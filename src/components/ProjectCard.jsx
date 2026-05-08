@@ -153,7 +153,7 @@ export function ProjectCard({ project, clientName, to, accent = 'fizzia' }) {
           {project.status === 'revision' && project.client_deadline ? (
             <span className="inline-flex items-center gap-1">
               <span className="material-symbols-rounded text-[14px]">hourglass_top</span>
-              Límite cliente: {formatDate(project.client_deadline)}
+              Tu fecha programada: {formatDate(project.client_deadline)}
             </span>
           ) : project.status !== 'revision' && project.due_date ? (
             <span className="inline-flex items-center gap-1">
