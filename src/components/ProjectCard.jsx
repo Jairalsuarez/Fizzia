@@ -51,7 +51,7 @@ function CyclingInfo({ items, interval = 4000 }) {
 
   return (
     <div className="h-5 overflow-hidden flex items-center justify-center">
-      <span className={`text-sm font-medium transition-all duration-300 ease-out ${animClass} ${items[index].color || 'text-dark-300'}`}>
+      <span className={`text-sm font-medium truncate max-w-full transition-all duration-300 ease-out ${animClass} ${items[index].color || 'text-dark-300'}`}>
         {items[index].text}
       </span>
     </div>
