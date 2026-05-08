@@ -58,24 +58,16 @@ function CyclingInfo({ items, interval = 4000 }) {
   )
 }
 
-export function ProjectCard({ project, clientName, to, accent = 'fizzia' }) {
+export function ProjectCard({ project, clientName, to }) {
   const phase = getPhase(project.status)
   const daysLeft = getDaysRemaining(project.due_date)
   const [lastCommit, setLastCommit] = useState(null)
   const [developerName, setDeveloperName] = useState(null)
   const fetchedRef = useRef(false)
 
-  const accentClass = accent === 'purple'
-    ? 'hover:border-purple-500/40 hover:shadow-purple-500/5 group-hover:text-purple-400'
-    : 'hover:border-fizzia-500/40 hover:shadow-fizzia-500/5 group-hover:text-fizzia-400'
-
-  const gradientClass = accent === 'purple'
-    ? 'from-purple-500/[0.02]'
-    : 'from-fizzia-500/[0.02]'
-
-  const arrowClass = accent === 'purple'
-    ? 'group-hover:text-purple-400'
-    : 'group-hover:text-fizzia-400'
+  const accentClass = 'hover:border-[var(--accent)]/40 hover:shadow-[var(--accent)]/5 group-hover:text-[var(--accent)]'
+  const gradientClass = 'from-[var(--accent)]/[0.02]'
+  const arrowClass = 'group-hover:text-[var(--accent)]'
 
   useEffect(() => {
     if (fetchedRef.current) return
@@ -123,7 +115,7 @@ export function ProjectCard({ project, clientName, to, accent = 'fizzia' }) {
   }
 
   if (developerName) {
-    cycleItems.push({ text: `Desarrollador asignado: ${developerName}`, color: 'text-purple-400' })
+    cycleItems.push({ text: `Desarrollador asignado: ${developerName}`, color: 'text-[var(--accent)]' })
   }
 
   return (

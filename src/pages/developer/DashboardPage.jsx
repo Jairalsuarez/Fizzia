@@ -91,7 +91,6 @@ export function DashboardPage() {
               project={project}
               clientName={project.clients?.name}
               to={`/dev/proyecto/${project.id}`}
-              accent="purple"
             />
           ))}
         </div>
