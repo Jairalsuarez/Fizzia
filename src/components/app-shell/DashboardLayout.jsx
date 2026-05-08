@@ -4,6 +4,7 @@ import { useAuth } from '../../features/auth/authContext'
 import { getMyProfile } from '../../api/profilesApi'
 import { AvatarIcon } from '../../data/avatars.jsx'
 import { useAppTheme } from '../../theme/appTheme'
+import { ThemeProvider } from '../../theme/ThemeContext'
 
 export function DashboardLayout({
   navItems,
@@ -18,7 +19,7 @@ export function DashboardLayout({
   const [profile, setProfile] = useState(user)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
-  const { palette } = useAppTheme(theme)
+  const { theme: activeTheme, palette } = useAppTheme(theme)
   const preloadRoute = (item) => item.preload?.()
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export function DashboardLayout({
   const displayName = profile?.full_name || profile?.first_name || roleLabel || 'Usuario'
 
   return (
-    <div className="min-h-[100dvh] bg-dark-950">
+    <div className="min-h-[100dvh] bg-dark-950" data-theme={activeTheme}>
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className={`absolute -top-24 -left-24 w-[500px] h-[500px] ${palette.glow} rounded-full blur-3xl`} />
         <div className={`absolute top-1/2 -right-24 w-[400px] h-[400px] ${palette.glowSoft} rounded-full blur-3xl`} />
@@ -175,7 +176,9 @@ export function DashboardLayout({
 
       <main className="pt-24 pb-10 lg:pt-20 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {children || <Outlet />}
+          <ThemeProvider value={{ theme: activeTheme, palette }}>
+            {children || <Outlet />}
+          </ThemeProvider>
         </div>
       </main>
     </div>

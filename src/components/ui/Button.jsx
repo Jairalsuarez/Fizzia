@@ -1,4 +1,5 @@
 import { Icon } from './Icon'
+import { useTheme } from '../../theme/ThemeContext'
 
 export function Button({
   children,
@@ -11,12 +12,13 @@ export function Button({
   className = '',
   ...props
 }) {
+  const { palette } = useTheme()
   const base = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-200 cursor-pointer select-none active:translate-y-px disabled:cursor-not-allowed'
   
   const variants = {
-    primary: 'bg-fizzia-500 text-white hover:bg-fizzia-400 shadow-lg shadow-fizzia-500/20 hover:shadow-fizzia-500/30',
-    outline: 'border border-dark-700 text-white hover:border-fizzia-500 hover:bg-fizzia-500/5 hover:text-fizzia-300 bg-transparent',
-    ghost: 'text-dark-300 hover:text-fizzia-400 bg-transparent',
+    primary: `${palette.bg} text-white ${palette.hoverBg} shadow-lg ${palette.shadow}`,
+    outline: `border border-dark-700 text-white ${palette.hoverText} bg-transparent`,
+    ghost: `text-dark-300 ${palette.hoverText} bg-transparent`,
   }
   
   const sizes = {

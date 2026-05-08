@@ -645,7 +645,7 @@ export function ProjectDetailPage() {
                   type="text"
                   value={editData.name}
                   onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 transition-all"
+                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] transition-all"
                   required
                 />
               </div>
@@ -654,7 +654,7 @@ export function ProjectDetailPage() {
                 <textarea
                   value={editData.description}
                   onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 resize-none transition-all"
+                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] resize-none transition-all"
                   rows={4}
                 />
               </div>
@@ -664,7 +664,7 @@ export function ProjectDetailPage() {
                   type="number"
                   value={editData.budget}
                   onChange={(e) => setEditData({ ...editData, budget: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 transition-all"
+                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] transition-all"
                 />
               </div>
               <div>
@@ -673,7 +673,7 @@ export function ProjectDetailPage() {
                   type="url"
                   value={editData.repo_url}
                   onChange={(e) => setEditData({ ...editData, repo_url: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 transition-all"
+                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] transition-all"
                   placeholder="https://github.com/usuario/proyecto"
                 />
               </div>
@@ -683,7 +683,7 @@ export function ProjectDetailPage() {
                   type="url"
                   value={editData.live_url}
                   onChange={(e) => setEditData({ ...editData, live_url: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 transition-all"
+                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] transition-all"
                   placeholder="https://mi-proyecto.com"
                 />
               </div>
@@ -692,7 +692,7 @@ export function ProjectDetailPage() {
                 <textarea
                   value={editData.notes}
                   onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 resize-none transition-all"
+                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] resize-none transition-all"
                   rows={3}
                   placeholder="Instrucciones, accesos, comentarios..."
                 />
@@ -701,7 +701,7 @@ export function ProjectDetailPage() {
                 <button type="button" onClick={() => setShowEdit(false)} className="cursor-pointer flex-1 py-3 bg-dark-800 text-white font-medium rounded-xl hover:bg-dark-700 transition-all">
                   Cancelar
                 </button>
-                <button type="submit" disabled={savingEdit} className="cursor-pointer flex-1 py-3 bg-fizzia-500 text-white font-semibold rounded-xl hover:bg-fizzia-400 disabled:opacity-50 transition-all">
+                <button type="submit" disabled={savingEdit} className="cursor-pointer flex-1 py-3 bg-[var(--accent)] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all">
                   {savingEdit ? 'Guardando...' : 'Guardar cambios'}
                 </button>
               </div>
@@ -745,7 +745,7 @@ export function ProjectDetailPage() {
             onClick={() => { setActiveTab(tab.key); if (tab.key !== 'pagos') resetPaymentForm() }}
             className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium cursor-pointer transition-all ${
               activeTab === tab.key
-                ? 'bg-fizzia-500 text-white'
+                ? 'bg-[var(--accent)] text-white'
                 : 'text-dark-400 hover:text-white'
             }`}
           >
@@ -873,7 +873,7 @@ export function ProjectDetailPage() {
                           className={`cursor-pointer px-4 py-2.5 rounded-2xl text-sm text-left shadow-sm ${
                             isMine
                               ? status === 'error' ? 'bg-red-500/80 text-white rounded-br-sm'
-                              : 'bg-fizzia-500 text-white rounded-br-sm'
+                              : 'bg-[var(--accent)] text-white rounded-br-sm'
                               : 'bg-dark-800 text-dark-100 rounded-bl-sm'
                           }`}
                         >
@@ -907,8 +907,8 @@ export function ProjectDetailPage() {
             <div ref={messagesEndRef} />
           </div>
           <form onSubmit={handleSend} className="p-3 border-t border-dark-800 flex gap-2 shrink-0">
-            <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} className="flex-1 px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-fizzia-500 text-sm" placeholder="Escribir mensaje..." />
-            <button type="submit" disabled={!newMessage.trim()} className="cursor-pointer px-4 py-2.5 bg-fizzia-500 text-white rounded-xl hover:bg-fizzia-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} className="flex-1 px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] text-sm" placeholder="Escribir mensaje..." />
+            <button type="submit" disabled={!newMessage.trim()} className="cursor-pointer px-4 py-2.5 bg-[var(--accent)] text-white rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
               <span className="material-symbols-rounded text-lg">send</span>
             </button>
           </form>
@@ -1042,7 +1042,7 @@ export function ProjectDetailPage() {
                   <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.05fr_0.95fr]">
                     <button
                       onClick={() => handleSelectPaymentMethod('paypal')}
-                      className="cursor-pointer flex min-h-[104px] items-center gap-4 rounded-2xl border border-dark-700 bg-dark-950 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-fizzia-500/50 active:translate-y-0"
+                      className="cursor-pointer flex min-h-[104px] items-center gap-4 rounded-2xl border border-dark-700 bg-dark-950 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]/50 active:translate-y-0"
                     >
                       <div className="flex h-12 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white px-2">
                         <img src="/Logo metodos de pagos/Paypal_2014_logo.png" alt="PayPal" className="w-full h-full object-contain" />
@@ -1055,7 +1055,7 @@ export function ProjectDetailPage() {
                     </button>
                     <button
                       onClick={() => handleSelectPaymentMethod('transfer')}
-                      className="cursor-pointer flex min-h-[104px] items-center gap-4 rounded-2xl border border-dark-700 bg-dark-950 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-fizzia-500/50 active:translate-y-0"
+                      className="cursor-pointer flex min-h-[104px] items-center gap-4 rounded-2xl border border-dark-700 bg-dark-950 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]/50 active:translate-y-0"
                     >
                       <div className="flex h-12 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white px-2">
                         <img src="/Logo metodos de pagos/Banco_Pichincha_nuevo.png" alt="Banco Pichincha" className="w-full h-full object-contain" />
@@ -1090,7 +1090,7 @@ export function ProjectDetailPage() {
                         type="number"
                         value={paymentAmount}
                         onChange={(e) => setPaymentAmount(e.target.value)}
-                        className="w-full rounded-xl border border-dark-700 bg-dark-950 px-4 py-3 text-white transition-colors focus:border-fizzia-500 focus:outline-none"
+                        className="w-full rounded-xl border border-dark-700 bg-dark-950 px-4 py-3 text-white transition-colors focus:border-[var(--accent)] focus:outline-none"
                         placeholder="0.00"
                         max={pending}
                         step="0.01"
@@ -1132,7 +1132,7 @@ export function ProjectDetailPage() {
                         type="number"
                         value={paymentAmount}
                         onChange={(e) => setPaymentAmount(e.target.value)}
-                        className="w-full rounded-xl border border-dark-700 bg-dark-950 px-4 py-3 text-white transition-colors focus:border-fizzia-500 focus:outline-none"
+                        className="w-full rounded-xl border border-dark-700 bg-dark-950 px-4 py-3 text-white transition-colors focus:border-[var(--accent)] focus:outline-none"
                         placeholder="0.00"
                         max={pending}
                         step="0.01"
@@ -1141,7 +1141,7 @@ export function ProjectDetailPage() {
                     </div>
                     <button
                       onClick={handleTransferContinue}
-                      className="cursor-pointer w-full rounded-xl bg-fizzia-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-fizzia-400 active:translate-y-px"
+                      className="cursor-pointer w-full rounded-xl bg-fizzia-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:translate-y-px"
                     >
                       Continuar
                     </button>
@@ -1163,13 +1163,13 @@ export function ProjectDetailPage() {
                   <div className="grid grid-cols-2 gap-2 rounded-xl border border-dark-800 bg-dark-900 p-1">
                     <button
                       onClick={() => setTransferType('transfer')}
-                      className={`rounded-lg py-2.5 text-sm font-medium transition-all ${transferType === 'transfer' ? 'bg-fizzia-500 text-white' : 'text-dark-400 hover:text-white'}`}
+                      className={`rounded-lg py-2.5 text-sm font-medium transition-all ${transferType === 'transfer' ? 'bg-[var(--accent)] text-white' : 'text-dark-400 hover:text-white'}`}
                     >
                       Transferencia
                     </button>
                     <button
                       onClick={() => setTransferType('deposit')}
-                      className={`rounded-lg py-2.5 text-sm font-medium transition-all ${transferType === 'deposit' ? 'bg-fizzia-500 text-white' : 'text-dark-400 hover:text-white'}`}
+                      className={`rounded-lg py-2.5 text-sm font-medium transition-all ${transferType === 'deposit' ? 'bg-[var(--accent)] text-white' : 'text-dark-400 hover:text-white'}`}
                     >
                       Depósito
                     </button>
@@ -1183,7 +1183,7 @@ export function ProjectDetailPage() {
                         type="text"
                         value={accountHolderName}
                         onChange={(e) => setAccountHolderName(e.target.value)}
-                        className="w-full rounded-xl border border-dark-700 bg-dark-900 px-4 py-3 text-white transition-colors focus:border-fizzia-500 focus:outline-none"
+                        className="w-full rounded-xl border border-dark-700 bg-dark-900 px-4 py-3 text-white transition-colors focus:border-[var(--accent)] focus:outline-none"
                         placeholder="Nombre completo"
                       />
                     </div>
@@ -1194,7 +1194,7 @@ export function ProjectDetailPage() {
                         type="text"
                         value={accountCedula}
                         onChange={(e) => setAccountCedula(e.target.value)}
-                        className="w-full rounded-xl border border-dark-700 bg-dark-900 px-4 py-3 text-white transition-colors focus:border-fizzia-500 focus:outline-none"
+                        className="w-full rounded-xl border border-dark-700 bg-dark-900 px-4 py-3 text-white transition-colors focus:border-[var(--accent)] focus:outline-none"
                         placeholder="Ej: 1234567890"
                       />
                     </div>
@@ -1217,7 +1217,7 @@ export function ProjectDetailPage() {
                       (transferType === 'transfer' && !accountHolderName.trim()) ||
                       (transferType === 'deposit' && !accountCedula.trim())
                     }
-                    className="cursor-pointer w-full rounded-xl bg-fizzia-500 py-3 text-sm font-semibold text-white transition-all hover:bg-fizzia-400 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer w-full rounded-xl bg-fizzia-500 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Continuar
                   </button>
@@ -1300,7 +1300,7 @@ export function ProjectDetailPage() {
                   {!proofPreview ? (
                     <button
                       onClick={() => proofInputRef.current?.click()}
-                      className="mt-3 flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-dark-600 py-12 text-dark-400 transition-all hover:border-fizzia-500/60 hover:text-white"
+                      className="mt-3 flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-dark-600 py-12 text-dark-400 transition-all hover:border-[var(--accent)]/50 hover:text-white"
                     >
                       <span className="material-symbols-rounded text-4xl">camera_alt</span>
                       <p className="text-sm font-medium">Tomar foto o subir comprobante</p>
@@ -1328,7 +1328,7 @@ export function ProjectDetailPage() {
                         <button
                           onClick={handleSubmitTransferPayment}
                           disabled={paymentSubmitting}
-                          className="cursor-pointer flex-1 rounded-xl bg-fizzia-500 py-2.5 text-sm font-semibold text-white transition-all hover:bg-fizzia-400 disabled:opacity-50"
+                          className="cursor-pointer flex-1 rounded-xl bg-fizzia-500 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
                         >
                           {paymentSubmitting ? 'Enviando...' : 'Enviar comprobante'}
                         </button>
@@ -1444,7 +1444,7 @@ export function ProjectDetailPage() {
                     ) : (
                       <button
                         onClick={() => { setFulfillingRequestId(req.id); fileInputRef.current?.click() }}
-                        className="cursor-pointer px-3 py-1.5 bg-fizzia-500 text-white text-xs font-medium rounded-lg hover:bg-fizzia-400 transition-all shrink-0"
+                        className="cursor-pointer px-3 py-1.5 bg-[var(--accent)] text-white text-xs font-medium rounded-lg hover:opacity-90 transition-all shrink-0"
                       >
                         Enviar archivo
                       </button>
@@ -1468,7 +1468,7 @@ export function ProjectDetailPage() {
             <textarea
               value={fileNote}
               onChange={(e) => setFileNote(e.target.value)}
-              className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white text-sm placeholder-dark-500 focus:outline-none focus:border-fizzia-500 resize-none transition-all mb-3"
+              className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white text-sm placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] resize-none transition-all mb-3"
               rows={2}
               placeholder="Nota opcional (ej: logo en alta resolución, referencias...)"
             />

@@ -117,7 +117,7 @@ export function PaymentsPage() {
             onClick={() => setFilter(tab.key)}
             className={`flex items-center gap-1.5 py-2 px-4 rounded-lg text-sm font-medium cursor-pointer transition-all ${
               filter === tab.key
-                ? 'bg-fizzia-500 text-white'
+                ? 'bg-[var(--accent)] text-white'
                 : 'text-dark-400 hover:text-white'
             }`}
           >
@@ -263,7 +263,7 @@ export function PaymentsPage() {
                   <p className="text-xs text-dark-500 mb-2">Comprobante</p>
                   <button
                     onClick={() => window.open(proofUrl, '_blank')}
-                    className="cursor-pointer w-full flex items-center justify-center gap-2 py-4 bg-dark-950 border border-dark-700 rounded-xl hover:border-fizzia-500/50 transition-all group"
+                    className="cursor-pointer w-full flex items-center justify-center gap-2 py-4 bg-dark-950 border border-dark-700 rounded-xl hover:border-[var(--accent)]/50 transition-all group"
                   >
                     <span className="material-symbols-rounded text-fizzia-400 group-hover:scale-110 transition-transform">image</span>
                     <span className="text-fizzia-400 text-sm font-medium">Ver Comprobante</span>
@@ -280,7 +280,7 @@ export function PaymentsPage() {
                       type="text"
                       value={rejectionReason}
                       onChange={(e) => setRejectionReason(e.target.value)}
-                      className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500"
+                      className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)]"
                       placeholder="Ej: El comprobante no es legible"
                     />
                   </div>

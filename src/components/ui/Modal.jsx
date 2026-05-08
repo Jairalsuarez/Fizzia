@@ -37,7 +37,7 @@ export function Modal({ isOpen, open, onClose, title, children, size = 'md' }) {
           onClick={(e) => e.stopPropagation()}
           style={{ animation: 'modalEnter 190ms cubic-bezier(.2,.8,.2,1) both' }}
         >
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-fizzia-400/50 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <div className={`flex shrink-0 items-center justify-between gap-3 border-b border-dark-800 bg-dark-950/55 px-4 py-3 sm:px-5 ${title ? '' : 'justify-end'}`}>
             {title && <h2 className="min-w-0 truncate text-base font-semibold text-white sm:text-lg">{title}</h2>}
             <button onClick={onClose} className="cursor-pointer flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-dark-400 transition-colors hover:bg-dark-800 hover:text-white">

@@ -182,3 +182,9 @@ textarea {
 .animate-shimmer {
   animation: shimmer 4s ease-in-out infinite;
 }
+
+[data-theme="fizzia"] { --accent: #32a852; --accent-lighter: #44a64a; --accent-bg: rgba(50, 168, 82, 0.2); }
+[data-theme="rose"] { --accent: #f43f5e; --accent-lighter: #fb7185; --accent-bg: rgba(244, 63, 94, 0.2); }
+[data-theme="purple"] { --accent: #a855f7; --accent-lighter: #c084fc; --accent-bg: rgba(168, 85, 247, 0.2); }
+[data-theme="blue"] { --accent: #3b82f6; --accent-lighter: #60a5fa; --accent-bg: rgba(59, 130, 246, 0.2); }
+[data-theme="amber"] { --accent: #f59e0b; --accent-lighter: #fbbf24; --accent-bg: rgba(245, 158, 11, 0.2); }

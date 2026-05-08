@@ -50,7 +50,7 @@ function Typewriter({ text, speed = 40 }) {
   return (
     <span>
       {displayed}
-      {!done && <span className="animate-blink text-fizzia-400">|</span>}
+      {!done && <span className="animate-blink text-[var(--accent)]">|</span>}
     </span>
   )
 }
@@ -116,9 +116,9 @@ export function DashboardPage() {
             <button
               type="button"
               onClick={openMessages}
-              className="cursor-pointer group relative px-4 py-2.5 bg-dark-900 border border-dark-700 text-white font-semibold rounded-xl hover:border-fizzia-500/50 hover:bg-dark-800 transition-all inline-flex items-center gap-2"
+              className="cursor-pointer group relative px-4 py-2.5 bg-dark-900 border border-dark-700 text-white font-semibold rounded-xl hover:border-[var(--accent)]/50 hover:bg-dark-800 transition-all inline-flex items-center gap-2"
             >
-              <span className="material-symbols-rounded text-lg text-fizzia-400">chat</span>
+              <span className="material-symbols-rounded text-lg text-[var(--accent)]">chat</span>
               Mensajes
               <span className="pointer-events-none absolute right-0 top-full z-20 mt-2 hidden w-64 rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-left text-xs font-medium text-dark-200 shadow-xl group-hover:block">
                 Preguntar al desarrollador sobre tu proyecto
@@ -127,7 +127,7 @@ export function DashboardPage() {
           )}
           <Link
             to="/cliente/nuevo-proyecto"
-            className="cursor-pointer px-4 py-2.5 bg-fizzia-500 text-white font-semibold rounded-xl hover:bg-fizzia-400 transition-all shadow-lg shadow-fizzia-500/25 inline-flex items-center gap-2"
+            className="cursor-pointer px-4 py-2.5 bg-[var(--accent)] text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/25 inline-flex items-center gap-2"
           >
             <span className="material-symbols-rounded text-lg">add_circle</span>
             Nuevo proyecto

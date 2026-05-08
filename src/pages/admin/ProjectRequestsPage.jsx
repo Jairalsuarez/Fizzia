@@ -152,7 +152,7 @@ export function ProjectRequestsPage() {
             onClick={() => setFilter(f.key)}
             className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               filter === f.key
-                ? 'bg-fizzia-500 text-white'
+                ? 'bg-[var(--accent)] text-white'
                 : 'bg-dark-800 text-dark-300 hover:text-white'
             }`}
           >
@@ -173,7 +173,7 @@ export function ProjectRequestsPage() {
               key={project.id}
               className={`bg-dark-900/50 border rounded-xl p-5 transition-all ${
                 project.status === PROJECT_STATUS.REQUESTED
-                  ? 'border-fizzia-500/30 hover:border-fizzia-500/50'
+                  ? 'border-fizzia-500/30 hover:border-[var(--accent)]/50'
                   : 'border-dark-800 hover:border-dark-700'
               }`}
             >
@@ -207,7 +207,7 @@ export function ProjectRequestsPage() {
                       </button>
                       <button
                         onClick={() => openReview(project)}
-                        className="cursor-pointer px-4 py-2 bg-fizzia-500 text-white rounded-lg text-sm font-medium hover:bg-fizzia-400 transition-all"
+                        className="cursor-pointer px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-all"
                       >
                         Revisar y aceptar
                       </button>
@@ -250,7 +250,7 @@ export function ProjectRequestsPage() {
                 <select
                   value={reviewForm.projectType}
                   onChange={(e) => setReviewForm({ ...reviewForm, projectType: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 transition-all"
+                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] transition-all"
                 >
                   <option value="preparando">Preparando</option>
                   <option value="trabajando">Trabajando</option>
@@ -263,7 +263,7 @@ export function ProjectRequestsPage() {
                   type="text"
                   value={reviewForm.clientName}
                   onChange={(e) => setReviewForm({ ...reviewForm, clientName: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-fizzia-500 transition-all"
+                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] transition-all"
                   placeholder="Nombre de la empresa o persona"
                 />
               </div>
@@ -274,7 +274,7 @@ export function ProjectRequestsPage() {
                     type="number"
                     value={reviewForm.budget}
                     onChange={(e) => setReviewForm({ ...reviewForm, budget: e.target.value })}
-                    className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-fizzia-500 transition-all"
+                    className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] transition-all"
                     placeholder="5000"
                   />
                 </div>
@@ -284,7 +284,7 @@ export function ProjectRequestsPage() {
                     type="date"
                     value={reviewForm.dueDate}
                     onChange={(e) => setReviewForm({ ...reviewForm, dueDate: e.target.value })}
-                    className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 transition-all"
+                    className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] transition-all"
                   />
                 </div>
               </div>
@@ -294,7 +294,7 @@ export function ProjectRequestsPage() {
                   type="date"
                   value={reviewForm.startDate}
                   onChange={(e) => setReviewForm({ ...reviewForm, startDate: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 transition-all"
+                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] transition-all"
                 />
               </div>
               <div>
@@ -302,7 +302,7 @@ export function ProjectRequestsPage() {
                 <textarea
                   value={reviewForm.notes}
                   onChange={(e) => setReviewForm({ ...reviewForm, notes: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-fizzia-500 transition-all resize-none"
+                  className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] transition-all resize-none"
                   placeholder="Notas solo visibles para el equipo"
                   rows={3}
                 />
@@ -315,7 +315,7 @@ export function ProjectRequestsPage() {
                   type="button"
                   onClick={handleAccept}
                   disabled={updating}
-                  className="cursor-pointer flex-1 py-3 bg-fizzia-500 text-white font-semibold rounded-xl hover:bg-fizzia-400 disabled:opacity-50 transition-all"
+                  className="cursor-pointer flex-1 py-3 bg-[var(--accent)] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all"
                 >
                   {updating ? 'Guardando...' : 'Aceptar proyecto'}
                 </button>

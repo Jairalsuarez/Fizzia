@@ -109,7 +109,7 @@ export function LeadsPage() {
                 onClick={() => setStatusFilter(status)}
                 className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                   statusFilter === status
-                    ? 'bg-fizzia-500 text-white'
+                    ? 'bg-[var(--accent)] text-white'
                     : 'bg-dark-800 text-dark-300 hover:text-white'
                 }`}
               >
@@ -160,7 +160,7 @@ export function LeadsPage() {
                   </button>
                   <button
                     onClick={handleContact}
-                    className="px-3 py-1.5 rounded bg-fizzia-500 text-white text-sm hover:bg-fizzia-600 flex items-center gap-1"
+                    className="px-3 py-1.5 rounded bg-[var(--accent)] text-white text-sm hover:opacity-80 flex items-center gap-1"
                   >
                     <span className="material-symbols-rounded text-base">mail</span>
                     Contactar
@@ -269,11 +269,11 @@ export function LeadsPage() {
             value={contactNote}
             onChange={(e) => setContactNote(e.target.value)}
             rows={10}
-            className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white text-sm focus:outline-none focus:border-fizzia-500 resize-none"
+            className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white text-sm focus:outline-none focus:border-[var(--accent)] resize-none"
           />
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setShowContactModal(false)} className="px-4 py-2 rounded border border-dark-700 text-white hover:bg-dark-800">Cerrar</button>
-            <button onClick={copyContactMessage} className="px-4 py-2 rounded bg-fizzia-500 text-white hover:bg-fizzia-600 flex items-center gap-1">
+            <button onClick={copyContactMessage} className="px-4 py-2 rounded bg-[var(--accent)] text-white hover:opacity-80 flex items-center gap-1">
               <span className="material-symbols-rounded text-base">content_copy</span>
               Copiar
             </button>
@@ -304,7 +304,7 @@ export function LeadsPage() {
                   type="text"
                   value={editingLead.full_name}
                   onChange={(e) => setEditingLead({ ...editingLead, full_name: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
+                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)]"
                 />
               </div>
               <div>
@@ -313,7 +313,7 @@ export function LeadsPage() {
                   type="email"
                   value={editingLead.email}
                   onChange={(e) => setEditingLead({ ...editingLead, email: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
+                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)]"
                 />
               </div>
               <div>
@@ -322,7 +322,7 @@ export function LeadsPage() {
                   type="text"
                   value={editingLead.phone || ''}
                   onChange={(e) => setEditingLead({ ...editingLead, phone: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
+                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)]"
                 />
               </div>
               <div>
@@ -331,7 +331,7 @@ export function LeadsPage() {
                   type="text"
                   value={editingLead.company || ''}
                   onChange={(e) => setEditingLead({ ...editingLead, company: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
+                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)]"
                 />
               </div>
               <div>
@@ -340,7 +340,7 @@ export function LeadsPage() {
                   type="text"
                   value={editingLead.city || ''}
                   onChange={(e) => setEditingLead({ ...editingLead, city: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
+                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)]"
                 />
               </div>
               <div>
@@ -349,7 +349,7 @@ export function LeadsPage() {
                   type="number"
                   value={editingLead.budget_range || ''}
                   onChange={(e) => setEditingLead({ ...editingLead, budget_range: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
+                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)]"
                 />
               </div>
               <div>
@@ -357,7 +357,7 @@ export function LeadsPage() {
                 <select
                   value={editingLead.status}
                   onChange={(e) => setEditingLead({ ...editingLead, status: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
+                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)]"
                 >
                   <option value="new">Nuevo</option>
                   <option value="contacted">Contactado</option>
@@ -374,7 +374,7 @@ export function LeadsPage() {
                   value={editingLead.need_summary || ''}
                   onChange={(e) => setEditingLead({ ...editingLead, need_summary: e.target.value })}
                   rows={4}
-                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 resize-none"
+                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] resize-none"
                 />
               </div>
               <div>
@@ -383,13 +383,13 @@ export function LeadsPage() {
                   value={editingLead.notes || ''}
                   onChange={(e) => setEditingLead({ ...editingLead, notes: e.target.value })}
                   rows={4}
-                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 resize-none"
+                  className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] resize-none"
                 />
               </div>
               </div>
               <div className="flex flex-col-reverse gap-2 border-t border-dark-800 pt-4 sm:flex-row sm:justify-end">
                 <button onClick={() => setShowEditModal(false)} className="cursor-pointer rounded-xl border border-dark-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-dark-800">Cancelar</button>
-                <button onClick={handleSaveEdit} className="cursor-pointer rounded-xl bg-fizzia-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-fizzia-400">Guardar cambios</button>
+                <button onClick={handleSaveEdit} className="cursor-pointer rounded-xl bg-fizzia-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90">Guardar cambios</button>
               </div>
             </div>
           )}
@@ -429,7 +429,7 @@ export function LeadsPage() {
                 type="text"
                 value={informalProjectData.name}
                 onChange={(e) => setInformalProjectData({ ...informalProjectData, name: e.target.value })}
-                className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
+                className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)]"
                 placeholder="Ej: Sitio web corporativo"
               />
             </div>
@@ -439,7 +439,7 @@ export function LeadsPage() {
                 value={informalProjectData.description}
                 onChange={(e) => setInformalProjectData({ ...informalProjectData, description: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 resize-none"
+                className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] resize-none"
                 placeholder="Detalles del proyecto..."
               />
             </div>
@@ -449,13 +449,13 @@ export function LeadsPage() {
                 type="number"
                 value={informalProjectData.budget}
                 onChange={(e) => setInformalProjectData({ ...informalProjectData, budget: e.target.value })}
-                className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
+                className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-[var(--accent)]"
                 placeholder="0"
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button onClick={() => { setShowProjectForm(false); setCreatedClientId(null) }} className="px-4 py-2 rounded border border-dark-700 text-white hover:bg-dark-800">Saltar</button>
-              <button onClick={handleCreateInformalProject} disabled={!informalProjectData.name} className="px-4 py-2 rounded bg-fizzia-500 text-white hover:bg-fizzia-600 disabled:opacity-50">Crear Proyecto</button>
+              <button onClick={handleCreateInformalProject} disabled={!informalProjectData.name} className="px-4 py-2 rounded bg-[var(--accent)] text-white hover:opacity-80 disabled:opacity-50">Crear Proyecto</button>
             </div>
           </div>
         </div>

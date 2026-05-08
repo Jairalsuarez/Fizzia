@@ -41,7 +41,7 @@ export function DashboardPage() {
         <button
           onClick={() => setTab('solicitudes')}
           className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-all relative ${
-            tab === 'solicitudes' ? 'bg-fizzia-500 text-white' : 'text-dark-400 hover:text-white'
+            tab === 'solicitudes' ? 'bg-[var(--accent)] text-white' : 'text-dark-400 hover:text-white'
           }`}
         >
           Solicitudes
@@ -56,7 +56,7 @@ export function DashboardPage() {
         <button
           onClick={() => setTab('proyectos')}
           className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-all ${
-            tab === 'proyectos' ? 'bg-fizzia-500 text-white' : 'text-dark-400 hover:text-white'
+            tab === 'proyectos' ? 'bg-[var(--accent)] text-white' : 'text-dark-400 hover:text-white'
           }`}
         >
           Proyectos
@@ -78,7 +78,7 @@ export function DashboardPage() {
                 <Link
                   key={project.id}
                   to={`/admin/proyecto/${project.id}`}
-                  className="cursor-pointer flex items-center gap-4 bg-dark-900/50 border border-dark-800 rounded-xl p-4 hover:border-fizzia-500/50 hover:bg-dark-900 transition-all group"
+                  className="cursor-pointer flex items-center gap-4 bg-dark-900/50 border border-dark-800 rounded-xl p-4 hover:border-[var(--accent)]/50 hover:bg-dark-900 transition-all group"
                 >
                   <div className="w-10 h-10 bg-fizzia-500/20 rounded-lg flex items-center justify-center shrink-0">
                     <span className="material-symbols-rounded text-fizzia-400">request_quote</span>

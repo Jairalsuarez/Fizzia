@@ -237,7 +237,7 @@ export function MessagesPage() {
                             type="button"
                             onClick={() => setVisibleTimeMessageId(prev => prev === message.id ? null : message.id)}
                             className={`cursor-pointer rounded-2xl px-4 py-3 text-left text-sm ${
-                              isMine ? 'bg-fizzia-500 text-white rounded-br-sm' : 'bg-dark-800 text-dark-100 rounded-bl-sm'
+                              isMine ? 'bg-[var(--accent)] text-white rounded-br-sm' : 'bg-dark-800 text-dark-100 rounded-bl-sm'
                             }`}
                           >
                             <span className="whitespace-pre-wrap break-words">{message.content}</span>
@@ -271,13 +271,13 @@ export function MessagesPage() {
               <input
                 value={newMessage}
                 onChange={(event) => setNewMessage(event.target.value)}
-                className="flex-1 rounded-xl border border-dark-700 bg-dark-950 px-4 py-2.5 text-sm text-white outline-none placeholder:text-dark-500 focus:border-fizzia-500"
+                className="flex-1 rounded-xl border border-dark-700 bg-dark-950 px-4 py-2.5 text-sm text-white outline-none placeholder:text-dark-500 focus:border-[var(--accent)]"
                 placeholder="Escribir al admin..."
               />
               <button
                 type="submit"
                 disabled={!newMessage.trim()}
-                className="cursor-pointer rounded-xl bg-fizzia-500 px-4 py-2.5 text-white transition-colors hover:bg-fizzia-400 disabled:cursor-not-allowed disabled:opacity-50"
+                className="cursor-pointer rounded-xl bg-fizzia-500 px-4 py-2.5 text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span className="material-symbols-rounded text-lg">send</span>
               </button>

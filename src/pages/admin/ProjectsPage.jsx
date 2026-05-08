@@ -47,7 +47,7 @@ export function ProjectsPage() {
           onClick={() => setStatusFilter('all')}
           className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
             statusFilter === 'all'
-              ? 'bg-fizzia-500 text-white'
+              ? 'bg-[var(--accent)] text-white'
               : 'bg-dark-800 text-dark-300 hover:text-white'
           }`}
         >
@@ -59,7 +59,7 @@ export function ProjectsPage() {
                 onClick={() => setStatusFilter(status)}
                 className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                   statusFilter === status
-                    ? 'bg-fizzia-500 text-white'
+                    ? 'bg-[var(--accent)] text-white'
                     : 'bg-dark-800 text-dark-300 hover:text-white'
                 }`}
               >

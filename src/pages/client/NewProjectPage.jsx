@@ -141,8 +141,8 @@ export function NewProjectPage() {
     }
   }
 
-  const inputClass = "w-full px-4 py-3.5 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-fizzia-500 focus:ring-1 focus:ring-fizzia-500/50 transition-all"
-  const btnPrimary = "cursor-pointer px-6 py-3.5 bg-fizzia-500 text-white font-semibold rounded-xl hover:bg-fizzia-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-fizzia-500/25 hover:shadow-fizzia-500/40"
+  const inputClass = "w-full px-4 py-3.5 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-fizzia-500/50 transition-all"
+  const btnPrimary = "cursor-pointer px-6 py-3.5 bg-[var(--accent)] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-[var(--accent)]/25 hover:shadow-[var(--accent)]/25"
   const btnSecondary = "cursor-pointer px-6 py-3.5 bg-dark-800 text-white font-medium rounded-xl hover:bg-dark-700 transition-all"
 
   return (
@@ -167,8 +167,8 @@ export function NewProjectPage() {
             <>
               <div className="flex flex-col items-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                  isCompleted ? 'bg-fizzia-500 text-white' :
-                  isCurrent ? 'bg-fizzia-500 text-white shadow-lg shadow-fizzia-500/30' : 'bg-dark-800 text-dark-500'
+                  isCompleted ? 'bg-[var(--accent)] text-white' :
+                  isCurrent ? 'bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/25' : 'bg-dark-800 text-dark-500'
                 }`}>
                   {isCompleted ? (
                     <span className="material-symbols-rounded text-base">check</span>

@@ -59,7 +59,7 @@ export function ProjectCreatedPage() {
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Link
           to={`/cliente/proyecto/${project.id}`}
-          className="cursor-pointer px-6 py-3.5 bg-fizzia-500 text-white font-semibold rounded-xl hover:bg-fizzia-400 transition-all shadow-lg shadow-fizzia-500/25"
+          className="cursor-pointer px-6 py-3.5 bg-[var(--accent)] text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/25"
         >
           Ver mi proyecto
         </Link>

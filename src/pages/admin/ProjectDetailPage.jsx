@@ -17,6 +17,7 @@ import { getDeliveryStatus, markMessageFailed, markMessageSent, mergeRealtimeMes
 import { sumApprovedPayments } from '../../utils/paymentStatus'
 import { readStoredValue, writeStoredValue } from '../../utils/persistedState'
 import { useRealtimeProject } from '../../hooks/useRealtimeProjects'
+import { useTheme } from '../../theme/ThemeContext'
 
 let pendingId = Date.now()
 function genId() { return `pending-${pendingId++}` }
@@ -39,6 +40,7 @@ export function ProjectDetailPage() {
   const { projectId } = useParams()
   const navigate = useNavigate()
   const toast = useToast()
+  const { palette } = useTheme()
 
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -480,7 +482,7 @@ export function ProjectDetailPage() {
   )
   if (!project) return (
     <div className="p-6">
-      <button onClick={() => navigate('/admin')} className="cursor-pointer text-fizzia-400 hover:text-fizzia-300 text-sm mb-4 inline-flex items-center gap-1">
+      <button onClick={() => navigate('/admin')} className="cursor-pointer text-[var(--accent)] hover:text-[var(--accent-lighter)] text-sm mb-4 inline-flex items-center gap-1">
         <span className="material-symbols-rounded text-sm">arrow_back</span> Volver
       </button>
       <p className="text-dark-400">Proyecto no encontrado</p>
@@ -532,13 +534,13 @@ export function ProjectDetailPage() {
                       inputMode="decimal"
                       value={hasFinalPrice ? finalPriceValue : budgetValue}
                       onChange={(e) => hasFinalPrice ? setFinalPriceValue(e.target.value) : setBudgetValue(e.target.value)}
-                      className="h-8 w-24 rounded-lg border border-dark-700 bg-black/60 px-2.5 text-right text-sm font-semibold text-white outline-none transition-colors focus:border-fizzia-500"
+                      className="h-8 w-24 rounded-lg border border-dark-700 bg-black/60 px-2.5 text-right text-sm font-semibold text-white outline-none transition-colors focus:border-[var(--accent)]"
                       autoFocus
                     />
                     <button
                       onClick={hasFinalPrice ? savePrice : saveBudget}
                       disabled={hasFinalPrice ? savingPrice : savingBudget}
-                      className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-lg bg-fizzia-500 text-white hover:bg-fizzia-400 disabled:opacity-50 transition-all"
+                      className={`cursor-pointer flex h-8 w-8 items-center justify-center rounded-lg ${palette.bg} text-white ${palette.hoverBg} disabled:opacity-50 transition-all`}
                       title="Guardar precio"
                     >
                       <span className="material-symbols-rounded text-[18px]">check</span>
@@ -578,7 +580,7 @@ export function ProjectDetailPage() {
               {/* Action buttons */}
               {isSolicitado && (
                 <>
-                  <button onClick={() => setActionModal('accept')} className="cursor-pointer px-4 py-2 bg-fizzia-500/20 border border-fizzia-500/30 text-fizzia-400 text-sm font-medium rounded-lg hover:bg-fizzia-500/30 transition-all">Empezar a revisar</button>
+                  <button onClick={() => setActionModal('accept')} className={`cursor-pointer px-4 py-2 ${palette.bg}/20 border ${palette.border} ${palette.text} text-sm font-medium rounded-lg transition-all`}>Empezar a revisar</button>
                   <button onClick={() => setActionModal('reject')} className="cursor-pointer px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium rounded-lg hover:bg-red-500/30 transition-all">Rechazar</button>
                 </>
               )}
@@ -599,9 +601,9 @@ export function ProjectDetailPage() {
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={`cursor-pointer flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${
-                  tab === t.id
-                    ? 'border-fizzia-500 text-white'
-                    : 'border-transparent text-dark-400 hover:text-white hover:border-dark-600'
+                    tab === t.id
+                      ? `${palette.borderStrong} text-white`
+                      : 'border-transparent text-dark-400 hover:text-white hover:border-dark-600'
                 }`}
               >
                 <span className="material-symbols-rounded text-lg">{t.icon}</span>
@@ -652,10 +654,10 @@ export function ProjectDetailPage() {
             <div className="bg-dark-900/80 border border-dark-800 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <span className="material-symbols-rounded text-fizzia-400">event_note</span>
+                  <span className="material-symbols-rounded text-[var(--accent)]">event_note</span>
                   Fechas del proyecto
                 </h3>
-                <button onClick={() => setShowEditDates(!showEditDates)} className="cursor-pointer text-xs text-fizzia-400 hover:text-fizzia-300 transition-colors flex items-center gap-1">
+                <button onClick={() => setShowEditDates(!showEditDates)} className="cursor-pointer text-xs text-[var(--accent)] hover:text-[var(--accent-lighter)] transition-colors flex items-center gap-1">
                   <span className="material-symbols-rounded text-sm">{showEditDates ? 'close' : 'edit'}</span>
                   {showEditDates ? 'Cancelar' : 'Editar'}
                 </button>
@@ -665,22 +667,22 @@ export function ProjectDetailPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div>
                       <label className="text-xs text-dark-500 mb-1 block">Fecha inicio</label>
-                      <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500" />
+                      <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)]" />
                     </div>
                     <div>
                       <label className="text-xs text-dark-500 mb-1 block">Fecha entrega</label>
-                      <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500" />
+                      <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)]" />
                     </div>
                     <div>
                       <label className="text-xs text-dark-500 mb-1 block">Fecha límite (cliente)</label>
-                      <input type="date" value={clientDeadline} onChange={(e) => setClientDeadline(e.target.value)} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500" />
+                      <input type="date" value={clientDeadline} onChange={(e) => setClientDeadline(e.target.value)} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)]" />
                     </div>
                   </div>
                   <div>
                     <label className="text-xs text-dark-500 mb-1 block">URL repositorio</label>
-                    <input type="url" value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} placeholder="https://github.com/..." className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500 placeholder-dark-600" />
+                    <input type="url" value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} placeholder="https://github.com/..." className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)] placeholder-dark-600" />
                   </div>
-                  <button onClick={saveDates} disabled={saving} className="cursor-pointer px-4 py-2 bg-fizzia-500 text-white text-sm font-medium rounded-lg hover:bg-fizzia-400 disabled:opacity-50 transition-all">
+                  <button onClick={saveDates} disabled={saving} className={`cursor-pointer px-4 py-2 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} disabled:opacity-50 transition-all`}>
                     {saving ? 'Guardando...' : 'Guardar'}
                   </button>
                 </div>
@@ -691,9 +693,9 @@ export function ProjectDetailPage() {
                     startDate ? 'bg-dark-950 border-dark-700' : 'bg-dark-950/50 border-dark-800 border-dashed'
                   }`}>
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                      startDate ? 'bg-fizzia-500/20' : 'bg-dark-800'
+                      startDate ? 'bg-[var(--accent)]/20' : 'bg-dark-800'
                     }`}>
-                      <span className={`material-symbols-rounded text-base ${startDate ? 'text-fizzia-400' : 'text-dark-600'}`}>calendar_today</span>
+                      <span className={`material-symbols-rounded text-base ${startDate ? 'text-[var(--accent)]' : 'text-dark-600'}`}>calendar_today</span>
                     </div>
                     <div className="min-w-0">
                       <p className="text-[10px] text-dark-500 uppercase tracking-wider font-medium">Inicio</p>
@@ -765,7 +767,7 @@ export function ProjectDetailPage() {
                 </div>
               )}
               {repoUrl && (
-                <a href={repoUrl} target="_blank" rel="noopener noreferrer" className="cursor-pointer flex items-center gap-2 mt-4 text-sm text-fizzia-400 hover:text-fizzia-300 transition-colors">
+                <a href={repoUrl} target="_blank" rel="noopener noreferrer" className="cursor-pointer flex items-center gap-2 mt-4 text-sm text-[var(--accent)] hover:text-[var(--accent-lighter)] transition-colors">
                   <span className="material-symbols-rounded text-sm">code</span>
                   Repositorio
                 </a>
@@ -776,14 +778,14 @@ export function ProjectDetailPage() {
             <div className="bg-dark-900/80 border border-dark-800 rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-dark-400 flex items-center gap-2">
-                  <span className="material-symbols-rounded text-fizzia-400">person_add</span>
+                  <span className="material-symbols-rounded text-[var(--accent)]">person_add</span>
                   Developers asignados
                 </h3>
                 {assignedDevelopers.length > 0 && !showDeveloperPicker && (
                   <button
                     type="button"
                     onClick={() => setShowDeveloperPicker(true)}
-                    className="cursor-pointer flex items-center gap-1 text-xs font-medium text-fizzia-400 transition-colors hover:text-fizzia-300"
+                    className="cursor-pointer flex items-center gap-1 text-xs font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-lighter)]"
                   >
                     <span className="material-symbols-rounded text-sm">edit</span>
                     Editar
@@ -818,7 +820,7 @@ export function ProjectDetailPage() {
                     <select
                       value={selectedDeveloperId}
                       onChange={(e) => setSelectedDeveloperId(e.target.value)}
-                      className="cursor-pointer flex-1 px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500"
+                      className="cursor-pointer flex-1 px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)]"
                     >
                       <option value="">Seleccionar developer...</option>
                       {developers
@@ -832,7 +834,7 @@ export function ProjectDetailPage() {
                     <button
                       onClick={assignDeveloper}
                       disabled={assigning || !selectedDeveloperId}
-                      className="cursor-pointer px-4 py-2 bg-fizzia-500 text-white text-sm font-medium rounded-lg hover:bg-fizzia-400 disabled:opacity-50 transition-all"
+                      className={`cursor-pointer px-4 py-2 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} disabled:opacity-50 transition-all`}
                     >
                       {assigning ? 'Asignando...' : 'Asignar'}
                     </button>
@@ -850,7 +852,7 @@ export function ProjectDetailPage() {
               <div className="bg-dark-900 border border-dark-800 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-dark-400">Facturas</h3>
-                  <button onClick={() => setShowInvoiceForm(true)} className="cursor-pointer px-3 py-1.5 bg-fizzia-500/20 border border-fizzia-500/30 text-fizzia-400 text-xs font-medium rounded-lg hover:bg-fizzia-500/30 transition-all">+ Nueva factura</button>
+                  <button onClick={() => setShowInvoiceForm(true)} className={`cursor-pointer px-3 py-1.5 ${palette.bg}/20 border ${palette.border} ${palette.text} text-xs font-medium rounded-lg transition-all`}>+ Nueva factura</button>
                 </div>
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div className="text-center p-3 bg-dark-950 rounded-lg">
@@ -927,7 +929,7 @@ export function ProjectDetailPage() {
                             className={`cursor-pointer px-4 py-3 rounded-2xl text-sm text-left shadow-sm ${
                               isAdmin
                                 ? status === 'error' ? 'bg-red-500/80 text-white rounded-br-sm'
-                                : 'bg-fizzia-500 text-white rounded-br-sm'
+                                : 'bg-[var(--accent)] text-white rounded-br-sm'
                                 : 'bg-dark-800 text-dark-100 rounded-bl-sm'
                             }`}
                           >
@@ -961,8 +963,8 @@ export function ProjectDetailPage() {
               <div ref={messagesEndRef} />
             </div>
             <form onSubmit={handleSend} className="p-3 border-t border-dark-800 flex gap-2 shrink-0">
-              <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} className="flex-1 px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-fizzia-500 text-sm" placeholder="Escribir mensaje..." />
-              <button type="submit" disabled={!newMessage.trim()} className="cursor-pointer px-4 py-2.5 bg-fizzia-500 text-white rounded-lg hover:bg-fizzia-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+              <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} className="flex-1 px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] text-sm" placeholder="Escribir mensaje..." />
+              <button type="submit" disabled={!newMessage.trim()} className={`cursor-pointer px-4 py-2.5 ${palette.bg} text-white rounded-lg ${palette.hoverBg} disabled:opacity-50 disabled:cursor-not-allowed transition-all`}>
                 <span className="material-symbols-rounded text-lg">send</span>
               </button>
             </form>
@@ -985,7 +987,7 @@ export function ProjectDetailPage() {
                   href={project.repository_url || project.repo_url || repoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="cursor-pointer text-fizzia-400 hover:text-fizzia-300 text-sm font-medium"
+                  className="cursor-pointer text-[var(--accent)] hover:text-[var(--accent-lighter)] text-sm font-medium"
                 >
                   Abrir repo
                 </a>
@@ -1005,13 +1007,13 @@ export function ProjectDetailPage() {
                     href={commit.html_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="cursor-pointer flex items-start gap-3 rounded-xl border border-dark-800 bg-dark-950/70 p-4 transition-all hover:border-fizzia-500/40 hover:bg-dark-950"
+                    className="cursor-pointer flex items-start gap-3 rounded-xl border border-dark-800 bg-dark-950/70 p-4 transition-all hover:border-[var(--accent)]/40 hover:bg-dark-950"
                   >
                     <div className="w-8 h-8 rounded-full border border-dark-700 bg-dark-800 overflow-hidden flex items-center justify-center shrink-0">
                       {commit.author?.avatar_url ? (
                         <img src={commit.author.avatar_url} alt="" className="h-full w-full object-cover" />
                       ) : (
-                        <span className="material-symbols-rounded text-fizzia-400 text-sm">terminal</span>
+                        <span className="material-symbols-rounded text-[var(--accent)] text-sm">terminal</span>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -1020,7 +1022,7 @@ export function ProjectDetailPage() {
                         {getCommitAuthorName(commit)} · {formatCommitTime(getCommitDate(commit))}
                       </p>
                     </div>
-                    <code className="cursor-pointer text-xs text-fizzia-400 hover:text-fizzia-300 font-mono shrink-0">{commit.sha?.slice(0, 7)}</code>
+                    <code className="cursor-pointer text-xs text-[var(--accent)] hover:text-[var(--accent-lighter)] font-mono shrink-0">{commit.sha?.slice(0, 7)}</code>
                   </a>
                 ))}
               </div>
@@ -1043,7 +1045,7 @@ export function ProjectDetailPage() {
                   <h3 className="text-sm font-semibold text-white">Lista de archivos pendientes</h3>
                   <p className="text-xs text-dark-500 mt-0.5">{doneTasks}/{tasks.length} completados</p>
                 </div>
-                <button onClick={() => setShowTaskForm(!showTaskForm)} className="cursor-pointer px-3 py-1.5 bg-fizzia-500/20 border border-fizzia-500/30 text-fizzia-400 text-xs font-medium rounded-lg hover:bg-fizzia-500/30 transition-all flex items-center gap-1">
+                <button onClick={() => setShowTaskForm(!showTaskForm)} className={`cursor-pointer px-3 py-1.5 ${palette.bg}/20 border ${palette.border} ${palette.text} text-xs font-medium rounded-lg transition-all flex items-center gap-1`}>
                   <span className="material-symbols-rounded text-sm">add</span>
                   Agregar
                 </button>
@@ -1056,10 +1058,10 @@ export function ProjectDetailPage() {
                     value={newTaskTitle}
                     onChange={(e) => setNewTaskTitle(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && addTask()}
-                    className="flex-1 px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm placeholder-dark-600 focus:outline-none focus:border-fizzia-500"
+                    className="flex-1 px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm placeholder-dark-600 focus:outline-none focus:border-[var(--accent)]"
                     placeholder="Nombre del archivo o tarea..."
                   />
-                  <button onClick={addTask} disabled={savingTask || !newTaskTitle.trim()} className="cursor-pointer px-3 py-2 bg-fizzia-500 text-white text-sm font-medium rounded-lg hover:bg-fizzia-400 disabled:opacity-50 transition-all">
+                  <button onClick={addTask} disabled={savingTask || !newTaskTitle.trim()} className={`cursor-pointer px-3 py-2 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} disabled:opacity-50 transition-all`}>
                     Agregar
                   </button>
                 </div>
@@ -1086,7 +1088,7 @@ export function ProjectDetailPage() {
                         className={`cursor-pointer w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                           task.status === 'done'
                             ? 'bg-green-500 border-green-500'
-                            : 'border-dark-500 hover:border-fizzia-400'
+                            : 'border-dark-500 hover:border-[var(--accent-lighter)]'
                         }`}
                       >
                         {task.status === 'done' && (
@@ -1116,7 +1118,7 @@ export function ProjectDetailPage() {
               <div className="mt-6 pt-6 border-t border-dark-800">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs text-dark-400 font-medium">Solicitar archivos al cliente</span>
-                  <button onClick={() => setShowFileRequestForm(!showFileRequestForm)} className="cursor-pointer text-xs text-fizzia-400 hover:text-fizzia-300 transition-colors">
+                  <button onClick={() => setShowFileRequestForm(!showFileRequestForm)} className="cursor-pointer text-xs text-[var(--accent)] hover:text-[var(--accent-lighter)] transition-colors">
                     <span className="material-symbols-rounded text-sm">{showFileRequestForm ? 'close' : 'add'}</span>
                   </button>
                 </div>
@@ -1127,10 +1129,10 @@ export function ProjectDetailPage() {
                       value={newFileRequest}
                       onChange={(e) => setNewFileRequest(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleCreateFileRequest()}
-                      className="flex-1 px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm placeholder-dark-600 focus:outline-none focus:border-fizzia-500"
+                      className="flex-1 px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm placeholder-dark-600 focus:outline-none focus:border-[var(--accent)]"
                       placeholder="Ej: Logo en alta resolución..."
                     />
-                    <button onClick={handleCreateFileRequest} disabled={requestSaving || !newFileRequest.trim()} className="cursor-pointer px-3 py-2 bg-fizzia-500 text-white text-sm font-medium rounded-lg hover:bg-fizzia-400 disabled:opacity-50 transition-all">
+                    <button onClick={handleCreateFileRequest} disabled={requestSaving || !newFileRequest.trim()} className={`cursor-pointer px-3 py-2 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} disabled:opacity-50 transition-all`}>
                       Enviar
                     </button>
                   </div>
@@ -1158,8 +1160,8 @@ export function ProjectDetailPage() {
               <h3 className="text-sm font-semibold text-white mb-3">Archivos subidos</h3>
               <div className="mb-3">
                 <input type="file" ref={fileInputRef} multiple onChange={handleFileUpload} className="hidden" accept="image/*,.pdf,.doc,.docx,.zip,.rar,.psd,.ai,.fig,.sketch,.mp4,.mov,.svg" />
-                <textarea value={fileNote} onChange={(e) => setFileNote(e.target.value)} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm placeholder-dark-500 focus:outline-none focus:border-fizzia-500 resize-none mb-2" rows={2} placeholder="Nota opcional..." />
-                <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="cursor-pointer w-full py-2 bg-fizzia-500/10 border border-fizzia-500/30 text-fizzia-400 text-sm font-medium rounded-lg hover:bg-fizzia-500/20 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
+                <textarea value={fileNote} onChange={(e) => setFileNote(e.target.value)} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] resize-none mb-2" rows={2} placeholder="Nota opcional..." />
+                <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className={`cursor-pointer w-full py-2 ${palette.bg}/10 border ${palette.border} ${palette.text} text-sm font-medium rounded-lg disabled:opacity-50 transition-all flex items-center justify-center gap-1.5`}>
                   {uploading ? 'Subiendo...' : <><span className="material-symbols-rounded text-sm">cloud_upload</span>Subir archivos</>}
                 </button>
               </div>
@@ -1169,7 +1171,7 @@ export function ProjectDetailPage() {
                   <p className="text-[10px] text-dark-500 font-medium uppercase tracking-wider">{files.length} archivos</p>
                   {files.map(file => (
                     <div key={file.id} className="flex items-center gap-2 bg-dark-950 border border-dark-800 rounded-lg p-2.5 group">
-                      <div className="w-8 h-8 bg-dark-700 rounded-lg flex items-center justify-center shrink-0"><span className="material-symbols-rounded text-fizzia-400 text-sm">{getFileIcon(file)}</span></div>
+                      <div className="w-8 h-8 bg-dark-700 rounded-lg flex items-center justify-center shrink-0"><span className="material-symbols-rounded text-[var(--accent)] text-sm">{getFileIcon(file)}</span></div>
                       <div className="flex-1 min-w-0">
                         <p className="text-white text-xs font-medium truncate">{file.file_name}</p>
                         <p className="text-dark-500 text-[10px]">{getFileSize(file.file_size)}{file.note && ` · ${file.note}`}</p>
@@ -1192,24 +1194,24 @@ export function ProjectDetailPage() {
         <p className="text-dark-300 text-sm mb-4">¿Cambiar estado de <span className="text-white font-medium">{project.name}</span> a <span className="text-fizzia-400 font-medium">{getProjectStatusLabel(pendingStatus)}</span>?</p>
         <div className="flex gap-2">
           <button onClick={() => setStatusChangeModal(false)} className="cursor-pointer flex-1 px-4 py-2.5 bg-dark-800 border border-dark-700 text-dark-300 text-sm font-medium rounded-lg hover:text-white transition-all">Cancelar</button>
-          <button onClick={confirmStatusChange} disabled={acting} className="cursor-pointer flex-1 px-4 py-2.5 bg-fizzia-500 text-white text-sm font-medium rounded-lg hover:bg-fizzia-400 disabled:opacity-50 transition-all">{acting ? 'Procesando...' : 'Confirmar'}</button>
+          <button onClick={confirmStatusChange} disabled={acting} className={`cursor-pointer flex-1 px-4 py-2.5 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} disabled:opacity-50 transition-all`}>{acting ? 'Procesando...' : 'Confirmar'}</button>
         </div>
       </Modal>
 
       <Modal isOpen={showInvoiceForm} onClose={() => setShowInvoiceForm(false)} title="Nueva factura" size="lg">
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="text-sm text-dark-400 mb-1 block">Número</label><input type="text" value={invoiceForm.invoice_number} onChange={(e) => setInvoiceForm(prev => ({ ...prev, invoice_number: e.target.value }))} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500" /></div>
-            <div><label className="text-sm text-dark-400 mb-1 block">Total</label><input type="number" value={invoiceForm.total} onChange={(e) => setInvoiceForm(prev => ({ ...prev, total: Number(e.target.value) }))} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500" /></div>
+            <div><label className="text-sm text-dark-400 mb-1 block">Número</label><input type="text" value={invoiceForm.invoice_number} onChange={(e) => setInvoiceForm(prev => ({ ...prev, invoice_number: e.target.value }))} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)]" /></div>
+            <div><label className="text-sm text-dark-400 mb-1 block">Total</label><input type="number" value={invoiceForm.total} onChange={(e) => setInvoiceForm(prev => ({ ...prev, total: Number(e.target.value) }))} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)]" /></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="text-sm text-dark-400 mb-1 block">Fecha emisión</label><input type="date" value={invoiceForm.issued_at} onChange={(e) => setInvoiceForm(prev => ({ ...prev, issued_at: e.target.value }))} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500" /></div>
-            <div><label className="text-sm text-dark-400 mb-1 block">Fecha vencimiento</label><input type="date" value={invoiceForm.due_at} onChange={(e) => setInvoiceForm(prev => ({ ...prev, due_at: e.target.value }))} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500" /></div>
+            <div><label className="text-sm text-dark-400 mb-1 block">Fecha emisión</label><input type="date" value={invoiceForm.issued_at} onChange={(e) => setInvoiceForm(prev => ({ ...prev, issued_at: e.target.value }))} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)]" /></div>
+            <div><label className="text-sm text-dark-400 mb-1 block">Fecha vencimiento</label><input type="date" value={invoiceForm.due_at} onChange={(e) => setInvoiceForm(prev => ({ ...prev, due_at: e.target.value }))} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)]" /></div>
           </div>
-          <div><label className="text-sm text-dark-400 mb-1 block">Notas</label><textarea value={invoiceForm.notes} onChange={(e) => setInvoiceForm(prev => ({ ...prev, notes: e.target.value }))} rows={2} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500 resize-none" /></div>
+          <div><label className="text-sm text-dark-400 mb-1 block">Notas</label><textarea value={invoiceForm.notes} onChange={(e) => setInvoiceForm(prev => ({ ...prev, notes: e.target.value }))} rows={2} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)] resize-none" /></div>
           <div className="flex gap-2 pt-2">
             <button onClick={() => setShowInvoiceForm(false)} className="cursor-pointer flex-1 px-4 py-2.5 bg-dark-800 border border-dark-700 text-dark-300 text-sm font-medium rounded-lg hover:text-white transition-all">Cancelar</button>
-            <button onClick={handleCreateInvoice} className="cursor-pointer flex-1 px-4 py-2.5 bg-fizzia-500 text-white text-sm font-medium rounded-lg hover:bg-fizzia-400 transition-all">Crear factura</button>
+            <button onClick={handleCreateInvoice} className={`cursor-pointer flex-1 px-4 py-2.5 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} transition-all`}>Crear factura</button>
           </div>
         </div>
       </Modal>
@@ -1233,9 +1235,9 @@ export function ProjectDetailPage() {
       <Modal isOpen={actionModal === 'cancel'} onClose={() => { setActionModal(null); setCancelPassword(''); setCancelAgreed(false) }} title="Cancelar proyecto" size="sm">
         <p className="text-dark-300 text-sm mb-4">Estás por cancelar <span className="text-white font-medium">{project.name}</span>. Esta acción requiere confirmación con tu contraseña.</p>
         <div className="space-y-4">
-          <div><label className="text-sm text-dark-400 mb-1 block">Contraseña</label><input type="password" value={cancelPassword} onChange={(e) => setCancelPassword(e.target.value)} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500" placeholder="Ingresa tu contraseña" /></div>
+          <div><label className="text-sm text-dark-400 mb-1 block">Contraseña</label><input type="password" value={cancelPassword} onChange={(e) => setCancelPassword(e.target.value)} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)]" placeholder="Ingresa tu contraseña" /></div>
           <label className="flex items-start gap-2 cursor-pointer">
-            <input type="checkbox" checked={cancelAgreed} onChange={(e) => setCancelAgreed(e.target.checked)} className="mt-0.5 rounded border-dark-700 bg-dark-950 text-fizzia-500 focus:ring-fizzia-500" />
+            <input type="checkbox" checked={cancelAgreed} onChange={(e) => setCancelAgreed(e.target.checked)} className="mt-0.5 rounded border-dark-700 bg-dark-950 text-[var(--accent)] focus:ring-[var(--accent)]" />
             <span className="text-sm text-dark-300">Entiendo que cancelar el proyecto afecta la relación con el cliente y los procesos en curso.</span>
           </label>
           <div className="flex gap-2">
