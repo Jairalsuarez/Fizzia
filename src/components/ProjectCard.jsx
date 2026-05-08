@@ -150,13 +150,18 @@ export function ProjectCard({ project, clientName, to, accent = 'fizzia' }) {
         </h3>
 
         <div className="flex items-center gap-3 text-xs text-dark-500 mb-3 flex-wrap">
-          {project.due_date && (
+          {project.status === 'revision' && project.client_deadline ? (
+            <span className="inline-flex items-center gap-1">
+              <span className="material-symbols-rounded text-[14px]">hourglass_top</span>
+              Límite cliente: {formatDate(project.client_deadline)}
+            </span>
+          ) : project.status !== 'revision' && project.due_date ? (
             <span className="inline-flex items-center gap-1">
               <span className="material-symbols-rounded text-[14px]">calendar_today</span>
               Entrega: {formatDate(project.due_date)}
             </span>
-          )}
-          {daysLeft !== null && daysLeft <= 30 && (
+          ) : null}
+          {project.status !== 'revision' && daysLeft !== null && daysLeft <= 30 && (
             <span className={`inline-flex items-center gap-1 font-medium ${daysLeft < 0 ? 'text-red-400' : daysLeft <= 7 ? 'text-yellow-400' : 'text-emerald-400'}`}>
               <span className="material-symbols-rounded text-[14px]">schedule</span>
               {daysLeft < 0 ? `${Math.abs(daysLeft)} días atrasado` : `${daysLeft} días restantes`}
