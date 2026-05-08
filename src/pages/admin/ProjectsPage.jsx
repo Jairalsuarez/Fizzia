@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { StatusBadge, EmptyState, Skeleton } from '../../components/ui/'
 import { formatMoney, formatDate } from '../../utils/format'
 import { getAllProjects } from '../../api/projectsApi'
@@ -7,6 +8,7 @@ import { mergeRealtimeProject, useRealtimeProjects } from '../../hooks/useRealti
 const FINISHED_STATUSES = ['entregado', 'cancelado']
 
 export function ProjectsPage() {
+  const navigate = useNavigate()
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('all')
@@ -86,6 +88,7 @@ export function ProjectsPage() {
               {filtered.map((project) => (
                 <tr
                   key={project.id}
+                  onClick={() => navigate(`/admin/proyecto/${project.id}`)}
                   className="border-b border-dark-800 hover:bg-dark-800 cursor-pointer transition-colors"
                 >
                   <td className="p-3 text-white font-medium">{project.name}</td>

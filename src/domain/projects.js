@@ -1,5 +1,6 @@
 export const PROJECT_STATUS = {
   REQUESTED: 'solicitado',
+  REVISION: 'revision',
   PREPARING: 'preparando',
   WORKING: 'trabajando',
   PAUSED: 'pausado',
@@ -9,6 +10,7 @@ export const PROJECT_STATUS = {
 
 export const projectStatusLabels = {
   [PROJECT_STATUS.REQUESTED]: 'Solicitado',
+  [PROJECT_STATUS.REVISION]: 'Revisión',
   [PROJECT_STATUS.PREPARING]: 'Preparando',
   [PROJECT_STATUS.WORKING]: 'Trabajando',
   [PROJECT_STATUS.PAUSED]: 'Pausado',
@@ -18,6 +20,7 @@ export const projectStatusLabels = {
 
 export const projectStatusColors = {
   [PROJECT_STATUS.REQUESTED]: 'bg-fizzia-500',
+  [PROJECT_STATUS.REVISION]: 'bg-amber-500',
   [PROJECT_STATUS.PREPARING]: 'bg-purple-500',
   [PROJECT_STATUS.WORKING]: 'bg-blue-500',
   [PROJECT_STATUS.PAUSED]: 'bg-yellow-500',
@@ -27,6 +30,7 @@ export const projectStatusColors = {
 
 export const projectStatusTone = {
   [PROJECT_STATUS.REQUESTED]: 'bg-fizzia-500/20 text-fizzia-400',
+  [PROJECT_STATUS.REVISION]: 'bg-amber-500/20 text-amber-400',
   [PROJECT_STATUS.PREPARING]: 'bg-purple-500/20 text-purple-400',
   [PROJECT_STATUS.WORKING]: 'bg-blue-500/20 text-blue-400',
   [PROJECT_STATUS.PAUSED]: 'bg-yellow-500/20 text-yellow-400',

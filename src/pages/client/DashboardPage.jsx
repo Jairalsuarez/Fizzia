@@ -5,6 +5,13 @@ import { useAuth } from '../../features/auth/authContext'
 import { ProjectCard, ProjectCardSkeleton, EmptyProjects } from '../../components/ProjectCard'
 import { mergeRealtimeProject, useRealtimeProjects } from '../../hooks/useRealtimeProjects'
 
+function getTimeGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Buenos días'
+  if (h < 19) return 'Buenas tardes'
+  return 'Buenas noches'
+}
+
 const greetings = [
   'un placer tenerte aquí',
   'qué alegría verte de nuevo',
@@ -18,6 +25,34 @@ const greetings = [
 
 function randomGreeting() {
   return greetings[Math.floor(Math.random() * greetings.length)]
+}
+
+function Typewriter({ text, speed = 40 }) {
+  const [displayed, setDisplayed] = useState('')
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    if (!text) return
+    let i = 0
+    setDisplayed('')
+    setDone(false)
+    const timer = setInterval(() => {
+      i++
+      setDisplayed(text.slice(0, i))
+      if (i >= text.length) {
+        clearInterval(timer)
+        setDone(true)
+      }
+    }, speed)
+    return () => clearInterval(timer)
+  }, [text, speed])
+
+  return (
+    <span>
+      {displayed}
+      {!done && <span className="animate-blink text-fizzia-400">|</span>}
+    </span>
+  )
 }
 
 export function DashboardPage() {
@@ -72,11 +107,11 @@ export function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <h1 className="text-3xl font-bold text-white leading-tight">
-          Bienvenido, {user?.full_name?.split(' ')[0] || 'Usuario'}, {greeting}
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold text-white leading-tight animate-fade-in-up min-w-0 shrink">
+          {getTimeGreeting()}, {user?.full_name?.split(' ')[0] || 'Usuario'}, <Typewriter text={greeting} />
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {projects.length > 0 && (
             <button
               type="button"
@@ -112,10 +147,8 @@ export function DashboardPage() {
             <ProjectCard
               key={project.id}
               project={project}
+              clientName={project.client_name}
               to={`/cliente/proyecto/${project.id}`}
-              showDescription
-              showBudget
-              showDate
             />
           ))}
         </div>

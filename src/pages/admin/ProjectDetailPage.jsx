@@ -373,9 +373,9 @@ export function ProjectDetailPage() {
       if (error) { toast.error('Contraseña incorrecta'); return }
     }
     setActing(true)
-    const newStatus = actionModal === 'accept' ? 'preparando' : 'cancelado'
+    const newStatus = actionModal === 'accept' ? 'revision' : 'cancelado'
     await updateProject(project.id, { status: newStatus })
-    toast.success(actionModal === 'accept' ? 'Proyecto aceptado' : 'Proyecto rechazado')
+    toast.success(actionModal === 'accept' ? 'Proyecto en revisión' : 'Proyecto rechazado')
     setProject(prev => ({ ...prev, status: newStatus }))
     setActionModal(null)
     setCancelPassword('')
@@ -578,7 +578,7 @@ export function ProjectDetailPage() {
               {/* Action buttons */}
               {isSolicitado && (
                 <>
-                  <button onClick={() => setActionModal('accept')} className="cursor-pointer px-4 py-2 bg-fizzia-500/20 border border-fizzia-500/30 text-fizzia-400 text-sm font-medium rounded-lg hover:bg-fizzia-500/30 transition-all">Aceptar</button>
+                  <button onClick={() => setActionModal('accept')} className="cursor-pointer px-4 py-2 bg-fizzia-500/20 border border-fizzia-500/30 text-fizzia-400 text-sm font-medium rounded-lg hover:bg-fizzia-500/30 transition-all">Empezar a revisar</button>
                   <button onClick={() => setActionModal('reject')} className="cursor-pointer px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium rounded-lg hover:bg-red-500/30 transition-all">Rechazar</button>
                 </>
               )}
@@ -1214,13 +1214,13 @@ export function ProjectDetailPage() {
         </div>
       </Modal>
 
-      <Modal isOpen={actionModal === 'accept'} onClose={() => setActionModal(null)} title="Aceptar proyecto" size="sm">
-        <p className="text-dark-300 text-sm mb-4">¿Confirmas que deseas aceptar <span className="text-white font-medium">{project.name}</span>? El proyecto pasará a estado <span className="text-fizzia-400 font-medium">Preparando</span>.</p>
-        <div className="flex gap-2">
-          <button onClick={() => setActionModal(null)} className="cursor-pointer flex-1 px-4 py-2.5 bg-dark-800 border border-dark-700 text-dark-300 text-sm font-medium rounded-lg hover:text-white transition-all">Cancelar</button>
-          <button onClick={handleConfirmAction} disabled={acting} className="cursor-pointer flex-1 px-4 py-2.5 bg-fizzia-500 text-white text-sm font-medium rounded-lg hover:bg-fizzia-400 disabled:opacity-50 transition-all">{acting ? 'Procesando...' : 'Confirmar'}</button>
-        </div>
-      </Modal>
+<Modal isOpen={actionModal === 'accept'} onClose={() => setActionModal(null)} title="Empezar a revisar" size="sm">
+  <p className="text-dark-300 text-sm mb-4">¿Confirmas que deseas empezar a revisar <span className="text-white font-medium">{project.name}</span>? El proyecto pasará a estado <span className="text-amber-400 font-medium">Revisión</span>.</p>
+  <div className="flex gap-2">
+    <button onClick={() => setActionModal(null)} className="cursor-pointer flex-1 px-4 py-2.5 bg-dark-800 border border-dark-700 text-dark-300 text-sm font-medium rounded-lg hover:text-white transition-all">Cancelar</button>
+    <button onClick={handleConfirmAction} disabled={acting} className="cursor-pointer flex-1 px-4 py-2.5 bg-amber-500 text-white text-sm font-medium rounded-lg hover:bg-amber-400 disabled:opacity-50 transition-all">{acting ? 'Procesando...' : 'Confirmar'}</button>
+  </div>
+</Modal>
 
       <Modal isOpen={actionModal === 'reject'} onClose={() => setActionModal(null)} title="Rechazar proyecto" size="sm">
         <p className="text-dark-300 text-sm mb-4">¿Confirmas que deseas rechazar <span className="text-white font-medium">{project.name}</span>? El proyecto pasará a estado <span className="text-red-400 font-medium">Cancelado</span>.</p>
