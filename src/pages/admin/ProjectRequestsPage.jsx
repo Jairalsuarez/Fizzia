@@ -207,7 +207,7 @@ export function ProjectRequestsPage() {
                       </button>
                       <button
                         onClick={() => openReview(project)}
-                        className="cursor-pointer px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-all"
+                        className="cursor-pointer px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium hover:bg-[var(--accent-lighter)] transition-all"
                       >
                         Revisar y aceptar
                       </button>
@@ -315,7 +315,7 @@ export function ProjectRequestsPage() {
                   type="button"
                   onClick={handleAccept}
                   disabled={updating}
-                  className="cursor-pointer flex-1 py-3 bg-[var(--accent)] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all"
+                  className="cursor-pointer flex-1 py-3 bg-[var(--accent)] text-white font-semibold rounded-xl hover:bg-[var(--accent-lighter)] disabled:opacity-50 transition-all"
                 >
                   {updating ? 'Guardando...' : 'Aceptar proyecto'}
                 </button>

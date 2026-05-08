@@ -142,7 +142,7 @@ export function NewProjectPage() {
   }
 
   const inputClass = "w-full px-4 py-3.5 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-fizzia-500/50 transition-all"
-  const btnPrimary = "cursor-pointer px-6 py-3.5 bg-[var(--accent)] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-[var(--accent)]/25 hover:shadow-[var(--accent)]/25"
+  const btnPrimary = "cursor-pointer px-6 py-3.5 bg-[var(--accent)] text-white font-semibold rounded-xl hover:bg-[var(--accent-lighter)] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-[var(--accent)]/25 hover:shadow-[var(--accent)]/25"
   const btnSecondary = "cursor-pointer px-6 py-3.5 bg-dark-800 text-white font-medium rounded-xl hover:bg-dark-700 transition-all"
 
   return (

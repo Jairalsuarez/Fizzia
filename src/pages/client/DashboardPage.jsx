@@ -127,7 +127,7 @@ export function DashboardPage() {
           )}
           <Link
             to="/cliente/nuevo-proyecto"
-            className="cursor-pointer px-4 py-2.5 bg-[var(--accent)] text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/25 inline-flex items-center gap-2"
+            className="cursor-pointer px-4 py-2.5 bg-[var(--accent)] text-white font-semibold rounded-xl hover:bg-[var(--accent-lighter)] transition-all shadow-lg shadow-[var(--accent)]/25 inline-flex items-center gap-2"
           >
             <span className="material-symbols-rounded text-lg">add_circle</span>
             Nuevo proyecto

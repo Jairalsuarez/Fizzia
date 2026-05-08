@@ -701,7 +701,7 @@ export function ProjectDetailPage() {
                 <button type="button" onClick={() => setShowEdit(false)} className="cursor-pointer flex-1 py-3 bg-dark-800 text-white font-medium rounded-xl hover:bg-dark-700 transition-all">
                   Cancelar
                 </button>
-                <button type="submit" disabled={savingEdit} className="cursor-pointer flex-1 py-3 bg-[var(--accent)] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all">
+                <button type="submit" disabled={savingEdit} className="cursor-pointer flex-1 py-3 bg-[var(--accent)] text-white font-semibold rounded-xl hover:bg-[var(--accent-lighter)] disabled:opacity-50 transition-all">
                   {savingEdit ? 'Guardando...' : 'Guardar cambios'}
                 </button>
               </div>
@@ -908,7 +908,7 @@ export function ProjectDetailPage() {
           </div>
           <form onSubmit={handleSend} className="p-3 border-t border-dark-800 flex gap-2 shrink-0">
             <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} className="flex-1 px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] text-sm" placeholder="Escribir mensaje..." />
-            <button type="submit" disabled={!newMessage.trim()} className="cursor-pointer px-4 py-2.5 bg-[var(--accent)] text-white rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            <button type="submit" disabled={!newMessage.trim()} className="cursor-pointer px-4 py-2.5 bg-[var(--accent)] text-white rounded-xl hover:bg-[var(--accent-lighter)] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
               <span className="material-symbols-rounded text-lg">send</span>
             </button>
           </form>
@@ -1141,7 +1141,7 @@ export function ProjectDetailPage() {
                     </div>
                     <button
                       onClick={handleTransferContinue}
-                      className="cursor-pointer w-full rounded-xl bg-fizzia-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:translate-y-px"
+                      className="cursor-pointer w-full rounded-xl bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-[var(--accent-lighter)] active:translate-y-px"
                     >
                       Continuar
                     </button>
@@ -1217,7 +1217,7 @@ export function ProjectDetailPage() {
                       (transferType === 'transfer' && !accountHolderName.trim()) ||
                       (transferType === 'deposit' && !accountCedula.trim())
                     }
-                    className="cursor-pointer w-full rounded-xl bg-fizzia-500 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer w-full rounded-xl bg-[var(--accent)] py-3 text-sm font-semibold text-white transition-all hover:bg-[var(--accent-lighter)] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Continuar
                   </button>
@@ -1328,7 +1328,7 @@ export function ProjectDetailPage() {
                         <button
                           onClick={handleSubmitTransferPayment}
                           disabled={paymentSubmitting}
-                          className="cursor-pointer flex-1 rounded-xl bg-fizzia-500 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
+                          className="cursor-pointer flex-1 rounded-xl bg-[var(--accent)] py-2.5 text-sm font-semibold text-white transition-all hover:bg-[var(--accent-lighter)] disabled:opacity-50"
                         >
                           {paymentSubmitting ? 'Enviando...' : 'Enviar comprobante'}
                         </button>
@@ -1444,7 +1444,7 @@ export function ProjectDetailPage() {
                     ) : (
                       <button
                         onClick={() => { setFulfillingRequestId(req.id); fileInputRef.current?.click() }}
-                        className="cursor-pointer px-3 py-1.5 bg-[var(--accent)] text-white text-xs font-medium rounded-lg hover:opacity-90 transition-all shrink-0"
+                        className="cursor-pointer px-3 py-1.5 bg-[var(--accent)] text-white text-xs font-medium rounded-lg hover:bg-[var(--accent-lighter)] transition-all shrink-0"
                       >
                         Enviar archivo
                       </button>

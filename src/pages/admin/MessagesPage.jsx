@@ -396,7 +396,7 @@ export function MessagesPage() {
                   <button
                     type="submit"
                     disabled={!newMessage.trim()}
-                    className="cursor-pointer px-4 py-2.5 bg-[var(--accent)] text-white rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="cursor-pointer px-4 py-2.5 bg-[var(--accent)] text-white rounded-xl hover:bg-[var(--accent-lighter)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />

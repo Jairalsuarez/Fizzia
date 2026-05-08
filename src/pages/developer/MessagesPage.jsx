@@ -277,7 +277,7 @@ export function MessagesPage() {
               <button
                 type="submit"
                 disabled={!newMessage.trim()}
-                className="cursor-pointer rounded-xl bg-fizzia-500 px-4 py-2.5 text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="cursor-pointer rounded-xl bg-[var(--accent)] px-4 py-2.5 text-white transition-colors hover:bg-[var(--accent-lighter)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span className="material-symbols-rounded text-lg">send</span>
               </button>

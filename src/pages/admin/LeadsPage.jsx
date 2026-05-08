@@ -160,7 +160,7 @@ export function LeadsPage() {
                   </button>
                   <button
                     onClick={handleContact}
-                    className="px-3 py-1.5 rounded bg-[var(--accent)] text-white text-sm hover:opacity-80 flex items-center gap-1"
+                    className="px-3 py-1.5 rounded bg-[var(--accent)] text-white text-sm hover:bg-[var(--accent-lighter)] flex items-center gap-1"
                   >
                     <span className="material-symbols-rounded text-base">mail</span>
                     Contactar
@@ -273,7 +273,7 @@ export function LeadsPage() {
           />
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setShowContactModal(false)} className="px-4 py-2 rounded border border-dark-700 text-white hover:bg-dark-800">Cerrar</button>
-            <button onClick={copyContactMessage} className="px-4 py-2 rounded bg-[var(--accent)] text-white hover:opacity-80 flex items-center gap-1">
+            <button onClick={copyContactMessage} className="px-4 py-2 rounded bg-[var(--accent)] text-white hover:bg-[var(--accent-lighter)] flex items-center gap-1">
               <span className="material-symbols-rounded text-base">content_copy</span>
               Copiar
             </button>
@@ -389,7 +389,7 @@ export function LeadsPage() {
               </div>
               <div className="flex flex-col-reverse gap-2 border-t border-dark-800 pt-4 sm:flex-row sm:justify-end">
                 <button onClick={() => setShowEditModal(false)} className="cursor-pointer rounded-xl border border-dark-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-dark-800">Cancelar</button>
-                <button onClick={handleSaveEdit} className="cursor-pointer rounded-xl bg-fizzia-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90">Guardar cambios</button>
+                <button onClick={handleSaveEdit} className="cursor-pointer rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-lighter)]">Guardar cambios</button>
               </div>
             </div>
           )}
@@ -455,7 +455,7 @@ export function LeadsPage() {
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button onClick={() => { setShowProjectForm(false); setCreatedClientId(null) }} className="px-4 py-2 rounded border border-dark-700 text-white hover:bg-dark-800">Saltar</button>
-              <button onClick={handleCreateInformalProject} disabled={!informalProjectData.name} className="px-4 py-2 rounded bg-[var(--accent)] text-white hover:opacity-80 disabled:opacity-50">Crear Proyecto</button>
+              <button onClick={handleCreateInformalProject} disabled={!informalProjectData.name} className="px-4 py-2 rounded bg-[var(--accent)] text-white hover:bg-[var(--accent-lighter)] disabled:opacity-50">Crear Proyecto</button>
             </div>
           </div>
         </div>
