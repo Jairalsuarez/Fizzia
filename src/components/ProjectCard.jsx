@@ -155,18 +155,19 @@ export function ProjectCard({ project, clientName, to, accent = 'fizzia' }) {
               <span className="material-symbols-rounded text-[14px]">hourglass_top</span>
               Tu fecha programada: {formatDate(project.client_deadline)}
             </span>
-          ) : project.status !== 'revision' && project.due_date ? (
-            <span className="inline-flex items-center gap-1">
-              <span className="material-symbols-rounded text-[14px]">calendar_today</span>
-              Entrega: {formatDate(project.due_date)}
-            </span>
+          ) : project.status !== 'revision' && project.status !== 'solicitado' && project.due_date ? (
+            daysLeft !== null ? (
+              <span className={`inline-flex items-center gap-1 font-medium ${daysLeft < 0 ? 'text-red-400' : daysLeft <= 7 ? 'text-yellow-400' : 'text-emerald-400'}`}>
+                <span className="material-symbols-rounded text-[14px]">schedule</span>
+                {daysLeft < 0 ? `${Math.abs(daysLeft)} días atrasado` : `Entrega en ${daysLeft} días`}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1">
+                <span className="material-symbols-rounded text-[14px]">calendar_today</span>
+                Entrega: {formatDate(project.due_date)}
+              </span>
+            )
           ) : null}
-          {project.status !== 'revision' && daysLeft !== null && daysLeft <= 30 && (
-            <span className={`inline-flex items-center gap-1 font-medium ${daysLeft < 0 ? 'text-red-400' : daysLeft <= 7 ? 'text-yellow-400' : 'text-emerald-400'}`}>
-              <span className="material-symbols-rounded text-[14px]">schedule</span>
-              {daysLeft < 0 ? `${Math.abs(daysLeft)} días atrasado` : `${daysLeft} días restantes`}
-            </span>
-          )}
         </div>
 
         {project.status === 'solicitado' || project.status === 'revision' ? (
