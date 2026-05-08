@@ -177,7 +177,7 @@ export function MessagesPage() {
           <p className="text-dark-400 text-sm">No tienes proyectos asignados</p>
         </div>
       ) : (
-        <div className="grid min-h-[36rem] grid-cols-1 overflow-hidden rounded-xl border border-dark-800 bg-dark-950/40 lg:grid-cols-[20rem_1fr]">
+        <div className="grid h-[calc(100dvh-11rem)] min-h-[32rem] max-h-[44rem] grid-cols-1 overflow-hidden rounded-xl border border-dark-800 bg-dark-950/40 lg:grid-cols-[20rem_1fr]">
           <aside className="border-b border-dark-800 bg-dark-900/70 lg:border-b-0 lg:border-r">
             <div className="border-b border-dark-800 p-4">
               <p className="text-sm font-semibold text-white">Proyectos</p>
@@ -202,13 +202,13 @@ export function MessagesPage() {
             </div>
           </aside>
 
-          <section className="flex min-h-[36rem] flex-col">
+          <section className="flex min-h-0 flex-col">
             <div className="border-b border-dark-800 bg-dark-900/60 p-4">
               <p className="text-sm font-semibold text-white">{selectedProject?.name}</p>
               <p className="text-xs text-dark-500">Chat interno con el equipo admin</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-3">
               {messages.length === 0 ? (
                 <div className="flex h-full items-center justify-center text-sm text-dark-500">
                   Todavia no hay mensajes internos

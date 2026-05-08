@@ -282,11 +282,22 @@ export function LeadsPage() {
       </Modal>
 
       {/* Edit Modal */}
-      <Modal open={showEditModal} onClose={() => setShowEditModal(false)}>
-        <div className="p-6 max-w-lg">
-          <h3 className="text-lg font-bold text-white mb-4">Editar Lead</h3>
+      <Modal open={showEditModal} onClose={() => setShowEditModal(false)} title="Editar cliente potencial" size="lg">
           {editingLead && (
-            <div className="space-y-3">
+            <div className="space-y-5">
+              <div className="rounded-xl border border-dark-800 bg-dark-950/60 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-fizzia-500/15 text-fizzia-400">
+                    <span className="material-symbols-rounded text-xl">person_edit</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-white">{editingLead.full_name || 'Nuevo lead'}</p>
+                    <p className="truncate text-xs text-dark-500">{editingLead.email || 'Sin email registrado'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="block text-sm text-dark-400 mb-1">Nombre completo</label>
                 <input
@@ -354,12 +365,15 @@ export function LeadsPage() {
                   <option value="proposal">Propuesta</option>
                 </select>
               </div>
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-2">
               <div>
                 <label className="block text-sm text-dark-400 mb-1">Resumen de necesidad</label>
                 <textarea
                   value={editingLead.need_summary || ''}
                   onChange={(e) => setEditingLead({ ...editingLead, need_summary: e.target.value })}
-                  rows={3}
+                  rows={4}
                   className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 resize-none"
                 />
               </div>
@@ -368,17 +382,17 @@ export function LeadsPage() {
                 <textarea
                   value={editingLead.notes || ''}
                   onChange={(e) => setEditingLead({ ...editingLead, notes: e.target.value })}
-                  rows={3}
+                  rows={4}
                   className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500 resize-none"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button onClick={() => setShowEditModal(false)} className="px-4 py-2 rounded border border-dark-700 text-white hover:bg-dark-800">Cancelar</button>
-                <button onClick={handleSaveEdit} className="px-4 py-2 rounded bg-fizzia-500 text-white hover:bg-fizzia-600">Guardar</button>
+              </div>
+              <div className="flex flex-col-reverse gap-2 border-t border-dark-800 pt-4 sm:flex-row sm:justify-end">
+                <button onClick={() => setShowEditModal(false)} className="cursor-pointer rounded-xl border border-dark-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-dark-800">Cancelar</button>
+                <button onClick={handleSaveEdit} className="cursor-pointer rounded-xl bg-fizzia-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-fizzia-400">Guardar cambios</button>
               </div>
             </div>
           )}
-        </div>
       </Modal>
 
       {/* Informal Client Modal */}

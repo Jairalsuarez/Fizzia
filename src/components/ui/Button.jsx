@@ -11,11 +11,11 @@ export function Button({
   className = '',
   ...props
 }) {
-  const base = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-200 cursor-pointer select-none'
+  const base = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-200 cursor-pointer select-none active:translate-y-px disabled:cursor-not-allowed'
   
   const variants = {
-    primary: 'bg-fizzia-500 text-white hover:bg-fizzia-400 shadow-lg shadow-fizzia-500/25',
-    outline: 'border border-dark-700 text-white hover:border-fizzia-500 hover:text-fizzia-400 bg-transparent',
+    primary: 'bg-fizzia-500 text-white hover:bg-fizzia-400 shadow-lg shadow-fizzia-500/20 hover:shadow-fizzia-500/30',
+    outline: 'border border-dark-700 text-white hover:border-fizzia-500 hover:bg-fizzia-500/5 hover:text-fizzia-300 bg-transparent',
     ghost: 'text-dark-300 hover:text-fizzia-400 bg-transparent',
   }
   

@@ -89,6 +89,34 @@ ALTER TABLE expenses ADD COLUMN IF NOT EXISTS category text CHECK (category IN (
 ALTER TABLE expenses DROP CONSTRAINT IF EXISTS expenses_category_check;
 ALTER TABLE expenses ADD CONSTRAINT expenses_category_check CHECK (category IN ('gasto_negocio', 'pago_personal'));
 
+-- Allow developers to register their own personal outgoing expenses
+ALTER TABLE expenses DROP CONSTRAINT IF EXISTS expenses_type_check;
+ALTER TABLE expenses ADD CONSTRAINT expenses_type_check CHECK (type IN ('negocio', 'personal', 'developer_expense'));
+ALTER TABLE expenses DROP CONSTRAINT IF EXISTS expenses_category_check;
+ALTER TABLE expenses ADD CONSTRAINT expenses_category_check CHECK (category IN ('gasto_negocio', 'pago_personal', 'egreso_dev'));
+
+DROP POLICY IF EXISTS "Developers can create own expenses" ON expenses;
+CREATE POLICY "Developers can create own expenses"
+  ON expenses FOR INSERT WITH CHECK (
+    created_by = auth.uid()
+    AND type = 'developer_expense'
+    AND category = 'egreso_dev'
+    AND EXISTS (
+      SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'developer'
+    )
+  );
+
+DROP POLICY IF EXISTS "Developers can read own finance movements" ON expenses;
+CREATE POLICY "Developers can read own finance movements"
+  ON expenses FOR SELECT USING (
+    paid_to_user_id = auth.uid()
+    OR (
+      created_by = auth.uid()
+      AND type = 'developer_expense'
+      AND category = 'egreso_dev'
+    )
+  );
+
 -- Add developer role
 ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
 ALTER TABLE profiles ADD CONSTRAINT profiles_role_check CHECK (role IN ('client', 'manager', 'admin', 'developer'));
@@ -165,4 +193,3 @@ CREATE POLICY "Developers view file requests"
       WHERE pd.project_id = project_file_requests.project_id AND pd.developer_id = auth.uid()
     )
   );
-

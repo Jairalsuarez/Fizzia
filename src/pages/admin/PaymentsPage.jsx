@@ -3,6 +3,7 @@ import { useAuth } from '../../features/auth/authContext'
 import { formatDate, formatMoney } from '../../utils/format'
 import { useToast } from '../../components/Toast'
 import { approvePayment, getAllPayments, rejectPayment } from '../../api/paymentsApi'
+import { Modal } from '../../components/ui'
 
 export function PaymentsPage() {
   const { session } = useAuth()
@@ -195,17 +196,9 @@ export function PaymentsPage() {
       )}
 
       {/* Payment detail modal */}
-      {selectedPayment && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={closePaymentDetail}>
-          <div className="bg-dark-900 border border-dark-700 rounded-2xl w-full max-w-lg overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-5 border-b border-dark-700">
-              <h3 className="text-lg font-bold text-white">Detalle del pago</h3>
-              <button onClick={closePaymentDetail} className="cursor-pointer text-dark-400 hover:text-white">
-                <span className="material-symbols-rounded">close</span>
-              </button>
-            </div>
-
-            <div className="p-5 space-y-4">
+      <Modal open={Boolean(selectedPayment)} onClose={closePaymentDetail} title="Detalle del pago" size="lg">
+        {selectedPayment && (
+            <div className="space-y-4">
               {/* Client & Project */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -310,9 +303,8 @@ export function PaymentsPage() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   )
 }

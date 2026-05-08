@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/authContext'
 import { getInternalProjectMessages, markInternalProjectMessagesRead, sendInternalProjectMessage, subscribeToInternalProjectMessages } from '../api/messagesApi'
 import { supabase } from '../services/supabase'
+import { useToast } from '../components/Toast'
 import { AvatarIcon } from '../data/avatars.jsx'
 import { getDeliveryStatus, markMessageFailed, markMessageSent, mergeRealtimeMessage, mergeRealtimeMessages } from '../utils/messageStatus'
 import { readStoredValue, writeStoredValue } from '../utils/persistedState'
@@ -11,6 +13,8 @@ function genId() { return `pending-floating-dev-${pendingId++}` }
 
 export function DeveloperFloatingChat() {
   const { user } = useAuth()
+  const location = useLocation()
+  const toast = useToast()
   const [isOpen, setIsOpen] = useState(false)
   const [projects, setProjects] = useState([])
   const [selectedProject, setSelectedProject] = useState(null)
@@ -21,6 +25,8 @@ export function DeveloperFloatingChat() {
   const buttonRef = useRef(null)
   const messagesEndRef = useRef(null)
   const channelRef = useRef(null)
+  const isMessagesPage = location.pathname === '/dev/mensajes'
+  const chatIsOpen = isOpen && !isMessagesPage
 
   const scrollToEnd = useCallback((behavior = 'auto') => {
     requestAnimationFrame(() => {
@@ -55,7 +61,7 @@ export function DeveloperFloatingChat() {
   }, [selectedProject?.id])
 
   useEffect(() => {
-    if (!isOpen || !selectedProject?.id) return
+    if (!chatIsOpen || !selectedProject?.id) return
     let cancelled = false
     getInternalProjectMessages(selectedProject.id).then(data => {
       if (cancelled) return
@@ -78,21 +84,29 @@ export function DeveloperFloatingChat() {
       cancelled = true
       if (channelRef.current) channelRef.current.unsubscribe()
     }
-  }, [isOpen, selectedProject?.id, scrollToEnd, user?.id])
+  }, [chatIsOpen, selectedProject?.id, scrollToEnd, user?.id])
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!chatIsOpen) return
     const handleOutside = event => {
       if (panelRef.current?.contains(event.target) || buttonRef.current?.contains(event.target)) return
       setIsOpen(false)
     }
     document.addEventListener('mousedown', handleOutside)
     return () => document.removeEventListener('mousedown', handleOutside)
-  }, [isOpen])
+  }, [chatIsOpen])
 
   useEffect(() => {
-    if (isOpen) scrollToEnd(messages.length ? 'smooth' : 'auto')
-  }, [isOpen, messages, scrollToEnd])
+    if (chatIsOpen) scrollToEnd(messages.length ? 'smooth' : 'auto')
+  }, [chatIsOpen, messages, scrollToEnd])
+
+  const handleToggle = () => {
+    if (isMessagesPage) {
+      toast.info('Ya estas usando el chat en esta pagina. Cierra esa herramienta o sal de Mensajes y vuelve a intentarlo.')
+      return
+    }
+    setIsOpen(prev => !prev)
+  }
 
   const handleSend = async event => {
     event.preventDefault()
@@ -123,15 +137,15 @@ export function DeveloperFloatingChat() {
     <>
       <button
         ref={buttonRef}
-        onClick={() => setIsOpen(prev => !prev)}
-        title="Hablar con admin"
-        className="cursor-pointer fixed bottom-6 right-6 z-[900] flex h-14 w-14 items-center justify-center rounded-full bg-purple-500 text-white shadow-2xl shadow-purple-500/30 transition-all hover:scale-105 hover:bg-purple-400"
+        onClick={handleToggle}
+        title={isMessagesPage ? 'El chat ya esta abierto en esta pagina' : 'Hablar con admin'}
+        className="cursor-pointer fixed bottom-5 right-5 z-[900] flex h-14 w-14 items-center justify-center rounded-full bg-purple-500 text-white shadow-2xl shadow-purple-500/25 transition-all hover:bg-purple-400 active:scale-95 sm:bottom-6 sm:right-6"
       >
-        <span className="material-symbols-rounded text-2xl">{isOpen ? 'close' : 'forum'}</span>
+        <span className="material-symbols-rounded text-2xl">{chatIsOpen ? 'close' : 'forum'}</span>
       </button>
 
-      {isOpen && (
-        <div ref={panelRef} className="fixed bottom-24 right-6 z-[900] flex h-[480px] w-80 flex-col overflow-hidden rounded-2xl border border-dark-700 bg-dark-900 shadow-2xl md:w-96">
+      {chatIsOpen && (
+        <div ref={panelRef} className="fixed inset-x-3 bottom-24 z-[900] flex h-[min(520px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-dark-700 bg-dark-900 shadow-2xl shadow-black/40 sm:inset-x-auto sm:right-6 sm:w-96">
           <div className="border-b border-dark-700 bg-dark-950 p-3">
             <div className="flex items-center justify-between gap-2">
               <div>

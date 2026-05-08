@@ -64,7 +64,7 @@ export function MessagesPage() {
         setProjects(cleanProjects)
         const savedProjectId = readStoredValue('admin-messages-project', '')
         const savedProject = cleanProjects.find(project => project.id === savedProjectId)
-        if (savedProject) setSelectedProject(savedProject)
+        setSelectedProject(prev => prev || savedProject || cleanProjects[0] || null)
       } catch {
         setProjects([])
       } finally {
@@ -219,30 +219,37 @@ export function MessagesPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] lg:h-[calc(100vh-4rem)]">
-      {/* Project list sidebar */}
-      <div className="w-80 border-r border-dark-800 bg-dark-900/50 flex flex-col">
-        <div className="p-4 border-b border-dark-800">
-          <h2 className="text-white font-bold">Mensajes</h2>
-          <p className="text-dark-400 text-xs mt-0.5">{projects.length} proyectos</p>
+    <div className="space-y-5 p-6">
+      <div>
+        <h1 className="text-2xl font-bold text-white">Mensajes</h1>
+        <p className="mt-1 text-sm text-dark-400">Conversa con clientes y con el equipo interno por proyecto</p>
+      </div>
+
+      <div className="grid h-[calc(100dvh-11rem)] min-h-[32rem] max-h-[44rem] grid-cols-1 overflow-hidden rounded-xl border border-dark-800 bg-dark-950/40 lg:grid-cols-[20rem_1fr]">
+        {/* Project list sidebar */}
+      <aside className="flex flex-col border-b border-dark-800 bg-dark-900/70 lg:border-b-0 lg:border-r">
+        <div className="border-b border-dark-800 p-4">
+          <h2 className="text-sm font-semibold text-white">Proyectos</h2>
+          <p className="text-xs text-dark-500">{projects.length} conversaciones</p>
         </div>
         <div className="flex-1 overflow-y-auto">
           {projectsWithUnread.length === 0 ? (
-            <div className="p-8 text-center">
-              <p className="text-dark-500 text-sm">No hay proyectos</p>
+            <div className="p-8 text-center text-sm text-dark-500">
+              No hay proyectos
             </div>
           ) : (
             projectsWithUnread.map(project => (
               <button
+                key={project.id}
                 onClick={() => setSelectedProject(project)}
-                className={`cursor-pointer w-full text-left p-4 border-b border-dark-800 hover:bg-dark-800/50 transition-colors ${
-                  selectedProject?.id === project.id ? 'bg-fizzia-500/10 border-l-2 border-l-fizzia-500' : ''
+                className={`cursor-pointer w-full border-b border-dark-800 p-4 text-left transition-colors ${
+                  selectedProject?.id === project.id ? 'bg-fizzia-500/10' : 'hover:bg-dark-800/60'
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{project.name}</p>
-                    <p className="text-dark-400 text-xs mt-0.5">{project.clients?.name || 'Sin cliente'}</p>
+                    <p className="truncate text-sm font-semibold text-white">{project.name}</p>
+                    <p className="mt-0.5 truncate text-xs text-dark-500">{project.clients?.name || 'Sin cliente'}</p>
                   </div>
                   <span className="text-xs px-2 py-0.5 rounded-full shrink-0 bg-dark-800 text-dark-300">
                     {statusLabels[project.status] || project.status}
@@ -255,24 +262,24 @@ export function MessagesPage() {
             ))
           )}
         </div>
-      </div>
+      </aside>
 
       {/* Chat area */}
-      <div className="flex-1 flex flex-col">
+      <section className="flex min-h-0 flex-col">
         {!selectedProject ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <div className="text-4xl mb-3">💬</div>
-              <p className="text-dark-400">Selecciona un proyecto para ver los mensajes</p>
+              <p className="text-sm text-dark-400">Selecciona un proyecto para ver los mensajes</p>
             </div>
           </div>
         ) : (
           <>
-            <div className="p-4 border-b border-dark-800">
+            <div className="border-b border-dark-800 bg-dark-900/60 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-white font-bold">{selectedProject.name}</h3>
-                  <p className="text-dark-400 text-xs mt-0.5">
+                  <h3 className="text-sm font-semibold text-white">{selectedProject.name}</h3>
+                  <p className="mt-0.5 text-xs text-dark-500">
                     {statusLabels[selectedProject.status]} · {selectedProject.clients?.name || 'Sin cliente'}
                   </p>
                 </div>
@@ -319,7 +326,7 @@ export function MessagesPage() {
 
             {activeTab === 'messages' && (
               <>
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-3">
                   {messages.length === 0 ? (
                     <div className="text-center py-12">
                       <p className="text-dark-400 text-sm">No hay mensajes aún. Inicia la conversación.</p>
@@ -400,7 +407,7 @@ export function MessagesPage() {
             )}
 
             {activeTab === 'files' && (
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-4">
                 <div className="bg-dark-800/50 rounded-xl p-4">
                   <h4 className="text-white text-sm font-medium mb-3">Enviar archivos al cliente</h4>
                   <input
@@ -475,6 +482,7 @@ export function MessagesPage() {
             )}
           </>
         )}
+      </section>
       </div>
     </div>
   )

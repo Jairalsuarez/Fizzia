@@ -52,7 +52,7 @@ export function DashboardLayout({
   const displayName = profile?.full_name || profile?.first_name || roleLabel || 'Usuario'
 
   return (
-    <div className="min-h-screen bg-dark-950">
+    <div className="min-h-[100dvh] bg-dark-950">
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className={`absolute -top-24 -left-24 w-[500px] h-[500px] ${palette.glow} rounded-full blur-3xl`} />
         <div className={`absolute top-1/2 -right-24 w-[400px] h-[400px] ${palette.glowSoft} rounded-full blur-3xl`} />
@@ -65,7 +65,7 @@ export function DashboardLayout({
         <div className="absolute inset-0 bg-gradient-to-b from-dark-950 via-transparent to-dark-950/80" />
       </div>
 
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-950/80 backdrop-blur-md border-b border-dark-800/50">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-950/85 backdrop-blur-xl border-b border-dark-800/60">
         <div className="absolute inset-0 bg-gradient-to-b from-dark-950/50 to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -84,10 +84,10 @@ export function DashboardLayout({
                   onTouchStart={() => preloadRoute(item)}
                   end={item.end ?? item.to.endsWith('/admin') ?? item.to.endsWith('/dev') ?? item.to.endsWith('/cliente')}
                   className={({ isActive }) =>
-                    `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                    `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
                       isActive
                         ? `${palette.activeText} ${palette.activeBg}`
-                        : 'text-dark-300 hover:text-white hover:bg-dark-800'
+                        : 'text-dark-300 hover:text-white hover:bg-dark-800/80'
                     }`
                   }
                 >
@@ -111,7 +111,7 @@ export function DashboardLayout({
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-64 bg-dark-900 border border-dark-700 rounded-xl shadow-2xl z-[100] overflow-hidden">
+                  <div className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl border border-dark-700 bg-dark-900 shadow-2xl shadow-black/40">
                     <div className="p-4 border-b border-dark-700">
                       <p className="text-white text-sm font-semibold truncate">{displayName}</p>
                       <p className="text-dark-400 text-xs truncate mt-0.5">{email}</p>
@@ -147,8 +147,8 @@ export function DashboardLayout({
           </div>
         </div>
 
-        <div className="lg:hidden border-t border-dark-800/50 bg-black/60">
-          <div className="flex overflow-x-auto px-4 py-2 gap-1">
+        <div className="lg:hidden border-t border-dark-800/50 bg-dark-950/70">
+          <div className="flex overflow-x-auto px-4 py-2 gap-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -158,7 +158,7 @@ export function DashboardLayout({
                 onTouchStart={() => preloadRoute(item)}
                 end={item.end ?? item.to.endsWith('/admin') ?? item.to.endsWith('/dev') ?? item.to.endsWith('/cliente')}
                 className={({ isActive }) =>
-                  `flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                  `flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
                     isActive
                       ? `${palette.activeText} ${palette.activeBg}`
                       : 'text-dark-400 hover:text-white'
@@ -173,7 +173,7 @@ export function DashboardLayout({
         </div>
       </nav>
 
-      <main className="pt-20 lg:pt-16 relative z-10">
+      <main className="pt-24 pb-10 lg:pt-20 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {children || <Outlet />}
         </div>

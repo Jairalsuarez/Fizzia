@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState, useCallback, useRef, useMemo } from 'react'
 import { createContext, useContext } from 'react'
+import { useAppTheme } from '../theme/appTheme'
 
 const ToastContext = createContext(null)
 
@@ -11,21 +12,7 @@ const ICONS = {
   info: 'info',
 }
 
-const COLORS = {
-  success: 'border-fizzia-500/50 bg-fizzia-500/10',
-  error: 'border-red-500/50 bg-red-500/10',
-  warning: 'border-yellow-500/50 bg-yellow-500/10',
-  info: 'border-blue-500/50 bg-blue-500/10',
-}
-
-const TEXT_COLORS = {
-  success: 'text-fizzia-400',
-  error: 'text-red-400',
-  warning: 'text-yellow-400',
-  info: 'text-blue-400',
-}
-
-function ToastContainer({ toasts, removeToast }) {
+function ToastContainer({ toasts, removeToast, palette }) {
   if (toasts.length === 0) return null
 
   return (
@@ -33,9 +20,9 @@ function ToastContainer({ toasts, removeToast }) {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-md shadow-2xl animate-slide-in-right max-w-sm ${COLORS[t.type]}`}
+          className={`pointer-events-auto flex max-w-sm items-center gap-3 rounded-xl border bg-dark-900/95 px-4 py-3 shadow-2xl backdrop-blur-md animate-slide-in-right ${palette.borderSoft} ${palette.shadow}`}
         >
-          <span className={`material-symbols-rounded text-lg ${TEXT_COLORS[t.type]}`}>
+          <span className={`material-symbols-rounded text-lg ${palette.text}`}>
             {ICONS[t.type]}
           </span>
           <p className="text-white text-sm flex-1">{t.message}</p>
@@ -54,6 +41,7 @@ function ToastContainer({ toasts, removeToast }) {
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
   const timeoutsRef = useRef(new Map())
+  const { palette } = useAppTheme()
 
   const removeToast = useCallback((id) => {
     setToasts(prev => prev.filter(t => t.id !== id))
@@ -81,7 +69,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={toast}>
       {children}
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      <ToastContainer toasts={toasts} removeToast={removeToast} palette={palette} />
     </ToastContext.Provider>
   )
 }

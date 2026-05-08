@@ -277,7 +277,7 @@ export function FloatingChat({ onUnreadChange }) {
         ref={buttonRef}
         onClick={handleOpen}
         title={unreadCount > 0 ? `Tienes ${unreadCount} mensajes nuevos` : 'Preguntar al desarrollador sobre tu proyecto'}
-        className="cursor-pointer fixed bottom-6 right-6 z-[900] w-14 h-14 bg-fizzia-500 rounded-full shadow-2xl shadow-fizzia-500/30 flex items-center justify-center hover:bg-fizzia-400 transition-all hover:scale-105 group"
+        className="cursor-pointer fixed bottom-5 right-5 z-[900] flex h-14 w-14 items-center justify-center rounded-full bg-fizzia-500 shadow-2xl shadow-fizzia-500/25 transition-all hover:bg-fizzia-400 active:scale-95 sm:bottom-6 sm:right-6 group"
       >
         <span className="material-symbols-rounded text-white text-2xl">
           {isOpen ? 'close' : 'chat'}
@@ -296,7 +296,7 @@ export function FloatingChat({ onUnreadChange }) {
 
       {/* Chat window */}
       {isOpen && (
-        <div ref={panelRef} className="fixed bottom-24 right-6 z-[900] w-80 md:w-96 bg-dark-900 border border-dark-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ height: '480px' }}>
+        <div ref={panelRef} className="fixed inset-x-3 bottom-24 z-[900] flex h-[min(520px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-dark-700 bg-dark-900 shadow-2xl shadow-black/40 sm:inset-x-auto sm:right-6 sm:w-96">
           {/* Header */}
           <div className="bg-dark-950 border-b border-dark-700 p-3 flex items-center gap-3">
             {selectedProject && !showProjectPicker && (
@@ -340,7 +340,7 @@ export function FloatingChat({ onUnreadChange }) {
                   <button
                     key={proj.id}
                     onClick={() => handleSelectProject(proj)}
-                    className="cursor-pointer w-full text-left p-3 bg-dark-800/50 border border-dark-700 rounded-xl hover:border-fizzia-500/50 transition-all"
+                    className="cursor-pointer w-full text-left p-3 bg-dark-800/50 border border-dark-700 rounded-xl hover:border-fizzia-500/50 hover:bg-dark-800 transition-all active:translate-y-px"
                   >
                     <p className="text-white text-sm font-medium truncate">{proj.name}</p>
                     <p className="text-dark-500 text-xs mt-0.5">

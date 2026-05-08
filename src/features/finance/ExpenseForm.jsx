@@ -34,6 +34,7 @@ export default function ExpenseForm({ onSaved, onCancel }) {
       type: form.category === 'pago_personal' ? 'personal' : 'negocio',
       amount: parseFloat(form.amount),
       paid_to_user_id: form.category === 'pago_personal' ? form.paid_to_user_id : null,
+      expense_date: new Date().toISOString().slice(0, 10),
     })
     setSaving(false)
     onSaved?.()

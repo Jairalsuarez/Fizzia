@@ -20,7 +20,7 @@ export function ProjectCard({ project, clientName, to, showClient = false, showD
   return (
     <Link
       to={to}
-      className="cursor-pointer bg-dark-900/50 border border-dark-800 rounded-xl p-5 hover:border-fizzia-500/50 hover:bg-dark-900 transition-all group"
+      className="cursor-pointer bg-dark-900/60 border border-dark-800 rounded-xl p-5 hover:-translate-y-0.5 hover:border-fizzia-500/50 hover:bg-dark-900 transition-all duration-200 active:translate-y-0 group"
     >
       <div className="flex items-start justify-between mb-3">
         <span className="text-2xl">{phase.icon}</span>
@@ -66,7 +66,7 @@ export function ProjectCardSkeleton() {
 
 export function EmptyProjects({ message, actionLabel, actionTo }) {
   return (
-    <div className="text-center py-20 bg-dark-900/50 border border-dark-800 rounded-2xl col-span-full">
+    <div className="text-center py-16 sm:py-20 bg-dark-900/50 border border-dark-800 rounded-2xl col-span-full px-4">
       <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-fizzia-500/20 flex items-center justify-center">
         <span className="material-symbols-rounded text-4xl text-fizzia-400">rocket_launch</span>
       </div>

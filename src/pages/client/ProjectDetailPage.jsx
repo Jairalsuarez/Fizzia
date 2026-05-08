@@ -29,6 +29,14 @@ const phases = [
   { key: 'cancelado', label: 'Cancelado', textColor: 'text-red-400' },
 ]
 
+function getPayPalClientId() {
+  const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID?.trim()
+  if (!clientId) return ''
+  const looksLikeSql = /\b(alter|create|drop|policy|constraint|select|insert|update|delete)\b/i.test(clientId)
+  const hasUnsafeWhitespace = /\s/.test(clientId)
+  return looksLikeSql || hasUnsafeWhitespace ? '' : clientId
+}
+
 export function ProjectDetailPage() {
   const { projectId } = useParams()
   const navigate = useNavigate()
@@ -83,15 +91,21 @@ export function ProjectDetailPage() {
   const [proofFile, setProofFile] = useState(null)
   const [proofPreview, setProofPreview] = useState(null)
   const [paypalProcessing, setPaypalProcessing] = useState(false)
+  const [paypalReady, setPaypalReady] = useState(false)
   const [paymentSubmitting, setPaymentSubmitting] = useState(false)
   const [paymentSuccess, setPaymentSuccess] = useState(false)
   const [commits, setCommits] = useState([])
   const [commitsLoading, setCommitsLoading] = useState(false)
   const proofInputRef = useRef(null)
+  const paypalButtonRef = useRef(null)
+  const paypalButtonsRef = useRef(null)
 
   const projectTotal = project?.final_price || project?.budget || 0
   const approvedPaid = sumApprovedPayments(payments)
   const pending = Math.max(projectTotal - approvedPaid, 0)
+  const paymentProgress = projectTotal > 0 ? Math.min((approvedPaid / projectTotal) * 100, 100) : 0
+  const selectedAmount = Number(paymentAmount || 0)
+  const paymentAmountIsValid = selectedAmount > 0 && selectedAmount <= pending
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -117,26 +131,7 @@ export function ProjectDetailPage() {
   const capturePayPalOrder = async (orderId) => {
     setPaypalProcessing(true)
     try {
-      const paypal = await loadScript({ 'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: 'USD' })
-      const details = await paypal.Buttons.captureOrder(orderId)
-      const amount = Number(details.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || 0)
-      const transactionId = details.purchase_units?.[0]?.payments?.captures?.[0]?.id || orderId
-      const savedAmount = Number(sessionStorage.getItem('fizzia_paypal_amount') || 0)
-      const finalAmount = amount || savedAmount
-      sessionStorage.removeItem('fizzia_paypal_amount')
-      const { data: paymentData, error } = await createClientPayment({
-        invoice_id: invoices[0]?.id,
-        project_id: projectId,
-        amount: finalAmount,
-        currency: 'USD',
-        method: 'paypal',
-        reference: transactionId,
-        paid_at: new Date().toISOString(),
-        admin_status: 'approved',
-      })
-      if (error) throw error
-      setPayments(prev => [{ ...paymentData, invoice_number: invoices[0]?.invoice_number }, ...prev])
-      toast.success('Pago verificado exitosamente')
+      throw new Error(`No se puede verificar la orden ${orderId} fuera de la ventana activa de PayPal`)
     } catch (err) {
       console.error('PayPal capture error:', err)
       toast.error(err.message || 'Error verificando pago con PayPal')
@@ -144,6 +139,26 @@ export function ProjectDetailPage() {
       setPaypalProcessing(false)
     }
   }
+
+  const recordPayPalPayment = useCallback(async (details, fallbackOrderId) => {
+    const capture = details.purchase_units?.[0]?.payments?.captures?.[0]
+    const amount = Number(capture?.amount?.value || paymentAmount || pending)
+    const transactionId = capture?.id || fallbackOrderId
+    const { data: paymentData, error } = await createClientPayment({
+      invoice_id: invoices[0]?.id,
+      project_id: projectId,
+      amount,
+      currency: 'USD',
+      method: 'paypal',
+      reference: transactionId,
+      paid_at: new Date().toISOString(),
+      admin_status: 'approved',
+    })
+    if (error) throw error
+    setPayments(prev => [{ ...paymentData, invoice_number: invoices[0]?.invoice_number }, ...prev])
+    setPaymentSuccess(true)
+    toast.success('Pago verificado exitosamente')
+  }, [invoices, paymentAmount, pending, projectId, toast])
 
   useEffect(() => {
     const loadData = async () => {
@@ -187,6 +202,97 @@ export function ProjectDetailPage() {
     }
     loadData()
   }, [projectId, navigate])
+
+  useEffect(() => {
+    if (paymentMethod !== 'paypal' || paymentStep !== 1) return
+    const amount = Number(paymentAmount)
+    if (!paypalButtonRef.current || !amount || amount <= 0 || amount > pending) {
+      setPaypalReady(false)
+      return
+    }
+
+    let cancelled = false
+    const container = paypalButtonRef.current
+    container.innerHTML = ''
+    setPaypalReady(false)
+
+    const renderButtons = async () => {
+      try {
+        const paypalClientId = getPayPalClientId()
+        if (!paypalClientId) throw new Error('PayPal no configurado. Revisa VITE_PAYPAL_CLIENT_ID.')
+        const paypal = await loadScript({
+          'client-id': paypalClientId,
+          currency: 'USD',
+          intent: 'capture',
+          'enable-funding': 'card',
+        })
+        if (cancelled || !paypal?.Buttons) return
+        const buttons = paypal.Buttons({
+          style: {
+            layout: 'vertical',
+            color: 'blue',
+            shape: 'rect',
+            label: 'pay',
+            height: 45,
+          },
+          createOrder: (_data, actions) => actions.order.create({
+            intent: 'CAPTURE',
+            purchase_units: [{
+              amount: { currency_code: 'USD', value: amount.toFixed(2) },
+              description: `Pago proyecto: ${project?.name || 'Fizzia'}`,
+            }],
+          }),
+          onClick: () => {
+            if (amount <= 0 || amount > pending) {
+              toast.error('Monto invalido')
+              return false
+            }
+            return true
+          },
+          onApprove: async (data, actions) => {
+            setPaypalProcessing(true)
+            try {
+              const details = await actions.order.capture()
+              await recordPayPalPayment(details, data.orderID)
+            } catch (err) {
+              console.error('PayPal capture error:', err)
+              toast.error(err.message || 'Error verificando pago con PayPal')
+            } finally {
+              setPaypalProcessing(false)
+            }
+          },
+          onCancel: () => {
+            toast.info('Pago cancelado')
+            setPaypalProcessing(false)
+          },
+          onError: (err) => {
+            console.error('PayPal error:', err)
+            toast.error('Error al abrir PayPal')
+            setPaypalProcessing(false)
+          },
+        })
+        paypalButtonsRef.current = buttons
+        await buttons.render(container)
+        if (!cancelled) setPaypalReady(true)
+      } catch (err) {
+        console.error(err)
+        const message = String(err?.message || '')
+        if (message.includes('failed to load') || message.includes('400')) {
+          toast.error('PayPal rechazo el Client ID configurado. Revisa VITE_PAYPAL_CLIENT_ID.')
+        } else {
+          toast.error(err.message || 'Error al cargar PayPal')
+        }
+      }
+    }
+
+    renderButtons()
+    return () => {
+      cancelled = true
+      paypalButtonsRef.current?.close?.()
+      paypalButtonsRef.current = null
+      container.innerHTML = ''
+    }
+  }, [paymentMethod, paymentStep, paymentAmount, pending, project?.name, recordPayPalPayment, toast])
 
   /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
   useEffect(() => {
@@ -267,32 +373,6 @@ export function ProjectDetailPage() {
     if (activeTab === 'mensajes') scrollMessagesToEnd('auto')
   }, [activeTab])
 
-  const createPayPalOrder = async () => {
-    const amount = paymentAmount ? Number(paymentAmount) : pending
-    if (amount <= 0 || amount > pending) { toast.error('Monto inválido'); return }
-    setPaypalProcessing(true)
-    try {
-      if (!import.meta.env.VITE_PAYPAL_CLIENT_ID) throw new Error('PayPal no configurado')
-      const paypal = await loadScript({ 'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: 'USD' })
-      const order = await paypal.Buttons.createOrder({
-        intent: 'CAPTURE',
-        purchase_units: [{
-          amount: { currency_code: 'USD', value: amount.toFixed(2) },
-          description: `Pago proyecto: ${project.name}`,
-        }],
-      })
-      const approveUrl = order.links?.find(l => l.rel === 'approve')?.href
-      if (approveUrl) {
-        sessionStorage.setItem('fizzia_paypal_amount', String(amount))
-        window.location.href = approveUrl
-      }
-    } catch (err) {
-      console.error(err)
-      toast.error('Error al iniciar pago con PayPal')
-      setPaypalProcessing(false)
-    }
-  }
-
   const handleSelectPaymentMethod = (method) => {
     setPaymentMethod(method)
     setPaymentStep(1)
@@ -372,6 +452,7 @@ export function ProjectDetailPage() {
     setProofPreview(null)
     setPaymentSuccess(false)
     setPaypalProcessing(false)
+    setPaypalReady(false)
     if (proofInputRef.current) proofInputRef.current.value = ''
   }
 
@@ -757,8 +838,12 @@ export function ProjectDetailPage() {
       )}
 
       {activeTab === 'mensajes' && (
-        <div className="flex flex-col bg-dark-900/50 border border-dark-800 rounded-xl" style={{ height: 'calc(100vh - 14rem)' }}>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex h-[calc(100dvh-14rem)] min-h-[32rem] max-h-[44rem] flex-col overflow-hidden rounded-xl border border-dark-800 bg-dark-950/40">
+          <div className="border-b border-dark-800 bg-dark-900/60 p-4">
+            <p className="text-sm font-semibold text-white">{project.name}</p>
+            <p className="text-xs text-dark-500">Chat con el equipo de Fizzia</p>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 ? (
               <div className="flex items-center justify-center h-full"><p className="text-dark-500 text-sm">No hay mensajes aún</p></div>
             ) : (
@@ -895,54 +980,91 @@ export function ProjectDetailPage() {
       )}
 
       {activeTab === 'pagos' && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Summary */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-4 text-center">
-              <p className="text-xs text-dark-500 mb-1">{project.final_price ? 'Precio' : 'Presupuesto'}</p>
-              <p className="text-lg font-bold text-white">{formatMoney(projectTotal)}</p>
+          <div className="rounded-2xl border border-dark-800 bg-dark-900/40 p-4 sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-fizzia-400">Pagos del proyecto</p>
+                <h3 className="mt-1 text-xl font-bold text-white">{formatMoney(projectTotal)}</h3>
+              </div>
+              <div className="text-left sm:text-right">
+                <p className="text-xs text-dark-500">Pendiente</p>
+                <p className="text-lg font-bold text-amber-300">{formatMoney(pending)}</p>
+              </div>
             </div>
-            <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-4 text-center">
-              <p className="text-xs text-dark-500 mb-1">Pagado</p>
-              <p className="text-lg font-bold text-green-400">{formatMoney(approvedPaid)}</p>
+
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-dark-800">
+              <div
+                className="h-full rounded-full bg-fizzia-500 transition-[width] duration-300 ease-out"
+                style={{ width: `${paymentProgress}%` }}
+              />
             </div>
-            <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-4 text-center">
-              <p className="text-xs text-dark-500 mb-1">Pendiente</p>
-              <p className="text-lg font-bold text-amber-400">{formatMoney(pending)}</p>
+
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="rounded-xl border border-dark-800 bg-dark-950/70 p-3">
+                <p className="text-xs text-dark-500">{project.final_price ? 'Precio final' : 'Presupuesto'}</p>
+                <p className="mt-1 text-base font-semibold text-white">{formatMoney(projectTotal)}</p>
+              </div>
+              <div className="rounded-xl border border-fizzia-500/20 bg-fizzia-500/10 p-3">
+                <p className="text-xs text-fizzia-300">Verificado</p>
+                <p className="mt-1 text-base font-semibold text-fizzia-300">{formatMoney(approvedPaid)}</p>
+              </div>
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3">
+                <p className="text-xs text-amber-200">Por pagar</p>
+                <p className="mt-1 text-base font-semibold text-amber-200">{formatMoney(pending)}</p>
+              </div>
             </div>
           </div>
 
           {/* Payment flow */}
           {pending > 0 && !paymentSuccess && (
-            <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-5">
+            <div className="overflow-hidden rounded-2xl border border-dark-800 bg-dark-900/40">
+              <div className="flex flex-col gap-3 border-b border-dark-800 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-dark-500">Checkout</p>
+                  <h3 className="mt-1 text-base font-semibold text-white">
+                    {paymentMethod === 'paypal' ? 'Pago con PayPal' : paymentMethod === 'transfer' ? 'Pago por banco' : 'Elige como quieres pagar'}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-dark-400">
+                  <span className={`h-2 w-2 rounded-full ${paymentAmountIsValid ? 'bg-fizzia-400' : 'bg-dark-600'}`} />
+                  <span>{paymentAmountIsValid ? `${formatMoney(selectedAmount)} listo` : `${formatMoney(pending)} disponible`}</span>
+                </div>
+              </div>
+              <div className="p-4 sm:p-5">
               {/* Step 0: Method selection */}
               {paymentStep === 0 && (
                 <>
-                  <h3 className="text-white font-semibold mb-4">Método de pago</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="mb-4 flex flex-col gap-1">
+                    <h4 className="text-white font-semibold">Método de pago</h4>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.05fr_0.95fr]">
                     <button
                       onClick={() => handleSelectPaymentMethod('paypal')}
-                      className="cursor-pointer flex items-center gap-3 p-4 rounded-xl border border-dark-700 bg-dark-950 hover:border-dark-600 transition-all text-left"
+                      className="cursor-pointer flex min-h-[104px] items-center gap-4 rounded-2xl border border-dark-700 bg-dark-950 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-fizzia-500/50 active:translate-y-0"
                     >
-                      <div className="w-16 h-10 bg-white rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                      <div className="flex h-12 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white px-2">
                         <img src="/Logo metodos de pagos/Paypal_2014_logo.png" alt="PayPal" className="w-full h-full object-contain" />
                       </div>
-                      <div>
-                        <p className="text-white font-medium text-sm">PayPal</p>
-                        <p className="text-dark-400 text-xs">Pago rápido y seguro</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-white font-semibold text-sm">PayPal</p>
+                        <p className="mt-1 text-dark-400 text-xs leading-relaxed">Necesitas una cuenta PayPal.</p>
                       </div>
+                      <span className="material-symbols-rounded text-dark-500">arrow_forward</span>
                     </button>
                     <button
                       onClick={() => handleSelectPaymentMethod('transfer')}
-                      className="cursor-pointer flex items-center gap-3 p-4 rounded-xl border border-dark-700 bg-dark-950 hover:border-dark-600 transition-all text-left"
+                      className="cursor-pointer flex min-h-[104px] items-center gap-4 rounded-2xl border border-dark-700 bg-dark-950 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-fizzia-500/50 active:translate-y-0"
                     >
-                      <div className="w-16 h-10 bg-white rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                      <div className="flex h-12 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white px-2">
                         <img src="/Logo metodos de pagos/Banco_Pichincha_nuevo.png" alt="Banco Pichincha" className="w-full h-full object-contain" />
                       </div>
-                      <div>
-                        <p className="text-white font-medium text-sm">Transferencia / Depósito</p>
-                        <p className="text-dark-400 text-xs">Datos bancarios</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-white font-semibold text-sm">Transferencia o depósito</p>
+                        <p className="mt-1 text-dark-400 text-xs leading-relaxed">Necesitas subir el comprobante.</p>
                       </div>
+                      <span className="material-symbols-rounded text-dark-500">arrow_forward</span>
                     </button>
                   </div>
                 </>
@@ -950,98 +1072,104 @@ export function ProjectDetailPage() {
 
               {/* PayPal flow */}
               {paymentMethod === 'paypal' && paymentStep === 1 && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-white font-semibold">Pagar con PayPal</h3>
-                    <button onClick={resetPaymentForm} className="cursor-pointer text-dark-400 hover:text-white text-sm">
+                <div className="mx-auto w-full max-w-[620px] space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h4 className="text-white font-semibold">PayPal o tarjeta</h4>
+                      <p className="mt-1 text-sm text-dark-500">Pendiente: <span className="font-medium text-fizzia-300">{formatMoney(pending)}</span></p>
+                    </div>
+                    <button onClick={resetPaymentForm} className="cursor-pointer rounded-lg p-1 text-dark-400 transition-colors hover:bg-dark-800 hover:text-white">
                       <span className="material-symbols-rounded text-lg">close</span>
                     </button>
                   </div>
-                  <div>
-                    <label className="block text-sm text-dark-300 mb-1.5">Monto a pagar (USD)</label>
-                    <input
-                      type="number"
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                      className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
-                      placeholder="0.00"
-                      max={pending}
-                      step="0.01"
-                    />
-                    <p className="text-dark-500 text-xs mt-1">Pendiente: {formatMoney(pending)}</p>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm text-dark-300 mb-1.5">Monto a pagar (USD)</label>
+                      <input
+                        type="number"
+                        value={paymentAmount}
+                        onChange={(e) => setPaymentAmount(e.target.value)}
+                        className="w-full rounded-xl border border-dark-700 bg-dark-950 px-4 py-3 text-white transition-colors focus:border-fizzia-500 focus:outline-none"
+                        placeholder="0.00"
+                        max={pending}
+                        step="0.01"
+                      />
+                    </div>
+                    <div className="rounded-xl border border-dark-800 bg-dark-950 p-1.5">
+                      <div ref={paypalButtonRef} className={`[&>*]:!min-w-0 ${paypalProcessing ? 'pointer-events-none opacity-60' : ''}`} />
+                      {!paypalReady && paymentAmountIsValid && (
+                        <div className="flex items-center justify-center gap-2 py-2 text-sm text-dark-400">
+                          <span className="material-symbols-rounded text-lg animate-spin">progress_activity</span>
+                          Cargando PayPal...
+                        </div>
+                      )}
+                      {!paymentAmountIsValid && (
+                        <p className="py-2 text-center text-sm text-dark-500">Ingresa un monto válido para activar PayPal</p>
+                      )}
+                    </div>
                   </div>
-                  <button
-                    onClick={createPayPalOrder}
-                    disabled={paypalProcessing || !paymentAmount}
-                    className="cursor-pointer w-full py-3 bg-[#0070BA] text-white text-sm font-semibold rounded-lg hover:bg-[#005ea6] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-                  >
-                    {paypalProcessing ? (
-                      <>
-                        <span className="material-symbols-rounded text-lg animate-spin">progress_activity</span>
-                        Redirigiendo...
-                      </>
-                    ) : (
-                      <>
-                        <img src="/Logo metodos de pagos/Paypal_2014_logo.png" alt="PayPal" className="h-4 object-contain" />
-                        Continuar con PayPal
-                      </>
-                    )}
-                  </button>
                 </div>
               )}
 
               {/* Transfer/Deposit flow */}
               {paymentMethod === 'transfer' && paymentStep === 1 && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-white font-semibold">Transferencia / Depósito</h3>
-                    <button onClick={resetPaymentForm} className="cursor-pointer text-dark-400 hover:text-white text-sm">
+                <div className="mx-auto w-full max-w-[620px] space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h4 className="text-white font-semibold">Transferencia o depósito</h4>
+                      <p className="mt-1 text-sm text-dark-500">Pendiente: <span className="font-medium text-fizzia-300">{formatMoney(pending)}</span></p>
+                    </div>
+                    <button onClick={resetPaymentForm} className="cursor-pointer rounded-lg p-1 text-dark-400 transition-colors hover:bg-dark-800 hover:text-white">
                       <span className="material-symbols-rounded text-lg">close</span>
                     </button>
                   </div>
-                  <div>
-                    <label className="block text-sm text-dark-300 mb-1.5">Monto a pagar (USD)</label>
-                    <input
-                      type="number"
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                      className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
-                      placeholder="0.00"
-                      max={pending}
-                      step="0.01"
-                    />
-                    <p className="text-dark-500 text-xs mt-1">Pendiente: {formatMoney(pending)}</p>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm text-dark-300 mb-1.5">Monto a pagar (USD)</label>
+                      <input
+                        type="number"
+                        value={paymentAmount}
+                        onChange={(e) => setPaymentAmount(e.target.value)}
+                        className="w-full rounded-xl border border-dark-700 bg-dark-950 px-4 py-3 text-white transition-colors focus:border-fizzia-500 focus:outline-none"
+                        placeholder="0.00"
+                        max={pending}
+                        step="0.01"
+                      />
+                      <p className="text-dark-500 text-xs mt-1">Pendiente: {formatMoney(pending)}</p>
+                    </div>
+                    <button
+                      onClick={handleTransferContinue}
+                      className="cursor-pointer w-full rounded-xl bg-fizzia-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-fizzia-400 active:translate-y-px"
+                    >
+                      Continuar
+                    </button>
                   </div>
-                  <button
-                    onClick={handleTransferContinue}
-                    className="cursor-pointer w-full py-3 bg-fizzia-500 text-white text-sm font-semibold rounded-lg hover:bg-fizzia-400 transition-all"
-                  >
-                    Continuar
-                  </button>
                 </div>
               )}
 
               {/* Transfer/Deposit Step 2: Account details */}
               {paymentMethod === 'transfer' && paymentStep === 2 && (
-                <div className="space-y-4">
+                <div className="mx-auto max-w-2xl space-y-4 rounded-2xl border border-dark-800 bg-dark-950/70 p-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-white font-semibold">Datos de tu pago</h3>
-                    <button onClick={() => setPaymentStep(1)} className="cursor-pointer text-dark-400 hover:text-white text-sm">
+                    <button onClick={() => setPaymentStep(1)} className="cursor-pointer rounded-lg p-1 text-dark-400 transition-colors hover:bg-dark-800 hover:text-white">
                       <span className="material-symbols-rounded text-lg">arrow_back</span>
                     </button>
                   </div>
 
                   {/* Transfer type toggle */}
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 gap-2 rounded-xl border border-dark-800 bg-dark-900 p-1">
                     <button
                       onClick={() => setTransferType('transfer')}
-                      className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${transferType === 'transfer' ? 'bg-fizzia-500 text-white' : 'bg-dark-950 text-dark-400 border border-dark-700 hover:text-white'}`}
+                      className={`rounded-lg py-2.5 text-sm font-medium transition-all ${transferType === 'transfer' ? 'bg-fizzia-500 text-white' : 'text-dark-400 hover:text-white'}`}
                     >
                       Transferencia
                     </button>
                     <button
                       onClick={() => setTransferType('deposit')}
-                      className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${transferType === 'deposit' ? 'bg-fizzia-500 text-white' : 'bg-dark-950 text-dark-400 border border-dark-700 hover:text-white'}`}
+                      className={`rounded-lg py-2.5 text-sm font-medium transition-all ${transferType === 'deposit' ? 'bg-fizzia-500 text-white' : 'text-dark-400 hover:text-white'}`}
                     >
                       Depósito
                     </button>
@@ -1055,7 +1183,7 @@ export function ProjectDetailPage() {
                         type="text"
                         value={accountHolderName}
                         onChange={(e) => setAccountHolderName(e.target.value)}
-                        className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
+                        className="w-full rounded-xl border border-dark-700 bg-dark-900 px-4 py-3 text-white transition-colors focus:border-fizzia-500 focus:outline-none"
                         placeholder="Nombre completo"
                       />
                     </div>
@@ -1066,7 +1194,7 @@ export function ProjectDetailPage() {
                         type="text"
                         value={accountCedula}
                         onChange={(e) => setAccountCedula(e.target.value)}
-                        className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white focus:outline-none focus:border-fizzia-500"
+                        className="w-full rounded-xl border border-dark-700 bg-dark-900 px-4 py-3 text-white transition-colors focus:border-fizzia-500 focus:outline-none"
                         placeholder="Ej: 1234567890"
                       />
                     </div>
@@ -1089,7 +1217,7 @@ export function ProjectDetailPage() {
                       (transferType === 'transfer' && !accountHolderName.trim()) ||
                       (transferType === 'deposit' && !accountCedula.trim())
                     }
-                    className="cursor-pointer w-full py-3 bg-fizzia-500 text-white text-sm font-semibold rounded-lg hover:bg-fizzia-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="cursor-pointer w-full rounded-xl bg-fizzia-500 py-3 text-sm font-semibold text-white transition-all hover:bg-fizzia-400 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Continuar
                   </button>
@@ -1098,16 +1226,16 @@ export function ProjectDetailPage() {
 
               {/* Transfer/Deposit Step 3: Bank info + Upload proof */}
               {paymentMethod === 'transfer' && paymentStep === 3 && (
-                <div className="space-y-4">
+                <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
                   <div className="flex items-center justify-between">
                     <h3 className="text-white font-semibold">Datos bancarios</h3>
-                    <button onClick={() => setPaymentStep(2)} className="cursor-pointer text-dark-400 hover:text-white text-sm">
+                    <button onClick={() => setPaymentStep(2)} className="cursor-pointer rounded-lg p-1 text-dark-400 transition-colors hover:bg-dark-800 hover:text-white">
                       <span className="material-symbols-rounded text-lg">arrow_back</span>
                     </button>
                   </div>
 
                   {/* Bank details */}
-                  <div className="bg-dark-950 border border-dark-700 rounded-xl p-4 space-y-2">
+                  <div className="rounded-2xl border border-dark-800 bg-dark-950/70 p-4 space-y-3 lg:row-start-2">
                     <p className="text-white text-sm font-medium mb-2">Realiza el pago a esta cuenta</p>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-dark-500">Banco</span>
@@ -1157,7 +1285,8 @@ export function ProjectDetailPage() {
                     )}
                   </div>
 
-                  <p className="text-dark-400 text-sm text-center">Sube el comprobante de tu pago</p>
+                  <div className="rounded-2xl border border-dark-800 bg-dark-950/70 p-4 lg:row-span-2">
+                  <p className="text-dark-400 text-sm">Sube el comprobante de tu pago</p>
 
                   <input
                     ref={proofInputRef}
@@ -1171,7 +1300,7 @@ export function ProjectDetailPage() {
                   {!proofPreview ? (
                     <button
                       onClick={() => proofInputRef.current?.click()}
-                      className="cursor-pointer w-full py-12 border-2 border-dashed border-dark-600 rounded-xl text-dark-400 hover:text-white hover:border-dark-500 transition-all flex flex-col items-center gap-2"
+                      className="mt-3 flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-dark-600 py-12 text-dark-400 transition-all hover:border-fizzia-500/60 hover:text-white"
                     >
                       <span className="material-symbols-rounded text-4xl">camera_alt</span>
                       <p className="text-sm font-medium">Tomar foto o subir comprobante</p>
@@ -1192,20 +1321,21 @@ export function ProjectDetailPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => { setProofFile(null); setProofPreview(null); proofInputRef.current?.click() }}
-                          className="cursor-pointer flex-1 py-2.5 bg-dark-800 text-white text-sm font-medium rounded-lg hover:bg-dark-700 transition-all"
+                          className="cursor-pointer flex-1 rounded-xl bg-dark-800 py-2.5 text-sm font-medium text-white transition-all hover:bg-dark-700"
                         >
                           Cambiar
                         </button>
                         <button
                           onClick={handleSubmitTransferPayment}
                           disabled={paymentSubmitting}
-                          className="cursor-pointer flex-1 py-2.5 bg-fizzia-500 text-white text-sm font-semibold rounded-lg hover:bg-fizzia-400 disabled:opacity-50 transition-all"
+                          className="cursor-pointer flex-1 rounded-xl bg-fizzia-500 py-2.5 text-sm font-semibold text-white transition-all hover:bg-fizzia-400 disabled:opacity-50"
                         >
                           {paymentSubmitting ? 'Enviando...' : 'Enviar comprobante'}
                         </button>
                       </div>
                     </div>
                   )}
+                  </div>
                 </div>
               )}
 
@@ -1225,12 +1355,13 @@ export function ProjectDetailPage() {
                   </button>
                 </div>
               )}
+              </div>
             </div>
           )}
 
           {/* Payment success for PayPal (redirect back) */}
           {paymentMethod === 'paypal' && paypalProcessing && (
-            <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-5">
+            <div className="rounded-2xl border border-dark-800 bg-dark-900/40 p-5">
               <div className="py-8 flex flex-col items-center text-center space-y-4">
                 <span className="material-symbols-rounded text-4xl text-fizzia-400 animate-spin">progress_activity</span>
                 <h3 className="text-lg font-bold text-white">Verificando tu pago</h3>
@@ -1240,35 +1371,42 @@ export function ProjectDetailPage() {
           )}
 
           {/* Payment history */}
-          <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-5">
-            <h3 className="text-white font-semibold mb-3">Historial de pagos</h3>
+          <div className="rounded-2xl border border-dark-800 bg-dark-900/40 p-4 sm:p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-white font-semibold">Historial de pagos</h3>
+                <p className="mt-1 text-sm text-dark-500">{payments.length ? `${payments.length} movimiento${payments.length === 1 ? '' : 's'} registrado${payments.length === 1 ? '' : 's'}` : 'Aún no hay movimientos'}</p>
+              </div>
+              <span className="material-symbols-rounded text-dark-600">receipt_long</span>
+            </div>
             {payments.length === 0 ? (
-              <div className="text-center py-8">
-                <span className="material-symbols-rounded text-dark-600 text-3xl mb-2 block">payments</span>
-                <p className="text-dark-500 text-sm">No hay pagos registrados</p>
+              <div className="rounded-2xl border border-dashed border-dark-700 bg-dark-950/50 py-10 text-center">
+                <span className="material-symbols-rounded mb-2 block text-3xl text-dark-600">payments</span>
+                <p className="text-dark-400 text-sm font-medium">No hay pagos registrados</p>
+                <p className="mt-1 text-dark-600 text-xs">Cuando pagues, aparecerá aquí con su estado.</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {payments.map(p => (
-                  <div key={p.id} className="flex items-center justify-between p-3 bg-dark-950 border border-dark-700 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-7 rounded-lg flex items-center justify-center shrink-0 overflow-hidden ${p.method === 'paypal' ? 'bg-white' : 'bg-green-600/20'}`}>
+                  <div key={p.id} className="grid gap-3 rounded-xl border border-dark-800 bg-dark-950/70 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className={`flex h-10 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl ${p.method === 'paypal' ? 'bg-white px-1' : 'bg-fizzia-500/15'}`}>
                         {p.method === 'paypal' ? (
                           <img src="/Logo metodos de pagos/Paypal_2014_logo.png" alt="PayPal" className="w-full h-full object-contain" />
                         ) : (
-                          <span className="material-symbols-rounded text-green-400 text-sm">account_balance</span>
+                          <span className="material-symbols-rounded text-fizzia-300 text-lg">account_balance</span>
                         )}
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-white text-sm font-medium">{p.method === 'paypal' ? 'PayPal' : p.method === 'deposit' ? 'Depósito' : 'Transferencia'}</p>
-                        <p className="text-dark-500 text-xs">{formatDate(p.paid_at)}{p.invoice_number ? ` · ${p.invoice_number}` : ''}</p>
-                        {p.reference && <p className="text-dark-600 text-xs">Ref: {p.reference}</p>}
+                        <p className="truncate text-dark-500 text-xs">{formatDate(p.paid_at)}{p.invoice_number ? ` · ${p.invoice_number}` : ''}</p>
+                        {p.reference && <p className="truncate text-dark-600 text-xs">Ref: {p.reference}</p>}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-white font-semibold text-sm">{formatMoney(p.amount)}</p>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                        p.admin_status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                    <div className="flex items-center justify-between gap-3 sm:block sm:text-right">
+                      <p className="text-white font-semibold text-sm sm:mb-1">{formatMoney(p.amount)}</p>
+                      <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                        p.admin_status === 'approved' ? 'bg-fizzia-500/20 text-fizzia-300' :
                         p.admin_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
                         'bg-amber-500/20 text-amber-400'
                       }`}>

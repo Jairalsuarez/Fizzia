@@ -3,10 +3,10 @@ export function ProjectTypeCard({ icon, label, desc, isSelected, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`cursor-pointer flex flex-col items-start text-left p-4 rounded-xl border transition-all min-h-[140px] ${
+      className={`cursor-pointer flex min-h-[140px] flex-col items-start rounded-xl border p-4 text-left transition-all duration-200 active:translate-y-px ${
         isSelected
-          ? 'border-fizzia-500 bg-fizzia-500/10'
-          : 'border-dark-700 bg-dark-900/50 hover:border-dark-600'
+          ? 'border-fizzia-500 bg-fizzia-500/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]'
+          : 'border-dark-700 bg-dark-900/50 hover:-translate-y-0.5 hover:border-dark-600 hover:bg-dark-900'
       }`}
     >
       <span className={`material-symbols-rounded text-2xl mb-2 ${

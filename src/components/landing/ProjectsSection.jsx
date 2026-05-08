@@ -63,19 +63,19 @@ export function ProjectsSection() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-fizzia-500/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-6 text-center">
+      <div className="relative mx-auto max-w-6xl px-4 text-center sm:px-6">
         <span className="inline-block px-4 py-1.5 bg-fizzia-500/10 text-fizzia-400 text-xs font-bold uppercase rounded-full mb-4">Portafolio</span>
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white leading-tight mb-16">
           Mis proyectos son la <br />
           <span className="text-fizzia-400">prueba que necesitas</span>
         </h2>
 
-        <div className="flex items-center justify-center gap-6 min-h-80">
-          <button onClick={goToPrev} className="w-14 h-14 flex items-center justify-center rounded-full bg-dark-900 border border-dark-800 text-fizzia-400 hover:bg-fizzia-500 hover:text-white transition-all shrink-0" aria-label="Anterior">
+        <div className="grid min-h-80 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-6">
+          <button onClick={goToPrev} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dark-800 bg-dark-900 text-fizzia-400 transition-all hover:bg-fizzia-500 hover:text-white active:scale-95 sm:h-14 sm:w-14" aria-label="Anterior">
             <Icon name="chevron_left" size={24} />
           </button>
 
-          <div className="relative w-80 h-56 rounded-2xl overflow-hidden border border-dark-700 shadow-2xl shadow-fizzia-500/10 transition-all duration-500">
+          <div className="relative mx-auto aspect-[10/7] w-full max-w-96 overflow-hidden rounded-2xl border border-dark-700 shadow-2xl shadow-fizzia-500/10 transition-all duration-500">
             <div className="absolute inset-0 bg-gradient-to-br from-dark-900 to-black" />
             {current.thumbnail_url ? (
               <img src={current.thumbnail_url} alt={current.title} className="absolute inset-0 w-full h-full object-cover opacity-40" />
@@ -93,7 +93,7 @@ export function ProjectsSection() {
             </div>
           </div>
 
-          <button onClick={goToNext} className="w-14 h-14 flex items-center justify-center rounded-full bg-dark-900 border border-dark-800 text-fizzia-400 hover:bg-fizzia-500 hover:text-white transition-all shrink-0" aria-label="Siguiente">
+          <button onClick={goToNext} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dark-800 bg-dark-900 text-fizzia-400 transition-all hover:bg-fizzia-500 hover:text-white active:scale-95 sm:h-14 sm:w-14" aria-label="Siguiente">
             <Icon name="chevron_right" size={24} />
           </button>
         </div>

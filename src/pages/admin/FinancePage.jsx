@@ -22,10 +22,23 @@ export function FinancePage() {
     setLoading(true)
     const [payRes, expRes] = await Promise.all([
       supabase.from('payments').select('*, projects(name)').eq('admin_status', 'approved').order('paid_at', { ascending: false }),
-      supabase.from('expenses').select('*, paid_to_user:profiles(full_name, email)').order('created_at', { ascending: false }),
+      supabase
+        .from('expenses')
+        .select('*, paid_to_user:profiles(full_name, email)')
+        .in('category', ['gasto_negocio', 'pago_personal'])
+        .order('created_at', { ascending: false }),
     ])
     setPayments(payRes.data || [])
-    setExpenses(expRes.data || [])
+    if (expRes.error) {
+      const fallback = await supabase
+        .from('expenses')
+        .select('*')
+        .in('category', ['gasto_negocio', 'pago_personal'])
+        .order('created_at', { ascending: false })
+      setExpenses(fallback.data || [])
+    } else {
+      setExpenses(expRes.data || [])
+    }
 
     if (currentUserId) {
       const { data: personal } = await supabase

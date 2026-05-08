@@ -5,8 +5,24 @@ import { useAuth } from '../../features/auth/authContext'
 import { ProjectCard, ProjectCardSkeleton, EmptyProjects } from '../../components/ProjectCard'
 import { mergeRealtimeProject, useRealtimeProjects } from '../../hooks/useRealtimeProjects'
 
+const greetings = [
+  'un placer tenerte aquí',
+  'qué alegría verte de nuevo',
+  'esperamos que tengas un excelente día',
+  'gracias por confiar en nosotros',
+  'estamos felices de trabajar contigo',
+  'tu proyecto está en buenas manos',
+  'bienvenido a bordo, capitán',
+  'nos encanta verte progresar',
+]
+
+function randomGreeting() {
+  return greetings[Math.floor(Math.random() * greetings.length)]
+}
+
 export function DashboardPage() {
   const { user } = useAuth()
+  const [greeting] = useState(randomGreeting)
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -56,13 +72,10 @@ export function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">
-            Bienvenido, {user?.full_name?.split(' ')[0] || 'Usuario'}, es hora de trabajar
-          </h1>
-          <p className="text-dark-400 text-sm mt-1">Aqui esta el estado de tus proyectos</p>
-        </div>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <h1 className="text-3xl font-bold text-white leading-tight">
+          Bienvenido, {user?.full_name?.split(' ')[0] || 'Usuario'}, {greeting}
+        </h1>
         <div className="flex items-center gap-2">
           {projects.length > 0 && (
             <button
