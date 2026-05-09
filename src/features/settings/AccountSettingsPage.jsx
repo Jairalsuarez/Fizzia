@@ -57,7 +57,7 @@ export function AccountSettingsPage({
   }, [])
 
   const displayName = profile?.full_name || fallbackName
-  const selectedAvatarId = profile?.avatar_id || '1'
+  const selectedAvatarId = profile?.avatar_id
   const inputClass = `w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none ${palette.focusBorder} transition-all`
 
   const flashSuccess = (message) => {
@@ -133,6 +133,23 @@ export function AccountSettingsPage({
     }
   }
 
+  const handleRemoveAvatar = async () => {
+    try {
+      const { error: err } = await supabase
+        .from('profiles')
+        .update({ avatar_id: null })
+        .eq('id', session?.user?.id)
+      if (err) throw err
+      setProfile(prev => ({ ...prev, avatar_id: null }))
+      updateUser({ avatar_id: null })
+      toast.success('Avatar eliminado')
+      setShowAvatarPicker(false)
+      setPreviewAvatarId(null)
+    } catch {
+      toast.error('Error al eliminar avatar')
+    }
+  }
+
   if (loading) {
     return (
       <div className="p-6 max-w-2xl space-y-6">
@@ -163,7 +180,7 @@ export function AccountSettingsPage({
         <p className="text-dark-400 text-sm mt-1">Gestiona tu perfil y preferencias</p>
       </div>
 
-      <div className="flex gap-1 bg-dark-900/50 border border-dark-800 rounded-xl p-1">
+      <div className="flex gap-1 bg-dark-900/50 border border-dark-800 rounded-xl p-1" data-tour="settings-tabs">
         {[
           { key: 'perfil', label: 'Perfil', icon: 'person' },
           { key: 'seguridad', label: 'Seguridad', icon: 'lock' },
@@ -201,6 +218,7 @@ export function AccountSettingsPage({
               type="button"
               onClick={() => { setShowAvatarPicker(true); setPreviewAvatarId(selectedAvatarId) }}
               className={`cursor-pointer w-20 h-20 rounded-full bg-white border-2 ${palette.border} flex items-center justify-center overflow-hidden transition-colors group relative`}
+              data-tour="settings-avatar"
             >
               <AvatarIcon id={selectedAvatarId} size={80} />
               <div className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -377,7 +395,7 @@ export function AccountSettingsPage({
                 <AvatarIcon id={previewAvatarId || selectedAvatarId} size={128} />
               </div>
               <p className="text-white font-medium mt-4 text-sm">
-                {avatars.find(a => a.id === (previewAvatarId || selectedAvatarId))?.label}
+                {previewAvatarId || selectedAvatarId ? avatars.find(a => a.id === (previewAvatarId || selectedAvatarId))?.label : 'Sin avatar — se mostrarán tus iniciales'}
               </p>
             </div>
 
@@ -402,10 +420,16 @@ export function AccountSettingsPage({
               </div>
             </div>
 
-            <div className="p-5 border-t border-dark-700">
+            <div className="p-5 border-t border-dark-700 flex gap-3">
+              <button
+                onClick={handleRemoveAvatar}
+                className="cursor-pointer flex-1 py-3 bg-dark-800 border border-dark-700 text-dark-300 font-semibold rounded-xl hover:text-white transition-all"
+              >
+                Quitar avatar
+              </button>
               <button
                 onClick={() => handleSelectAvatar(previewAvatarId || selectedAvatarId)}
-                className={`cursor-pointer w-full py-3 ${palette.bg} text-white font-semibold rounded-xl ${palette.hoverBg} transition-all`}
+                className={`cursor-pointer flex-1 py-3 ${palette.bg} text-white font-semibold rounded-xl ${palette.hoverBg} transition-all`}
               >
                 Usar este avatar
               </button>

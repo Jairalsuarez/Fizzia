@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../features/auth/authContext'
 import { formatDate, formatMoney } from '../../utils/format'
 import { useToast } from '../../components/Toast'
-import { approvePayment, getAllPayments, rejectPayment } from '../../api/paymentsApi'
+import { approvePayment, deletePayment, getAllPayments, rejectPayment } from '../../api/paymentsApi'
 import { Modal } from '../../components/ui'
 
 export function PaymentsPage() {
@@ -15,6 +15,7 @@ export function PaymentsPage() {
   const [proofUrl, setProofUrl] = useState(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [processing, setProcessing] = useState(false)
+  const [showDeleteRejectedModal, setShowDeleteRejectedModal] = useState(false)
 
   const loadPayments = useCallback(async () => {
     setLoading(true)
@@ -83,6 +84,21 @@ export function PaymentsPage() {
     }
   }
 
+  const handleDeleteAllRejected = async () => {
+    setProcessing(true)
+    try {
+      const rejected = payments.filter(p => p.admin_status === 'rejected')
+      await Promise.all(rejected.map(p => deletePayment(p.id)))
+      toast.success(`${rejected.length} pago(s) eliminado(s)`)
+      setShowDeleteRejectedModal(false)
+      loadPayments()
+    } catch {
+      toast.error('Error eliminando pagos')
+    } finally {
+      setProcessing(false)
+    }
+  }
+
   const getMethodName = (method) => {
     if (method === 'paypal') return 'PayPal'
     if (method === 'deposit') return 'Depósito'
@@ -104,7 +120,8 @@ export function PaymentsPage() {
         </div>
       </div>
 
-      {/* Filter tabs */}
+      {/* Filter tabs + delete all rejected */}
+      <div className="flex items-center gap-3">
       <div className="flex gap-1 bg-dark-900/50 border border-dark-800 rounded-xl p-1 w-fit">
         {[
           { key: 'pending', label: 'Pendientes', count: payments.filter(p => p.admin_status === 'pending').length },
@@ -129,6 +146,17 @@ export function PaymentsPage() {
             </span>
           </button>
         ))}
+      </div>
+
+      {filter === 'rejected' && filtered.length > 0 && (
+        <button
+          onClick={() => setShowDeleteRejectedModal(true)}
+          className="cursor-pointer flex items-center gap-2 py-2 px-4 bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium rounded-xl hover:bg-red-500/20 transition-all shrink-0"
+        >
+          <span className="material-symbols-rounded text-base">delete_sweep</span>
+          Eliminar todos ({filtered.length})
+        </button>
+      )}
       </div>
 
       {/* Payments list */}
@@ -304,6 +332,35 @@ export function PaymentsPage() {
               )}
             </div>
         )}
+      </Modal>
+
+      {/* Delete all rejected modal */}
+      <Modal open={showDeleteRejectedModal} onClose={() => !processing && setShowDeleteRejectedModal(false)}>
+        <div className="text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+            <span className="material-symbols-rounded text-red-400 text-3xl">delete_sweep</span>
+          </div>
+          <h3 className="text-lg font-bold text-white mb-2">Eliminar pagos rechazados</h3>
+          <p className="text-dark-400 text-sm mb-6">
+            ¿Eliminar permanentemente {payments.filter(p => p.admin_status === 'rejected').length} pago(s) rechazado(s)? Esta acción no se puede deshacer.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowDeleteRejectedModal(false)}
+              disabled={processing}
+              className="cursor-pointer flex-1 py-3 bg-dark-800 text-white font-medium rounded-xl hover:bg-dark-700 disabled:opacity-50 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleDeleteAllRejected}
+              disabled={processing}
+              className="cursor-pointer flex-1 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-400 disabled:opacity-50 transition-all"
+            >
+              {processing ? 'Eliminando...' : 'Eliminar'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   )

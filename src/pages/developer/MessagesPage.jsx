@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../features/auth/authContext'
-import { getInternalProjectMessages, markInternalProjectMessagesRead, sendInternalProjectMessage, subscribeToInternalProjectMessages } from '../../api/messagesApi'
+import {
+  getDirectChatUsers,
+  getDirectMessagesWithUser,
+  getInternalProjectMessages,
+  markDirectMessagesRead,
+  markInternalProjectMessagesRead,
+  sendDirectMessage,
+  sendInternalProjectMessage,
+  subscribeToDirectMessages,
+  subscribeToInternalProjectMessages,
+} from '../../api/messagesApi'
 import { supabase } from '../../services/supabase'
 import { AvatarIcon } from '../../data/avatars.jsx'
 import { formatDate } from '../../utils/format'
@@ -15,12 +25,15 @@ function genId() { return `pending-dev-${pendingId++}` }
 export function MessagesPage() {
   const { user } = useAuth()
   const [projects, setProjects] = useState([])
+  const [teamUsers, setTeamUsers] = useState([])
   const [selectedProject, setSelectedProject] = useState(null)
+  const [selectedTeamUser, setSelectedTeamUser] = useState(null)
   const [messages, setMessages] = useState([])
   const [messageAuthors, setMessageAuthors] = useState({})
   const [newMessage, setNewMessage] = useState('')
   const [visibleTimeMessageId, setVisibleTimeMessageId] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [conversationMode, setConversationMode] = useState(() => readStoredValue('dev-messages-mode', 'projects', value => ['projects', 'team'].includes(value)))
   const messagesEndRef = useRef(null)
   const channelRef = useRef(null)
 
@@ -51,23 +64,27 @@ export function MessagesPage() {
         .select('project_id')
         .eq('developer_id', user.id)
 
-      if (!assignments?.length) {
-        setLoading(false)
-        return
+      const ids = (assignments || []).map(a => a.project_id)
+      let projs = []
+      if (ids.length) {
+        const { data } = await supabase
+          .from('projects')
+          .select('id, name, status, clients(name)')
+          .in('id', ids)
+          .order('created_at', { ascending: false })
+        projs = data || []
       }
 
-      const ids = assignments.map(a => a.project_id)
-      const { data: projs } = await supabase
-        .from('projects')
-        .select('id, name, status, clients(name)')
-        .in('id', ids)
-        .order('created_at', { ascending: false })
-
-      const rows = projs || []
+      const rows = projs
+      const directUsers = await getDirectChatUsers()
       setProjects(rows)
+      setTeamUsers(directUsers)
       const savedProjectId = readStoredValue('dev-messages-project', '')
       const savedProject = rows.find(project => project.id === savedProjectId)
       setSelectedProject(prev => prev || savedProject || rows[0] || null)
+      const savedTeamUserId = readStoredValue('dev-messages-team-user', '')
+      const savedTeamUser = directUsers.find(profile => profile.id === savedTeamUserId)
+      setSelectedTeamUser(prev => prev || savedTeamUser || directUsers[0] || null)
       setLoading(false)
     }
     load()
@@ -78,7 +95,15 @@ export function MessagesPage() {
   }, [selectedProject?.id])
 
   useEffect(() => {
-    if (!selectedProject?.id) return
+    writeStoredValue('dev-messages-team-user', selectedTeamUser?.id)
+  }, [selectedTeamUser?.id])
+
+  useEffect(() => {
+    writeStoredValue('dev-messages-mode', conversationMode)
+  }, [conversationMode])
+
+  useEffect(() => {
+    if (conversationMode !== 'projects' || !selectedProject?.id) return
     let cancelled = false
 
     const loadMessages = async () => {
@@ -92,6 +117,7 @@ export function MessagesPage() {
     }
 
     loadMessages()
+    const refreshId = setInterval(loadMessages, 5000)
     if (channelRef.current) channelRef.current.unsubscribe()
     channelRef.current = subscribeToInternalProjectMessages(selectedProject.id, (payload) => {
       setMessages(prev => mergeRealtimeMessage(prev, payload))
@@ -104,9 +130,45 @@ export function MessagesPage() {
 
     return () => {
       cancelled = true
+      clearInterval(refreshId)
       if (channelRef.current) channelRef.current.unsubscribe()
     }
-  }, [selectedProject?.id, user?.id])
+  }, [conversationMode, selectedProject?.id, user?.id])
+
+  useEffect(() => {
+    if (conversationMode !== 'team' || !selectedTeamUser?.id || !user?.id) return
+    let cancelled = false
+
+    const loadMessages = async () => {
+      const msgs = await getDirectMessagesWithUser(selectedTeamUser.id)
+      if (cancelled) return
+      setMessages(msgs)
+      markDirectMessagesRead(selectedTeamUser.id).then(readMessages => {
+        if (readMessages.length) setMessages(prev => mergeRealtimeMessages(prev, readMessages))
+      })
+      scrollToEnd('auto')
+    }
+
+    loadMessages()
+    const refreshId = setInterval(loadMessages, 5000)
+    if (channelRef.current) channelRef.current.unsubscribe()
+    channelRef.current = subscribeToDirectMessages(user.id, (payload) => {
+      const isCurrentConversation = payload.sender_id === selectedTeamUser.id || payload.recipient_id === selectedTeamUser.id
+      if (!isCurrentConversation) return
+      setMessages(prev => mergeRealtimeMessage(prev, payload))
+      if (payload?.sender_id !== user.id) {
+        markDirectMessagesRead(selectedTeamUser.id).then(readMessages => {
+          if (readMessages.length) setMessages(prev => mergeRealtimeMessages(prev, readMessages))
+        })
+      }
+    })
+
+    return () => {
+      cancelled = true
+      clearInterval(refreshId)
+      if (channelRef.current) channelRef.current.unsubscribe()
+    }
+  }, [conversationMode, selectedTeamUser?.id, user?.id])
 
   useEffect(() => {
     scrollToEnd(messages.length ? 'smooth' : 'auto')
@@ -133,26 +195,32 @@ export function MessagesPage() {
 
   const handleSend = async (event) => {
     event.preventDefault()
-    if (!newMessage.trim() || !selectedProject) return
+    if (!newMessage.trim()) return
+    if (conversationMode === 'projects' && !selectedProject) return
+    if (conversationMode === 'team' && !selectedTeamUser) return
     const content = newMessage.trim()
     const tempId = genId()
     setNewMessage('')
     setMessages(prev => [...prev, {
       id: tempId,
-      project_id: selectedProject.id,
+      project_id: conversationMode === 'projects' ? selectedProject.id : null,
       sender_id: user?.id,
+      recipient_id: conversationMode === 'team' ? selectedTeamUser.id : null,
       content,
-      channel: 'internal',
-      is_admin_sender: true,
+      channel: conversationMode === 'projects' ? 'internal' : 'direct',
+      is_admin_sender: false,
       created_at: new Date().toISOString(),
       _status: 'sending',
     }])
 
     try {
-      const msg = await sendInternalProjectMessage(selectedProject.id, content)
+      const msg = conversationMode === 'projects'
+        ? await sendInternalProjectMessage(selectedProject.id, content)
+        : await sendDirectMessage(selectedTeamUser.id, content)
       setMessages(prev => markMessageSent(prev, tempId, msg || {}))
-    } catch {
+    } catch (error) {
       setMessages(prev => markMessageFailed(prev, tempId))
+      console.error('Error sending developer message:', error)
     }
   }
 
@@ -164,30 +232,54 @@ export function MessagesPage() {
     )
   }
 
+  const hasConversations = projects.length > 0 || teamUsers.length > 0
+  const activeTitle = conversationMode === 'projects'
+    ? selectedProject?.name
+    : selectedTeamUser?.full_name || selectedTeamUser?.first_name || selectedTeamUser?.email || 'Developer'
+  const activeSubtitle = conversationMode === 'projects'
+    ? 'Chat interno con el equipo admin'
+    : 'Chat directo con developer'
+  const emptyMessage = conversationMode === 'projects'
+    ? 'Todavia no hay mensajes internos'
+    : 'Todavia no hay mensajes con este developer'
+
   return (
     <div className="p-6 space-y-5">
       <div>
         <h1 className="text-2xl font-bold text-white">Mensajes internos</h1>
-        <p className="text-dark-400 text-sm mt-1">Habla con el admin sobre tus proyectos asignados</p>
+        <p className="text-dark-400 text-sm mt-1">Habla con el admin por proyecto o conversa directo con otros developers</p>
       </div>
 
-      {projects.length === 0 ? (
+      {!hasConversations ? (
         <div className="text-center py-16 bg-dark-900/50 border border-dark-800 rounded-xl">
           <span className="material-symbols-rounded text-dark-600 text-5xl mb-3 block">chat</span>
-          <p className="text-dark-400 text-sm">No tienes proyectos asignados</p>
+          <p className="text-dark-400 text-sm">No tienes conversaciones disponibles</p>
         </div>
       ) : (
         <div className="grid h-[calc(100dvh-11rem)] min-h-[32rem] max-h-[44rem] grid-cols-1 overflow-hidden rounded-xl border border-dark-800 bg-dark-950/40 lg:grid-cols-[20rem_1fr]">
           <aside className="border-b border-dark-800 bg-dark-900/70 lg:border-b-0 lg:border-r">
             <div className="border-b border-dark-800 p-4">
-              <p className="text-sm font-semibold text-white">Proyectos</p>
-              <p className="text-xs text-dark-500">{projects.length} conversaciones</p>
+              <p className="text-sm font-semibold text-white">Conversaciones</p>
+              <div className="mt-3 grid grid-cols-2 gap-1 rounded-lg bg-dark-950 p-1">
+                <button
+                  onClick={() => { setConversationMode('projects'); setMessages([]) }}
+                  className={`cursor-pointer rounded-md px-2 py-1.5 text-xs font-medium transition-all ${conversationMode === 'projects' ? 'bg-[var(--accent)] text-white' : 'text-dark-400 hover:text-white'}`}
+                >
+                  Admin ({projects.length})
+                </button>
+                <button
+                  onClick={() => { setConversationMode('team'); setMessages([]) }}
+                  className={`cursor-pointer rounded-md px-2 py-1.5 text-xs font-medium transition-all ${conversationMode === 'team' ? 'bg-[var(--accent)] text-white' : 'text-dark-400 hover:text-white'}`}
+                >
+                  Devs ({teamUsers.length})
+                </button>
+              </div>
             </div>
             <div className="max-h-[34rem] overflow-y-auto">
-              {projects.map(project => (
+              {conversationMode === 'projects' && projects.map(project => (
                 <button
                   key={project.id}
-                  onClick={() => setSelectedProject(project)}
+                  onClick={() => { setSelectedProject(project); setMessages([]) }}
                   className={`cursor-pointer w-full border-b border-dark-800 p-4 text-left transition-colors ${
                     selectedProject?.id === project.id ? 'bg-fizzia-500/10' : 'hover:bg-dark-800/60'
                   }`}
@@ -199,19 +291,38 @@ export function MessagesPage() {
                   <p className="mt-1 truncate text-xs text-dark-500">Linea directa con admin</p>
                 </button>
               ))}
+              {conversationMode === 'team' && teamUsers.map(profile => (
+                <button
+                  key={profile.id}
+                  onClick={() => { setSelectedTeamUser(profile); setMessages([]) }}
+                  className={`cursor-pointer w-full border-b border-dark-800 p-4 text-left transition-colors ${
+                    selectedTeamUser?.id === profile.id ? 'bg-fizzia-500/10' : 'hover:bg-dark-800/60'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 overflow-hidden rounded-full bg-white shrink-0">
+                      <AvatarIcon id={profile.avatar_id || '1'} name={profile.full_name || profile.first_name} size={36} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-white">{profile.full_name || profile.first_name || 'Developer'}</p>
+                      <p className="mt-0.5 truncate text-xs text-dark-500">{profile.email || profile.role}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
           </aside>
 
           <section className="flex min-h-0 flex-col">
             <div className="border-b border-dark-800 bg-dark-900/60 p-4">
-              <p className="text-sm font-semibold text-white">{selectedProject?.name}</p>
-              <p className="text-xs text-dark-500">Chat interno con el equipo admin</p>
+              <p className="text-sm font-semibold text-white">{activeTitle}</p>
+              <p className="text-xs text-dark-500">{activeSubtitle}</p>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-3">
               {messages.length === 0 ? (
                 <div className="flex h-full items-center justify-center text-sm text-dark-500">
-                  Todavia no hay mensajes internos
+                  {emptyMessage}
                 </div>
               ) : (
                 messages.map(message => {
@@ -272,7 +383,7 @@ export function MessagesPage() {
                 value={newMessage}
                 onChange={(event) => setNewMessage(event.target.value)}
                 className="flex-1 rounded-xl border border-dark-700 bg-dark-950 px-4 py-2.5 text-sm text-white outline-none placeholder:text-dark-500 focus:border-[var(--accent)]"
-                placeholder="Escribir al admin..."
+                placeholder={conversationMode === 'projects' ? 'Escribir al admin...' : 'Escribir al developer...'}
               />
               <button
                 type="submit"

@@ -50,6 +50,7 @@ create table if not exists public.profiles (
   avatar_url text,
   role public.profile_role not null default 'client',
   is_active boolean not null default true,
+  last_seen_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -304,6 +305,7 @@ create table if not exists public.clients (
   website_url text,
   province text,
   city text,
+  country text,
   address text,
   status text not null default 'active',
   notes text,

@@ -48,6 +48,26 @@ export async function updateProfile(payload) {
   return { data: data ? { ...data } : null, error }
 }
 
+export async function acceptTerms(fullName) {
+  const userId = await getCurrentUserId()
+  if (!userId) return { data: null, error: { message: 'No se pudo identificar tu usuario' } }
+
+  const acceptedAt = new Date().toISOString()
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      full_name: fullName.trim(),
+      terms_accepted_at: acceptedAt,
+      terms_full_name: fullName.trim(),
+      terms_version: '2026-05-09',
+    })
+    .eq('id', userId)
+    .select()
+    .maybeSingle()
+
+  return { data: data ? { ...data } : null, error }
+}
+
 export function updatePassword(_currentPassword, newPassword) {
   return supabase.auth.updateUser({ password: newPassword })
 }

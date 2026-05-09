@@ -1,13 +1,10 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from 'react'
-import { StatusBadge, EmptyState, Skeleton } from '../../components/ui/'
+import { EmptyState, Skeleton } from '../../components/ui/'
 import { getAllClients } from '../../api/clientsApi'
+import { AvatarIcon } from '../../data/avatars'
 
-function getInitials(name) {
-  return name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?'
-}
-
-export default function ClientList({ selectedId, onSelect }) {
+export default function ClientList({ selectedId, onSelect, refreshKey }) {
   const [clients, setClients] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -19,7 +16,7 @@ export default function ClientList({ selectedId, onSelect }) {
   useEffect(() => { 
     setLoading(true)
     loadClients().finally(() => setLoading(false))
-  }, [])
+  }, [refreshKey])
 
   return (
     <div className="rounded-lg border border-dark-700 bg-dark-900 h-full flex flex-col">
@@ -42,14 +39,11 @@ export default function ClientList({ selectedId, onSelect }) {
                   : 'border-transparent hover:bg-dark-800'
               }`}
             >
-              <div className="w-9 h-9 rounded-full bg-fizzia-500/20 flex items-center justify-center text-fizzia-400 font-semibold text-sm shrink-0">
-                {getInitials(client.name)}
-              </div>
+              <AvatarIcon id={client.avatar_id} name={client.name} size={36} zoom={1.5} className="shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="text-white text-sm font-medium truncate">{client.name}</p>
                 <p className="text-dark-400 text-xs truncate">{client.email}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <StatusBadge status={client.status} size="sm" />
                   <span className="text-xs text-dark-500">{client.project_count || 0} proyectos</span>
                 </div>
               </div>

@@ -1,21 +1,24 @@
 import { useState, useEffect, useRef } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../features/auth/authContext'
 import { getMyProfile } from '../../api/profilesApi'
 import { AvatarIcon } from '../../data/avatars.jsx'
 import { useAppTheme } from '../../theme/appTheme'
 import { ThemeProvider } from '../../theme/ThemeContext'
+import { TermsAcceptanceGate } from '../legal/TermsAcceptanceGate'
 
 export function DashboardLayout({
   navItems,
   roleLabel,
   settingsPath,
+  termsPath,
   theme = 'fizzia',
   topActions = null,
   children,
 }) {
   const { signOut, session, user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [profile, setProfile] = useState(user)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
@@ -48,9 +51,23 @@ export function DashboardLayout({
     navigate('/login')
   }
 
-  const avatarId = profile?.avatar_id || user?.avatar_id || '1'
+  const avatarId = profile?.avatar_id || user?.avatar_id || null
   const email = session?.user?.email || ''
   const displayName = profile?.full_name || profile?.first_name || roleLabel || 'Usuario'
+  const summaryPath = navItems[0]?.to || '/'
+  const isClientLayout = termsPath?.startsWith('/cliente')
+
+  const handleTermsAccepted = (updatedProfile) => {
+    setProfile(updatedProfile || profile)
+    if (location.pathname !== summaryPath) {
+      navigate(summaryPath, { replace: true })
+    }
+    if (isClientLayout) {
+      window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('fizzia-start-client-tour', { detail: { path: summaryPath } }))
+      }, 450)
+    }
+  }
 
   return (
     <div className="min-h-[100dvh] bg-dark-950" data-theme={activeTheme}>
@@ -106,7 +123,7 @@ export function DashboardLayout({
                   className="cursor-pointer flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg hover:bg-dark-800 transition-colors"
                 >
                   <div className={`w-8 h-8 rounded-full bg-white border ${palette.avatarBorder} overflow-hidden shrink-0`}>
-                    <AvatarIcon id={avatarId} size={32} />
+                    <AvatarIcon id={avatarId} name={displayName} size={32} />
                   </div>
                   <span className="material-symbols-rounded text-dark-400 text-lg">expand_more</span>
                 </button>
@@ -133,6 +150,35 @@ export function DashboardLayout({
                         <span className="material-symbols-rounded text-base">settings</span>
                         Configuracion
                       </NavLink>
+                      {termsPath && (
+                        <NavLink
+                          to={termsPath}
+                          onClick={() => setDropdownOpen(false)}
+                          className={({ isActive }) =>
+                            `cursor-pointer flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-colors ${
+                              isActive
+                                ? `${palette.activeText} ${palette.activeBg}`
+                                : 'text-dark-300 hover:text-white hover:bg-dark-800'
+                            }`
+                          }
+                        >
+                          <span className="material-symbols-rounded text-base">contract</span>
+                          Terminos y condiciones
+                        </NavLink>
+                      )}
+                      {isClientLayout && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDropdownOpen(false)
+                            window.dispatchEvent(new CustomEvent('fizzia-start-client-tour', { detail: { path: location.pathname } }))
+                          }}
+                          className="cursor-pointer flex items-center gap-3 w-full px-4 py-2.5 text-sm text-dark-300 hover:text-white hover:bg-dark-800 transition-colors"
+                        >
+                          <span className="material-symbols-rounded text-base">tips_and_updates</span>
+                          Tutoriales
+                        </button>
+                      )}
                       <button
                         onClick={handleSignOut}
                         className="cursor-pointer flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-dark-800 transition-colors"
@@ -177,7 +223,13 @@ export function DashboardLayout({
       <main className="pt-24 pb-10 lg:pt-20 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ThemeProvider value={{ theme: activeTheme, palette }}>
-            {children || <Outlet />}
+            {children || <Outlet key={location.key} />}
+            {termsPath && (
+              <TermsAcceptanceGate
+                profile={profile}
+                onAccepted={handleTermsAccepted}
+              />
+            )}
           </ThemeProvider>
         </div>
       </main>

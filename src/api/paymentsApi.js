@@ -5,6 +5,7 @@ export {
   createInvoice,
   createInvoiceForProject,
   createPayment,
+  deletePayment,
   getAllPayments,
   getAllPendingPayments,
   getOpenCharges,
@@ -17,7 +18,9 @@ export {
 
 export {
   createClientPayment,
+  deleteClientPayment,
   getMyInvoices,
+  getMyPayments,
   getProjectDirectPayments,
   getProjectInvoices,
   uploadPaymentProof,

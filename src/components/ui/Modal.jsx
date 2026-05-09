@@ -1,19 +1,22 @@
 import { useEffect, useRef } from 'react';
 
-export function Modal({ isOpen, open, onClose, title, children, size = 'md' }) {
+export function Modal({ isOpen, open, onClose, title, children, size = 'md', closeOnBackdrop = true, closeOnEscape = true }) {
   const modalRef = useRef(null);
   const isModalOpen = isOpen ?? open ?? false;
 
   useEffect(() => {
     if (!isModalOpen) return;
-    const handleEsc = (e) => e.key === 'Escape' && onClose();
-    document.addEventListener('keydown', handleEsc);
     document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', handleEsc);
-      document.body.style.overflow = 'auto';
-    };
-  }, [isModalOpen, onClose]);
+    if (closeOnEscape) {
+      const handleEsc = (e) => e.key === 'Escape' && onClose();
+      document.addEventListener('keydown', handleEsc);
+      return () => {
+        document.removeEventListener('keydown', handleEsc);
+        document.body.style.overflow = 'auto';
+      };
+    }
+    return () => { document.body.style.overflow = 'auto' };
+  }, [isModalOpen, onClose, closeOnEscape]);
 
   if (!isModalOpen) return null;
 
@@ -25,7 +28,7 @@ export function Modal({ isOpen, open, onClose, title, children, size = 'md' }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain p-3 sm:p-5" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain p-3 sm:p-5" onClick={closeOnBackdrop ? onClose : undefined}>
       <div
         className="fixed inset-0 bg-dark-950/80 backdrop-blur-md"
         style={{ animation: 'modalFadeIn 160ms ease-out both' }}

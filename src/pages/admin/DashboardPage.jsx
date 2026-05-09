@@ -5,8 +5,20 @@ import { ProjectCard, ProjectCardSkeleton, EmptyProjects } from '../../component
 import { StatusBadge } from '../../components/ui/'
 import { formatDate } from '../../utils/format'
 import { useAuth } from '../../features/auth/authContext'
+import { Greeting } from '../../components/Greeting'
 
 const WORKING_STATUSES = ['preparando', 'trabajando', 'pausado']
+
+const adminPhrases = [
+  'es hora de liderar',
+  'el equipo te necesita',
+  'grandes decisiones te esperan',
+  'a construir el futuro',
+  'tu visión marca el camino',
+  'el éxito empieza aquí',
+  'cada detalle cuenta',
+  'tú pones el rumbo',
+]
 
 export function DashboardPage() {
   const { user } = useAuth()
@@ -25,16 +37,17 @@ export function DashboardPage() {
   }
 
   const projects = data?.projects || []
-  const activeClients = data?.clients?.filter(c => c.status === 'active') || []
 
   const workingProjects = projects.filter(p => WORKING_STATUSES.includes(p.status))
   const requests = projects.filter(p => p.status === 'solicitado')
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">
-        Bienvenido, {user?.full_name?.split(' ')[0] || user?.first_name || 'Admin'}, es hora de trabajar
-      </h1>
+      <Greeting
+        name={user?.full_name?.split(' ')[0] || user?.first_name || 'Admin'}
+        phrases={adminPhrases}
+        fallback="es hora de liderar"
+      />
 
       {/* Tabs */}
       <div className="flex gap-1 bg-dark-800 rounded-lg p-0.5 w-fit">
@@ -130,31 +143,6 @@ export function DashboardPage() {
         </div>
       )}
 
-      {/* Clientes activos */}
-      {activeClients.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold text-white mb-4">Clientes Activos</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {activeClients.map((client) => {
-              const clientProjects = projects.filter(p => p.client_id === client.id)
-              const activeCount = clientProjects.filter(p => WORKING_STATUSES.includes(p.status)).length
-              return (
-                <div key={client.id} className="bg-dark-900/50 border border-dark-800 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-white font-semibold">{client.name}</p>
-                    <StatusBadge status={client.status} size="sm" />
-                  </div>
-                  <p className="text-dark-400 text-sm mb-3">{client.email}</p>
-                  <div className="flex gap-3 text-xs text-dark-500">
-                    <span>{clientProjects.length} proyectos</span>
-                    {activeCount > 0 && <span>• {activeCount} en curso</span>}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

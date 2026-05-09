@@ -5,6 +5,7 @@ export {
   createProjectFileRequest,
   createProjectTask,
   deleteMilestone,
+  deleteProject,
   deleteProjectFileRequest,
   deleteProjectTask,
   getAllProjectFiles,

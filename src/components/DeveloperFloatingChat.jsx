@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/authContext'
-import { getInternalProjectMessages, markInternalProjectMessagesRead, sendInternalProjectMessage, subscribeToInternalProjectMessages } from '../api/messagesApi'
+import {
+  getDirectChatUsers,
+  getDirectMessagesWithUser,
+  markDirectMessagesRead,
+  sendDirectMessage,
+  subscribeToDirectMessages,
+} from '../api/messagesApi'
 import { supabase } from '../services/supabase'
 import { useToast } from '../components/Toast'
 import { AvatarIcon } from '../data/avatars.jsx'
@@ -17,7 +23,8 @@ export function DeveloperFloatingChat() {
   const toast = useToast()
   const [isOpen, setIsOpen] = useState(false)
   const [projects, setProjects] = useState([])
-  const [selectedProject, setSelectedProject] = useState(null)
+  const [adminUsers, setAdminUsers] = useState([])
+  const [selectedAdmin, setSelectedAdmin] = useState(null)
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState('')
   const [visibleTimeMessageId, setVisibleTimeMessageId] = useState(null)
@@ -37,54 +44,71 @@ export function DeveloperFloatingChat() {
   useEffect(() => {
     const loadProjects = async () => {
       if (!user?.id) return
-      const { data: assignments } = await supabase
+      const { data: assignments, error: assignmentsError } = await supabase
         .from('project_developers')
         .select('project_id')
         .eq('developer_id', user.id)
+      if (assignmentsError) {
+        toast.error('No se pudieron cargar tus chats: ' + assignmentsError.message)
+        return
+      }
       const ids = assignments?.map(item => item.project_id) || []
-      if (!ids.length) return
-      const { data } = await supabase
-        .from('projects')
-        .select('id, name')
-        .in('id', ids)
-        .order('created_at', { ascending: false })
-      setProjects(data || [])
-      const savedProjectId = readStoredValue('dev-floating-chat-project', '')
-      const savedProject = (data || []).find(project => project.id === savedProjectId)
-      setSelectedProject(prev => prev || savedProject || data?.[0] || null)
+      if (ids.length) {
+        const { data, error: projectsError } = await supabase
+          .from('projects')
+          .select('id, name')
+          .in('id', ids)
+          .order('created_at', { ascending: false })
+        if (projectsError) {
+          toast.error('No se pudieron cargar tus proyectos: ' + projectsError.message)
+        } else {
+          setProjects(data || [])
+        }
+      }
+
+      const users = await getDirectChatUsers()
+      const admins = users.filter(profile => ['admin', 'manager'].includes(profile.role))
+      setAdminUsers(admins)
+      const savedAdminId = readStoredValue('dev-floating-chat-admin', '')
+      const savedAdmin = admins.find(profile => profile.id === savedAdminId)
+      setSelectedAdmin(prev => prev || savedAdmin || admins[0] || null)
     }
     loadProjects()
-  }, [user?.id])
+  }, [toast, user?.id])
 
   useEffect(() => {
-    writeStoredValue('dev-floating-chat-project', selectedProject?.id)
-  }, [selectedProject?.id])
+    writeStoredValue('dev-floating-chat-admin', selectedAdmin?.id)
+  }, [selectedAdmin?.id])
 
   useEffect(() => {
-    if (!chatIsOpen || !selectedProject?.id) return
+    if (!chatIsOpen || !selectedAdmin?.id || !user?.id) return
     let cancelled = false
-    getInternalProjectMessages(selectedProject.id).then(data => {
+    const loadMessages = () => getDirectMessagesWithUser(selectedAdmin.id).then(data => {
       if (cancelled) return
       setMessages(data || [])
-      markInternalProjectMessagesRead(selectedProject.id).then(readMessages => {
+      markDirectMessagesRead(selectedAdmin.id).then(readMessages => {
         if (readMessages.length) setMessages(prev => mergeRealtimeMessages(prev, readMessages))
       })
       scrollToEnd('auto')
     })
+    loadMessages()
+    const refreshId = setInterval(loadMessages, 5000)
     if (channelRef.current) channelRef.current.unsubscribe()
-    channelRef.current = subscribeToInternalProjectMessages(selectedProject.id, payload => {
+    channelRef.current = subscribeToDirectMessages(user.id, payload => {
+      if (payload.sender_id !== selectedAdmin.id && payload.recipient_id !== selectedAdmin.id) return
       setMessages(prev => mergeRealtimeMessage(prev, payload))
       if (payload?.sender_id !== user?.id) {
-        markInternalProjectMessagesRead(selectedProject.id).then(readMessages => {
+        markDirectMessagesRead(selectedAdmin.id).then(readMessages => {
           if (readMessages.length) setMessages(prev => mergeRealtimeMessages(prev, readMessages))
         })
       }
     })
     return () => {
       cancelled = true
+      clearInterval(refreshId)
       if (channelRef.current) channelRef.current.unsubscribe()
     }
-  }, [chatIsOpen, selectedProject?.id, scrollToEnd, user?.id])
+  }, [chatIsOpen, scrollToEnd, selectedAdmin?.id, user?.id])
 
   useEffect(() => {
     if (!chatIsOpen) return
@@ -110,28 +134,30 @@ export function DeveloperFloatingChat() {
 
   const handleSend = async event => {
     event.preventDefault()
-    if (!newMessage.trim() || !selectedProject) return
+    if (!newMessage.trim() || !selectedAdmin) return
     const content = newMessage.trim()
     const tempId = genId()
     setNewMessage('')
     setMessages(prev => [...prev, {
       id: tempId,
-      project_id: selectedProject.id,
       sender_id: user?.id,
+      recipient_id: selectedAdmin.id,
       content,
-      channel: 'internal',
+      channel: 'direct',
+      is_admin_sender: false,
       created_at: new Date().toISOString(),
       _status: 'sending',
     }])
     try {
-      const msg = await sendInternalProjectMessage(selectedProject.id, content)
+      const msg = await sendDirectMessage(selectedAdmin.id, content)
       setMessages(prev => markMessageSent(prev, tempId, msg || {}))
-    } catch {
+    } catch (error) {
       setMessages(prev => markMessageFailed(prev, tempId))
+      toast.error('No se pudo enviar: ' + (error.message || 'revisa permisos de Supabase'))
     }
   }
 
-  if (!projects.length) return null
+  if (!adminUsers.length) return null
 
   return (
     <>
@@ -149,16 +175,16 @@ export function DeveloperFloatingChat() {
           <div className="border-b border-dark-700 bg-dark-950 p-3">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <p className="text-sm font-semibold text-white">Admin</p>
-                <p className="text-xs text-dark-500 truncate">{selectedProject?.name}</p>
+                <p className="text-sm font-semibold text-white">{selectedAdmin?.full_name || selectedAdmin?.first_name || 'Admin'}</p>
+                <p className="text-xs text-dark-500 truncate">Chat directo con admin</p>
               </div>
-              {projects.length > 1 && (
+              {adminUsers.length > 1 && (
                 <select
-                  value={selectedProject?.id || ''}
-                  onChange={event => setSelectedProject(projects.find(project => project.id === event.target.value))}
+                  value={selectedAdmin?.id || ''}
+                  onChange={event => setSelectedAdmin(adminUsers.find(profile => profile.id === event.target.value))}
                   className="cursor-pointer max-w-40 rounded-lg border border-dark-700 bg-dark-900 px-2 py-1 text-xs text-white outline-none"
                 >
-                  {projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}
+                  {adminUsers.map(profile => <option key={profile.id} value={profile.id}>{profile.full_name || profile.first_name || profile.email}</option>)}
                 </select>
               )}
             </div>
@@ -167,7 +193,7 @@ export function DeveloperFloatingChat() {
           <div className="flex-1 space-y-3 overflow-y-auto p-3">
             {messages.length === 0 ? (
               <div className="flex h-full items-center justify-center text-center text-xs text-dark-500">
-                Escribe al admin sobre este proyecto
+                Escribe al admin
               </div>
             ) : messages.map(message => {
               const isMine = message.sender_id === user?.id
@@ -208,7 +234,7 @@ export function DeveloperFloatingChat() {
                   </div>
                   {isMine && (
                     <div className="h-7 w-7 overflow-hidden rounded-full bg-white shrink-0">
-                      <AvatarIcon id={user?.avatar_id || '1'} size={28} />
+                      <AvatarIcon id={user?.avatar_id} name={user?.full_name || user?.first_name} size={28} />
                     </div>
                   )}
                 </div>
@@ -222,7 +248,7 @@ export function DeveloperFloatingChat() {
               value={newMessage}
               onChange={event => setNewMessage(event.target.value)}
               className="flex-1 rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none placeholder:text-dark-500 focus:border-purple-500"
-              placeholder="Mensaje interno..."
+              placeholder="Mensaje al admin..."
             />
             <button
               type="submit"

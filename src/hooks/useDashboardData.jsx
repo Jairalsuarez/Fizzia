@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { DashboardDataContext } from './dashboardDataContext'
 import { loadDashboardData } from '../api/dashboardApi'
 import { buildMetrics } from '../utils/business'
 import { supabase } from '../services/supabase'
+import { useLocation } from 'react-router-dom'
 
 export function DashboardDataProvider({ children }) {
+  const location = useLocation()
   const [data, setData] = useState({
     clients: [],
     projects: [],
@@ -16,6 +18,8 @@ export function DashboardDataProvider({ children }) {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const prevPathRef = useRef(location.pathname)
+  const navTimerRef = useRef(null)
 
   const refreshData = useCallback(async () => {
     setLoading(true)
@@ -29,6 +33,16 @@ export function DashboardDataProvider({ children }) {
       setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    if (prevPathRef.current !== location.pathname) {
+      prevPathRef.current = location.pathname
+      clearTimeout(navTimerRef.current)
+      setLoading(true)
+      navTimerRef.current = setTimeout(() => setLoading(false), 350)
+    }
+    return () => clearTimeout(navTimerRef.current)
+  }, [location.pathname])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

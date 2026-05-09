@@ -66,8 +66,19 @@ export async function getMyInvoices() {
   if (!client) return []
   const { data } = await supabase
     .from('invoices')
-    .select('*, payments(*)')
+    .select('*, projects(name), payments(*)')
     .eq('client_id', client.id)
+  return data || []
+}
+
+export async function getMyPayments() {
+  const client = await getMyClient()
+  if (!client) return []
+  const { data } = await supabase
+    .from('payments')
+    .select('*, projects(name), invoices(invoice_number, total)')
+    .eq('client_id', client.id)
+    .order('created_at', { ascending: false })
   return data || []
 }
 
@@ -111,6 +122,50 @@ export async function updatePassword(currentPassword, newPassword) {
     password: newPassword
   })
   return { data, error }
+}
+
+export async function getAllMyMessages() {
+  const projects = await getMyProjects()
+  if (!projects.length) return []
+  const projectIds = projects.map(p => p.id)
+  const { data } = await supabase
+    .from('messages')
+    .select('*, projects(name)')
+    .in('project_id', projectIds)
+    .eq('channel', 'client')
+    .order('created_at', { ascending: true })
+  return data || []
+}
+
+export async function markAllMyMessagesRead() {
+  const projects = await getMyProjects()
+  if (!projects.length) return []
+  const userId = await getCurrentUserId()
+  if (!userId) return []
+  const projectIds = projects.map(p => p.id)
+  const { data } = await supabase
+    .from('messages')
+    .update({ read_at: new Date().toISOString(), read_by: userId })
+    .in('project_id', projectIds)
+    .eq('channel', 'client')
+    .neq('sender_id', userId)
+    .is('read_at', null)
+    .select()
+  return data || []
+}
+
+export async function sendMessageToTeam(content) {
+  const projects = await getMyProjects()
+  if (!projects.length) return null
+  const userId = await getCurrentUserId()
+  if (!userId) return null
+  const projectId = projects[projects.length - 1].id
+  const { data } = await supabase
+    .from('messages')
+    .insert({ project_id: projectId, sender_id: userId, content, channel: 'client' })
+    .select()
+    .single()
+  return data
 }
 
 export async function getProjectMessages(projectId) {
@@ -204,7 +259,7 @@ export async function getProjectFiles(projectId) {
   return data || []
 }
 
-export async function createProjectRequest(name, description, budget, details) {
+export async function createProjectRequest(name, description, budget, details, dueDate) {
   const userId = await getCurrentUserId()
   if (!userId) return { project: null, error: 'No se pudo identificar tu usuario' }
 
@@ -249,6 +304,7 @@ export async function createProjectRequest(name, description, budget, details) {
       description: details ? `${description}\n\n${details}` : description,
       status: 'solicitado',
       budget: budget || 0,
+      due_date: dueDate || null,
     })
     .select()
     .single()
@@ -420,6 +476,12 @@ export async function createClientPayment(payload) {
     },
     error: null,
   }
+}
+
+export async function deleteClientPayment(paymentId) {
+  const { error } = await supabase.from('payments').delete().eq('id', paymentId)
+  if (error) throw new Error(error.message)
+  return { error: null }
 }
 
 export async function uploadPaymentProof(file) {

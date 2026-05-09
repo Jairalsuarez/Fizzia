@@ -193,3 +193,11 @@ CREATE POLICY "Developers view file requests"
       WHERE pd.project_id = project_file_requests.project_id AND pd.developer_id = auth.uid()
     )
   );
+
+-- Clients can delete their own rejected payments
+CREATE POLICY "Clients delete own rejected payments"
+  ON payments FOR DELETE
+  USING (
+    client_id = (SELECT client_id FROM client_users WHERE user_id = auth.uid())
+    AND admin_status = 'rejected'
+  );

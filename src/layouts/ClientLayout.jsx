@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { DashboardLayout } from '../components/app-shell/DashboardLayout'
-import { FloatingChat } from '../components/FloatingChat'
+import { Chat } from '../components/Chat'
+import { PresenceTracker } from '../components/PresenceTracker'
 import { NotificationBell } from '../components/NotificationBell'
+import { ClientTutorial } from '../components/tutorial/ClientTutorial'
 import { clientNav } from '../constants/navigation'
 
 export function ClientLayout() {
@@ -13,10 +15,13 @@ export function ClientLayout() {
         navItems={clientNav}
         roleLabel="Cliente"
         settingsPath="/cliente/configuracion"
+        termsPath="/cliente/terminos"
         theme="fizzia"
         topActions={<NotificationBell unreadCount={unreadCount} />}
       />
-      <FloatingChat onUnreadChange={setUnreadCount} />
+      <Chat onUnreadChange={setUnreadCount} />
+      <ClientTutorial />
+      <PresenceTracker />
     </>
   )
 }

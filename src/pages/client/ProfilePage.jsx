@@ -124,7 +124,7 @@ export function ProfilePage() {
         </div>
       )}
 
-      <Card className="bg-dark-900 border-dark-700">
+      <Card className="bg-dark-900 border-dark-700" data-tour="profile-form">
         <form onSubmit={handleSaveProfile} className="p-6 space-y-6">
           <h2 className="text-lg font-semibold text-white">Personal Information</h2>
 
@@ -181,7 +181,7 @@ export function ProfilePage() {
         </form>
       </Card>
 
-      <Card className="bg-dark-900 border-dark-700">
+      <Card className="bg-dark-900 border-dark-700" data-tour="profile-password">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-white">Password</h2>

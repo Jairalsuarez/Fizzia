@@ -58,7 +58,7 @@ function CyclingInfo({ items, interval = 4000 }) {
   )
 }
 
-export function ProjectCard({ project, clientName, to }) {
+export function ProjectCard({ project, clientName, to, hidePrice }) {
   const phase = getPhase(project.status)
   const daysLeft = getDaysRemaining(project.due_date)
   const [lastCommit, setLastCommit] = useState(null)
@@ -147,7 +147,7 @@ export function ProjectCard({ project, clientName, to }) {
               <span className="material-symbols-rounded text-[14px]">hourglass_top</span>
               Tu fecha programada: {formatDate(project.client_deadline)}
             </span>
-          ) : project.status !== 'revision' && project.status !== 'solicitado' && project.due_date ? (
+          ) : project.status !== 'revision' && project.due_date ? (
             daysLeft !== null ? (
               <span className={`inline-flex items-center gap-1 font-medium ${daysLeft < 0 ? 'text-red-400' : daysLeft <= 7 ? 'text-yellow-400' : 'text-emerald-400'}`}>
                 <span className="material-symbols-rounded text-[14px]">schedule</span>
@@ -169,7 +169,11 @@ export function ProjectCard({ project, clientName, to }) {
         )}
 
         <div className="mt-3 pt-3 border-t border-dark-800 flex items-center justify-between text-xs text-dark-500">
-          {project.final_price || project.budget ? (
+          {hidePrice && project.repository_url ? (
+            <span className="font-medium text-dark-400 truncate">
+              {project.repository_url.replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '')}
+            </span>
+          ) : !hidePrice && (project.final_price || project.budget) ? (
             <span className="font-medium text-dark-400">
               ${Number(project.final_price || project.budget).toLocaleString()}
             </span>

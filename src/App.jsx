@@ -11,20 +11,19 @@ const DeveloperLayout = lazy(() => import('./layouts/DeveloperLayout').then(modu
 const LoginPage = lazy(() => import('./features/auth/LoginPage').then(module => ({ default: module.LoginPage })))
 const RegisterPage = lazy(() => import('./features/auth/RegisterPage').then(module => ({ default: module.RegisterPage })))
 const LandingPage = lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })))
+const TermsPage = lazy(() => import('./pages/shared/TermsPage').then(module => ({ default: module.TermsPage })))
 
 const AdminDashboardPage = lazy(() => import('./pages/admin/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const AdminProjectDetailPage = lazy(() => import('./pages/admin/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
 const AdminLeadsPage = lazy(() => import('./pages/admin/LeadsPage').then(module => ({ default: module.LeadsPage })))
 const AdminClientsPage = lazy(() => import('./pages/admin/ClientsPage').then(module => ({ default: module.ClientsPage })))
 const AdminFinancePage = lazy(() => import('./pages/admin/FinancePage').then(module => ({ default: module.FinancePage })))
-const AdminMessagesPage = lazy(() => import('./pages/admin/MessagesPage').then(module => ({ default: module.MessagesPage })))
-const AdminProjectRequestsPage = lazy(() => import('./pages/admin/ProjectRequestsPage').then(module => ({ default: module.ProjectRequestsPage })))
+const AdminDevelopersPage = lazy(() => import('./pages/admin/DevelopersPage').then(module => ({ default: module.DevelopersPage })))
 const AdminPaymentsPage = lazy(() => import('./pages/admin/PaymentsPage').then(module => ({ default: module.PaymentsPage })))
 const AdminSettingsPage = lazy(() => import('./pages/admin/SettingsPage').then(module => ({ default: module.SettingsPage })))
 
 const DeveloperDashboardPage = lazy(() => import('./pages/developer/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const DeveloperProjectDetailPage = lazy(() => import('./pages/developer/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
-const DeveloperMessagesPage = lazy(() => import('./pages/developer/MessagesPage').then(module => ({ default: module.MessagesPage })))
 const DeveloperFinancePage = lazy(() => import('./pages/developer/FinancePage').then(module => ({ default: module.FinancePage })))
 const DeveloperSettingsPage = lazy(() => import('./pages/developer/SettingsPage').then(module => ({ default: module.SettingsPage })))
 
@@ -68,8 +67,7 @@ function App() {
               <Route path="/admin/proyecto/:projectId" element={<AdminProjectDetailPage />} />
               <Route path="/admin/potenciales" element={<AdminLeadsPage />} />
               <Route path="/admin/clientes" element={<AdminClientsPage />} />
-              <Route path="/admin/proyectos" element={<AdminProjectRequestsPage />} />
-              <Route path="/admin/mensajes" element={<AdminMessagesPage />} />
+              <Route path="/admin/desarrolladores" element={<AdminDevelopersPage />} />
               <Route path="/admin/pagos" element={<AdminPaymentsPage />} />
               <Route path="/admin/finanzas" element={<AdminFinancePage />} />
               <Route path="/admin/configuracion" element={<AdminSettingsPage />} />
@@ -87,6 +85,7 @@ function App() {
               <Route path="/cliente/archivos" element={<ClientFilesPage />} />
               <Route path="/cliente/perfil" element={<ClientProfilePage />} />
               <Route path="/cliente/configuracion" element={<ClientSettingsPage />} />
+              <Route path="/cliente/terminos" element={<TermsPage />} />
             </Route>
           </Route>
 
@@ -94,9 +93,9 @@ function App() {
             <Route element={<DeveloperLayout />}>
               <Route path="/dev" element={<DeveloperDashboardPage />} />
               <Route path="/dev/proyecto/:projectId" element={<DeveloperProjectDetailPage />} />
-              <Route path="/dev/mensajes" element={<DeveloperMessagesPage />} />
               <Route path="/dev/finanzas" element={<DeveloperFinancePage />} />
               <Route path="/dev/configuracion" element={<DeveloperSettingsPage />} />
+              <Route path="/dev/terminos" element={<TermsPage />} />
             </Route>
           </Route>
 

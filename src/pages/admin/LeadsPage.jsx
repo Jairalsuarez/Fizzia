@@ -97,7 +97,7 @@ export function LeadsPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold text-white mb-6">Potenciales Clientes</h1>
 
       <div className="flex gap-6 h-[calc(100vh-180px)]">
@@ -107,7 +107,7 @@ export function LeadsPage() {
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
                   statusFilter === status
                     ? 'bg-[var(--accent)] text-white'
                     : 'bg-dark-800 text-dark-300 hover:text-white'
@@ -126,10 +126,10 @@ export function LeadsPage() {
                 <div
                   key={lead.id}
                   onClick={() => setSelectedLead(lead)}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                  className={`p-3 rounded-xl border cursor-pointer transition-colors ${
                     selectedLead?.id === lead.id
-                      ? 'border-fizzia-500 bg-fizzia-500/10'
-                      : 'border-dark-700 bg-dark-900 hover:border-dark-600'
+                    ? 'border-fizzia-500 bg-fizzia-500/10'
+                    : 'border-dark-800 bg-dark-900/50 hover:border-dark-600'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -147,27 +147,27 @@ export function LeadsPage() {
 
         <div className="flex-1">
           {selectedLead ? (
-            <div className="rounded-lg border border-dark-700 bg-dark-900 p-6 h-full overflow-y-auto">
+            <div className="rounded-xl border border-dark-800 bg-dark-900/50 p-6 h-full overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">{selectedLead.full_name}</h2>
                 <div className="flex gap-2">
                   <button
                     onClick={handleEdit}
-                    className="px-3 py-1.5 rounded border border-dark-600 text-white text-sm hover:bg-dark-800 flex items-center gap-1"
+                    className="px-3 py-1.5 rounded-lg border border-dark-600 text-white text-sm hover:bg-dark-800 flex items-center gap-1"
                   >
                     <span className="material-symbols-rounded text-base">edit</span>
                     Editar
                   </button>
                   <button
                     onClick={handleContact}
-                    className="px-3 py-1.5 rounded bg-[var(--accent)] text-white text-sm hover:bg-[var(--accent-lighter)] flex items-center gap-1"
+                    className="px-3 py-1.5 rounded-lg bg-[var(--accent)] text-white text-sm hover:bg-[var(--accent-lighter)] flex items-center gap-1"
                   >
                     <span className="material-symbols-rounded text-base">mail</span>
                     Contactar
                   </button>
                   <button
                     onClick={() => sendWhatsApp(selectedLead)}
-                    className="px-3 py-1.5 rounded bg-green-600 text-white text-sm hover:bg-green-500 flex items-center gap-1"
+                    className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm hover:bg-green-500 flex items-center gap-1"
                   >
                     <span className="material-symbols-rounded text-base">chat</span>
                     WhatsApp
@@ -225,13 +225,13 @@ export function LeadsPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowInformalModal(true)}
-                    className="px-4 py-2 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm hover:bg-amber-500/20 transition-colors"
+                    className="px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm hover:bg-amber-500/20 transition-colors"
                   >
                     Marcar como Cliente Informal
                   </button>
                   <button
                     onClick={() => setShowDeleteModal(true)}
-                    className="px-4 py-2 rounded border border-red-500/20 text-red-400 text-sm hover:bg-red-500/10 transition-colors"
+                    className="px-4 py-2 rounded-lg border border-red-500/20 text-red-400 text-sm hover:bg-red-500/10 transition-colors"
                   >
                     Eliminar
                   </button>
@@ -239,7 +239,7 @@ export function LeadsPage() {
               </div>
             </div>
           ) : (
-            <div className="rounded-lg border border-dark-700 bg-dark-900 h-full flex items-center justify-center">
+            <div className="rounded-xl border border-dark-800 bg-dark-900/50 h-full flex items-center justify-center">
               <EmptyState message="Selecciona un lead para ver detalles" />
             </div>
           )}
@@ -247,19 +247,19 @@ export function LeadsPage() {
       </div>
 
       {/* Delete Modal */}
-      <Modal open={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+      <Modal open={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Eliminar Lead" size="sm">
         <div className="p-6">
           <h3 className="text-lg font-bold text-white mb-2">Eliminar Lead</h3>
           <p className="text-dark-300 mb-4">Eliminar "{selectedLead?.full_name}"? Esta accion no se puede deshacer.</p>
           <div className="flex justify-end gap-2">
-            <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 rounded border border-dark-700 text-white hover:bg-dark-800">Cancelar</button>
-            <button onClick={handleDelete} className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600">Eliminar</button>
+            <button onClick={() => setShowDeleteModal(false)} className="cursor-pointer flex-1 px-4 py-2.5 bg-dark-800 border border-dark-700 text-dark-300 text-sm font-medium rounded-lg hover:text-white transition-all">Cancelar</button>
+            <button onClick={handleDelete} className="cursor-pointer flex-1 px-4 py-2.5 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-400 transition-all">Eliminar</button>
           </div>
         </div>
       </Modal>
 
       {/* Contact Modal */}
-      <Modal open={showContactModal} onClose={() => setShowContactModal(false)}>
+      <Modal open={showContactModal} onClose={() => setShowContactModal(false)} title="Mensaje de contacto">
         <div className="p-6 max-w-lg">
           <h3 className="text-lg font-bold text-white mb-2">Mensaje de contacto</h3>
           <p className="text-dark-400 text-sm mb-4">
@@ -272,8 +272,8 @@ export function LeadsPage() {
             className="w-full px-4 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white text-sm focus:outline-none focus:border-[var(--accent)] resize-none"
           />
           <div className="flex justify-end gap-2 mt-4">
-            <button onClick={() => setShowContactModal(false)} className="px-4 py-2 rounded border border-dark-700 text-white hover:bg-dark-800">Cerrar</button>
-            <button onClick={copyContactMessage} className="px-4 py-2 rounded bg-[var(--accent)] text-white hover:bg-[var(--accent-lighter)] flex items-center gap-1">
+            <button onClick={() => setShowContactModal(false)} className="px-4 py-2 rounded-lg border border-dark-700 text-white hover:bg-dark-800">Cerrar</button>
+            <button onClick={copyContactMessage} className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-lighter)] flex items-center gap-1">
               <span className="material-symbols-rounded text-base">content_copy</span>
               Copiar
             </button>
@@ -388,15 +388,15 @@ export function LeadsPage() {
               </div>
               </div>
               <div className="flex flex-col-reverse gap-2 border-t border-dark-800 pt-4 sm:flex-row sm:justify-end">
-                <button onClick={() => setShowEditModal(false)} className="cursor-pointer rounded-xl border border-dark-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-dark-800">Cancelar</button>
-                <button onClick={handleSaveEdit} className="cursor-pointer rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-lighter)]">Guardar cambios</button>
+                <button onClick={() => setShowEditModal(false)} className="cursor-pointer rounded-lg border border-dark-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-dark-800">Cancelar</button>
+                <button onClick={handleSaveEdit} className="cursor-pointer rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-lighter)]">Guardar cambios</button>
               </div>
             </div>
           )}
       </Modal>
 
       {/* Informal Client Modal */}
-      <Modal open={showInformalModal} onClose={() => setShowInformalModal(false)}>
+      <Modal open={showInformalModal} onClose={() => setShowInformalModal(false)} title="Cliente Informal">
         <div className="p-6 max-w-md">
           <h3 className="text-lg font-bold text-white mb-2">Cliente Informal</h3>
           <p className="text-dark-300 text-sm mb-4">
@@ -409,8 +409,8 @@ export function LeadsPage() {
             </p>
           </div>
           <div className="flex justify-end gap-2">
-            <button onClick={() => setShowInformalModal(false)} className="px-4 py-2 rounded border border-dark-700 text-white hover:bg-dark-800">Cancelar</button>
-            <button onClick={handleConvertToInformal} className="px-4 py-2 rounded bg-amber-500 text-white hover:bg-amber-600">
+            <button onClick={() => setShowInformalModal(false)} className="px-4 py-2 rounded-lg border border-dark-700 text-white hover:bg-dark-800">Cancelar</button>
+            <button onClick={handleConvertToInformal} className="px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600">
               Crear Cliente Informal
             </button>
           </div>
@@ -418,7 +418,7 @@ export function LeadsPage() {
       </Modal>
 
       {/* Informal Project Form */}
-      <Modal open={showProjectForm} onClose={() => { setShowProjectForm(false); setCreatedClientId(null) }}>
+      <Modal open={showProjectForm} onClose={() => { setShowProjectForm(false); setCreatedClientId(null) }} title="Crear Proyecto">
         <div className="p-6 max-w-lg">
           <h3 className="text-lg font-bold text-white mb-2">Crear Proyecto para Cliente Informal</h3>
           <p className="text-dark-400 text-sm mb-4">Este proyecto solo sera visible para ti en el panel de administracion.</p>
@@ -454,8 +454,8 @@ export function LeadsPage() {
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => { setShowProjectForm(false); setCreatedClientId(null) }} className="px-4 py-2 rounded border border-dark-700 text-white hover:bg-dark-800">Saltar</button>
-              <button onClick={handleCreateInformalProject} disabled={!informalProjectData.name} className="px-4 py-2 rounded bg-[var(--accent)] text-white hover:bg-[var(--accent-lighter)] disabled:opacity-50">Crear Proyecto</button>
+              <button onClick={() => { setShowProjectForm(false); setCreatedClientId(null) }} className="px-4 py-2 rounded-lg border border-dark-700 text-white hover:bg-dark-800">Saltar</button>
+              <button onClick={handleCreateInformalProject} disabled={!informalProjectData.name} className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-lighter)] disabled:opacity-50">Crear Proyecto</button>
             </div>
           </div>
         </div>

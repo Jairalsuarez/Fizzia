@@ -5,6 +5,7 @@ import { getProjectMessages } from '../../api/messagesApi'
 import { markAdminProjectMessagesRead, sendAdminMessage, subscribeToAdminMessages } from '../../api/messagesApi'
 import { getProjectInvoicesWithPayments, getProjectPayments } from '../../api/paymentsApi'
 import { createProjectFileRequest, createProjectTask, deleteProjectFileRequest, deleteProjectTask, getProjectFileRequests, getProjectTasks, updateProject, updateProjectTask } from '../../api/projectsApi'
+import { DeleteProjectModal } from '../../components/projects/DeleteProjectModal'
 import { useToast } from '../../components/Toast'
 import { Modal } from '../../components/ui/Modal'
 import { supabase } from '../../services/supabase'
@@ -17,7 +18,6 @@ import { getDeliveryStatus, markMessageFailed, markMessageSent, mergeRealtimeMes
 import { sumApprovedPayments } from '../../utils/paymentStatus'
 import { readStoredValue, writeStoredValue } from '../../utils/persistedState'
 import { useRealtimeProject } from '../../hooks/useRealtimeProjects'
-import { useTheme } from '../../theme/ThemeContext'
 
 let pendingId = Date.now()
 function genId() { return `pending-${pendingId++}` }
@@ -40,7 +40,6 @@ export function ProjectDetailPage() {
   const { projectId } = useParams()
   const navigate = useNavigate()
   const toast = useToast()
-  const { palette } = useTheme()
 
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -71,6 +70,7 @@ export function ProjectDetailPage() {
   const [actionModal, setActionModal] = useState(null)
   const [cancelPassword, setCancelPassword] = useState('')
   const [cancelAgreed, setCancelAgreed] = useState(false)
+
   const [acting, setActing] = useState(false)
   const [statusChangeModal, setStatusChangeModal] = useState(false)
   const [pendingStatus, setPendingStatus] = useState('')
@@ -106,7 +106,7 @@ export function ProjectDetailPage() {
   const fileInputRef = useRef(null)
 
   const handleRealtimeProject = useCallback((updatedProject) => {
-    if (!updatedProject) return navigate('/admin/proyectos')
+    if (!updatedProject) return navigate('/admin')
     setProject(prev => prev ? { ...prev, ...updatedProject } : prev)
     if (updatedProject.budget !== undefined) setBudgetValue(String(updatedProject.budget || ''))
     if (updatedProject.final_price !== undefined) setFinalPriceValue(String(updatedProject.final_price || ''))
@@ -490,6 +490,7 @@ export function ProjectDetailPage() {
   )
 
   const isSolicitado = project.status === PROJECT_STATUS.REQUESTED
+  const isWorkingStatus = [PROJECT_STATUS.WORKING, PROJECT_STATUS.PREPARING, PROJECT_STATUS.PAUSED].includes(project.status)
   const isClosed = isProjectClosed(project.status)
   const doneTasks = tasks.filter(t => t.status === 'done').length
   const hasFinalPrice = project.final_price && Number(project.final_price) > 0
@@ -540,7 +541,7 @@ export function ProjectDetailPage() {
                     <button
                       onClick={hasFinalPrice ? savePrice : saveBudget}
                       disabled={hasFinalPrice ? savingPrice : savingBudget}
-                      className={`cursor-pointer flex h-8 w-8 items-center justify-center rounded-lg ${palette.bg} text-white ${palette.hoverBg} disabled:opacity-50 transition-all`}
+                      className={`cursor-pointer flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-lighter)] disabled:opacity-50 transition-all`}
                       title="Guardar precio"
                     >
                       <span className="material-symbols-rounded text-[18px]">check</span>
@@ -578,14 +579,17 @@ export function ProjectDetailPage() {
                 )}
               </div>
               {/* Action buttons */}
-              {isSolicitado && (
+              {isSolicitado && !isClosed && (
                 <>
-                  <button onClick={() => setActionModal('accept')} className={`cursor-pointer px-4 py-2 ${palette.bg}/20 border ${palette.border} ${palette.text} text-sm font-medium rounded-lg transition-all`}>Empezar a revisar</button>
-                  <button onClick={() => setActionModal('reject')} className="cursor-pointer px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium rounded-lg hover:bg-red-500/30 transition-all">Rechazar</button>
+                  <button onClick={() => setActionModal('accept')} className={`cursor-pointer px-4 py-2 bg-[var(--accent)]/20 border border-[var(--accent)]/30 text-[var(--accent)] text-sm font-medium rounded-lg transition-all`}>Empezar a revisar</button>
+                  <button onClick={() => setActionModal('delete')} className="cursor-pointer px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium rounded-lg hover:bg-red-500/30 transition-all">Eliminar proyecto</button>
                 </>
               )}
-              {!isSolicitado && !isClosed && (
-                <button onClick={() => setActionModal('cancel')} className="cursor-pointer px-4 py-2 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-sm font-medium rounded-lg hover:bg-amber-500/30 transition-all">Cancelar</button>
+              {project.status === PROJECT_STATUS.REVISION && !isClosed && (
+                <button onClick={() => setActionModal('delete')} className="cursor-pointer px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium rounded-lg hover:bg-red-500/30 transition-all">Eliminar proyecto</button>
+              )}
+              {isWorkingStatus && !isClosed && (
+                <button onClick={() => setActionModal('cancel')} className="cursor-pointer px-4 py-2 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-sm font-medium rounded-lg hover:bg-amber-500/30 transition-all">Cancelar proyecto</button>
               )}
             </div>
           </div>
@@ -602,7 +606,7 @@ export function ProjectDetailPage() {
                 onClick={() => setTab(t.id)}
                 className={`cursor-pointer flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${
                     tab === t.id
-                      ? `${palette.borderStrong} text-white`
+                      ? `border-[var(--accent)] text-white`
                       : 'border-transparent text-dark-400 hover:text-white hover:border-dark-600'
                 }`}
               >
@@ -682,7 +686,7 @@ export function ProjectDetailPage() {
                     <label className="text-xs text-dark-500 mb-1 block">URL repositorio</label>
                     <input type="url" value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} placeholder="https://github.com/..." className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)] placeholder-dark-600" />
                   </div>
-                  <button onClick={saveDates} disabled={saving} className={`cursor-pointer px-4 py-2 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} disabled:opacity-50 transition-all`}>
+                  <button onClick={saveDates} disabled={saving} className={`cursor-pointer px-4 py-2 bg-[var(--accent)] text-white text-sm font-medium rounded-lg hover:bg-[var(--accent-lighter)] disabled:opacity-50 transition-all`}>
                     {saving ? 'Guardando...' : 'Guardar'}
                   </button>
                 </div>
@@ -834,7 +838,7 @@ export function ProjectDetailPage() {
                     <button
                       onClick={assignDeveloper}
                       disabled={assigning || !selectedDeveloperId}
-                      className={`cursor-pointer px-4 py-2 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} disabled:opacity-50 transition-all`}
+                      className={`cursor-pointer px-4 py-2 bg-[var(--accent)] text-white text-sm font-medium rounded-lg hover:bg-[var(--accent-lighter)] disabled:opacity-50 transition-all`}
                     >
                       {assigning ? 'Asignando...' : 'Asignar'}
                     </button>
@@ -852,7 +856,7 @@ export function ProjectDetailPage() {
               <div className="bg-dark-900 border border-dark-800 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-dark-400">Facturas</h3>
-                  <button onClick={() => setShowInvoiceForm(true)} className={`cursor-pointer px-3 py-1.5 ${palette.bg}/20 border ${palette.border} ${palette.text} text-xs font-medium rounded-lg transition-all`}>+ Nueva factura</button>
+                  <button onClick={() => setShowInvoiceForm(true)} className={`cursor-pointer px-3 py-1.5 bg-[var(--accent)]/20 border border-[var(--accent)]/30 text-[var(--accent)] text-xs font-medium rounded-lg transition-all`}>+ Nueva factura</button>
                 </div>
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div className="text-center p-3 bg-dark-950 rounded-lg">
@@ -919,7 +923,7 @@ export function ProjectDetailPage() {
                         </div>
                       )}
                       <div className={`max-w-[70%] ${isAdmin ? 'items-end' : 'items-start'} flex flex-col`}>
-                        <div className={`mb-1 flex items-center gap-2 text-[11px] ${isAdmin ? 'justify-end text-fizzia-400' : 'text-dark-400'}`}>
+                        <div className={`mb-1 flex items-center gap-2 text-[11px] ${isAdmin ? 'justify-end text-[var(--accent)]' : 'text-dark-400'}`}>
                           <span className="font-medium">{authorName}</span>
                         </div>
                         <div className={`flex items-end gap-1.5 ${isAdmin ? 'flex-row-reverse' : ''}`}>
@@ -964,7 +968,7 @@ export function ProjectDetailPage() {
             </div>
             <form onSubmit={handleSend} className="p-3 border-t border-dark-800 flex gap-2 shrink-0">
               <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} className="flex-1 px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] text-sm" placeholder="Escribir mensaje..." />
-              <button type="submit" disabled={!newMessage.trim()} className={`cursor-pointer px-4 py-2.5 ${palette.bg} text-white rounded-lg ${palette.hoverBg} disabled:opacity-50 disabled:cursor-not-allowed transition-all`}>
+              <button type="submit" disabled={!newMessage.trim()} className={`cursor-pointer px-4 py-2.5 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-lighter)] disabled:opacity-50 disabled:cursor-not-allowed transition-all`}>
                 <span className="material-symbols-rounded text-lg">send</span>
               </button>
             </form>
@@ -1045,7 +1049,7 @@ export function ProjectDetailPage() {
                   <h3 className="text-sm font-semibold text-white">Lista de archivos pendientes</h3>
                   <p className="text-xs text-dark-500 mt-0.5">{doneTasks}/{tasks.length} completados</p>
                 </div>
-                <button onClick={() => setShowTaskForm(!showTaskForm)} className={`cursor-pointer px-3 py-1.5 ${palette.bg}/20 border ${palette.border} ${palette.text} text-xs font-medium rounded-lg transition-all flex items-center gap-1`}>
+                <button onClick={() => setShowTaskForm(!showTaskForm)} className={`cursor-pointer px-3 py-1.5 bg-[var(--accent)]/20 border border-[var(--accent)]/30 text-[var(--accent)] text-xs font-medium rounded-lg transition-all flex items-center gap-1`}>
                   <span className="material-symbols-rounded text-sm">add</span>
                   Agregar
                 </button>
@@ -1061,7 +1065,7 @@ export function ProjectDetailPage() {
                     className="flex-1 px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm placeholder-dark-600 focus:outline-none focus:border-[var(--accent)]"
                     placeholder="Nombre del archivo o tarea..."
                   />
-                  <button onClick={addTask} disabled={savingTask || !newTaskTitle.trim()} className={`cursor-pointer px-3 py-2 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} disabled:opacity-50 transition-all`}>
+                  <button onClick={addTask} disabled={savingTask || !newTaskTitle.trim()} className={`cursor-pointer px-3 py-2 bg-[var(--accent)] text-white text-sm font-medium rounded-lg hover:bg-[var(--accent-lighter)] disabled:opacity-50 transition-all`}>
                     Agregar
                   </button>
                 </div>
@@ -1132,7 +1136,7 @@ export function ProjectDetailPage() {
                       className="flex-1 px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm placeholder-dark-600 focus:outline-none focus:border-[var(--accent)]"
                       placeholder="Ej: Logo en alta resolución..."
                     />
-                    <button onClick={handleCreateFileRequest} disabled={requestSaving || !newFileRequest.trim()} className={`cursor-pointer px-3 py-2 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} disabled:opacity-50 transition-all`}>
+                    <button onClick={handleCreateFileRequest} disabled={requestSaving || !newFileRequest.trim()} className={`cursor-pointer px-3 py-2 bg-[var(--accent)] text-white text-sm font-medium rounded-lg hover:bg-[var(--accent-lighter)] disabled:opacity-50 transition-all`}>
                       Enviar
                     </button>
                   </div>
@@ -1161,7 +1165,7 @@ export function ProjectDetailPage() {
               <div className="mb-3">
                 <input type="file" ref={fileInputRef} multiple onChange={handleFileUpload} className="hidden" accept="image/*,.pdf,.doc,.docx,.zip,.rar,.psd,.ai,.fig,.sketch,.mp4,.mov,.svg" />
                 <textarea value={fileNote} onChange={(e) => setFileNote(e.target.value)} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] resize-none mb-2" rows={2} placeholder="Nota opcional..." />
-                <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className={`cursor-pointer w-full py-2 ${palette.bg}/10 border ${palette.border} ${palette.text} text-sm font-medium rounded-lg disabled:opacity-50 transition-all flex items-center justify-center gap-1.5`}>
+                <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className={`cursor-pointer w-full py-2 bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-[var(--accent)] text-sm font-medium rounded-lg disabled:opacity-50 transition-all flex items-center justify-center gap-1.5`}>
                   {uploading ? 'Subiendo...' : <><span className="material-symbols-rounded text-sm">cloud_upload</span>Subir archivos</>}
                 </button>
               </div>
@@ -1191,10 +1195,10 @@ export function ProjectDetailPage() {
 
       {/* Modals */}
       <Modal isOpen={statusChangeModal} onClose={() => setStatusChangeModal(false)} title="Cambiar estado" size="sm">
-        <p className="text-dark-300 text-sm mb-4">¿Cambiar estado de <span className="text-white font-medium">{project.name}</span> a <span className="text-fizzia-400 font-medium">{getProjectStatusLabel(pendingStatus)}</span>?</p>
+        <p className="text-dark-300 text-sm mb-4">¿Cambiar estado de <span className="text-white font-medium">{project.name}</span> a <span className="text-[var(--accent)] font-medium">{getProjectStatusLabel(pendingStatus)}</span>?</p>
         <div className="flex gap-2">
           <button onClick={() => setStatusChangeModal(false)} className="cursor-pointer flex-1 px-4 py-2.5 bg-dark-800 border border-dark-700 text-dark-300 text-sm font-medium rounded-lg hover:text-white transition-all">Cancelar</button>
-          <button onClick={confirmStatusChange} disabled={acting} className={`cursor-pointer flex-1 px-4 py-2.5 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} disabled:opacity-50 transition-all`}>{acting ? 'Procesando...' : 'Confirmar'}</button>
+          <button onClick={confirmStatusChange} disabled={acting} className={`cursor-pointer flex-1 px-4 py-2.5 bg-[var(--accent)] text-white text-sm font-medium rounded-lg hover:bg-[var(--accent-lighter)] disabled:opacity-50 transition-all`}>{acting ? 'Procesando...' : 'Confirmar'}</button>
         </div>
       </Modal>
 
@@ -1211,7 +1215,7 @@ export function ProjectDetailPage() {
           <div><label className="text-sm text-dark-400 mb-1 block">Notas</label><textarea value={invoiceForm.notes} onChange={(e) => setInvoiceForm(prev => ({ ...prev, notes: e.target.value }))} rows={2} className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent)] resize-none" /></div>
           <div className="flex gap-2 pt-2">
             <button onClick={() => setShowInvoiceForm(false)} className="cursor-pointer flex-1 px-4 py-2.5 bg-dark-800 border border-dark-700 text-dark-300 text-sm font-medium rounded-lg hover:text-white transition-all">Cancelar</button>
-            <button onClick={handleCreateInvoice} className={`cursor-pointer flex-1 px-4 py-2.5 ${palette.bg} text-white text-sm font-medium rounded-lg ${palette.hoverBg} transition-all`}>Crear factura</button>
+            <button onClick={handleCreateInvoice} className={`cursor-pointer flex-1 px-4 py-2.5 bg-[var(--accent)] text-white text-sm font-medium rounded-lg hover:bg-[var(--accent-lighter)] transition-all`}>Crear factura</button>
           </div>
         </div>
       </Modal>
@@ -1246,6 +1250,13 @@ export function ProjectDetailPage() {
           </div>
         </div>
       </Modal>
+
+      <DeleteProjectModal
+        isOpen={actionModal === 'delete'}
+        onClose={() => setActionModal(null)}
+        project={project}
+        onDeleted={() => navigate('/admin')}
+      />
     </div>
   )
 }

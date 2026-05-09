@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getProjectMessages, markProjectMessagesRead, sendProjectMessage, subscribeToMessages } from '../../api/messagesApi'
-import { createClientPayment, getProjectDirectPayments, getProjectInvoices, uploadPaymentProof } from '../../api/paymentsApi'
+import { createClientPayment, deleteClientPayment, getProjectDirectPayments, getProjectInvoices, uploadPaymentProof } from '../../api/paymentsApi'
+import { Modal } from '../../components/ui'
 import { fulfillFileRequest, getClientProjectFileRequests, getMyProjects } from '../../api/projectsApi'
 import { getProjectFiles, uploadProjectFile } from '../../api/filesApi'
 import { formatDate, formatMoney } from '../../utils/format'
@@ -52,12 +53,14 @@ export function ProjectDetailPage() {
   const [invoices, setInvoices] = useState([])
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState(() => readStoredValue(`client-project-tab-${projectId}`, 'info', value => ['info', 'mensajes', 'actividad', 'pagos', 'files'].includes(value)))
+  const [activeTab, setActiveTab] = useState(() => readStoredValue(`client-project-tab-${projectId}`, 'info', value => ['info', 'actividad', 'pagos', 'files'].includes(value)))
   const [showEdit, setShowEdit] = useState(false)
   const [editData, setEditData] = useState({ name: '', description: '', budget: '', repo_url: '', live_url: '', notes: '' })
   const [savingEdit, setSavingEdit] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deletingRejected, setDeletingRejected] = useState(false)
+  const [showDeleteRejectedModal, setShowDeleteRejectedModal] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [fileNote, setFileNote] = useState('')
   const [fulfillingRequestId, setFulfillingRequestId] = useState(null)
@@ -582,6 +585,22 @@ export function ProjectDetailPage() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   }
 
+  const handleDeleteAllRejectedPayments = async () => {
+    const rejected = payments.filter(p => p.admin_status === 'rejected')
+    if (rejected.length === 0) return
+    setDeletingRejected(true)
+    try {
+      await Promise.all(rejected.map(p => deleteClientPayment(p.id)))
+      setPayments(prev => prev.filter(p => p.admin_status !== 'rejected'))
+      toast.success(`${rejected.length} pago(s) eliminado(s)`)
+      setShowDeleteRejectedModal(false)
+    } catch {
+      toast.error('Error eliminando pagos')
+    } finally {
+      setDeletingRejected(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">
@@ -735,7 +754,6 @@ export function ProjectDetailPage() {
       <div className="flex gap-1 bg-dark-900/50 border border-dark-800 rounded-xl p-1">
         {[
           { key: 'info', label: 'Detalles' },
-          { key: 'mensajes', label: 'Mensajes' },
           { key: 'pagos', label: 'Pagos' },
           { key: 'actividad', label: 'Cambios' },
           { key: 'files', label: 'Archivos' },
@@ -755,6 +773,18 @@ export function ProjectDetailPage() {
       </div>
 
       {/* Tab content */}
+      {project.status === 'solicitado' && ['pagos', 'actividad', 'files'].includes(activeTab) ? (
+        <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-12 text-center flex flex-col items-center justify-center animate-in fade-in duration-500">
+          <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mb-4">
+            <span className="material-symbols-rounded text-4xl text-dark-500">lock</span>
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Aún no puedes acceder a esta parte del proyecto</h3>
+          <p className="text-dark-400 text-sm max-w-md">
+            Espera a que el equipo de Fizzia se contacte contigo y habilite tu proyecto para ver esta información.
+          </p>
+        </div>
+      ) : (
+        <>
       {activeTab === 'info' && (
         <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-6 space-y-4">
           {project.description && (
@@ -1377,7 +1407,18 @@ export function ProjectDetailPage() {
                 <h3 className="text-white font-semibold">Historial de pagos</h3>
                 <p className="mt-1 text-sm text-dark-500">{payments.length ? `${payments.length} movimiento${payments.length === 1 ? '' : 's'} registrado${payments.length === 1 ? '' : 's'}` : 'Aún no hay movimientos'}</p>
               </div>
-              <span className="material-symbols-rounded text-dark-600">receipt_long</span>
+              <div className="flex items-center gap-2">
+                {payments.filter(p => p.admin_status === 'rejected').length > 0 && (
+                  <button
+                    onClick={() => setShowDeleteRejectedModal(true)}
+                    className="cursor-pointer flex items-center gap-1.5 py-1.5 px-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium rounded-lg hover:bg-red-500/20 transition-all"
+                  >
+                    <span className="material-symbols-rounded text-sm">delete_sweep</span>
+                    Eliminar todos
+                  </button>
+                )}
+                <span className="material-symbols-rounded text-dark-600">receipt_long</span>
+              </div>
             </div>
             {payments.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-dark-700 bg-dark-950/50 py-10 text-center">
@@ -1403,17 +1444,37 @@ export function ProjectDetailPage() {
                         {p.reference && <p className="truncate text-dark-600 text-xs">Ref: {p.reference}</p>}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between gap-3 sm:block sm:text-right">
-                      <p className="text-white font-semibold text-sm sm:mb-1">{formatMoney(p.amount)}</p>
-                      <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${
-                        p.admin_status === 'approved' ? 'bg-fizzia-500/20 text-fizzia-300' :
-                        p.admin_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                        'bg-amber-500/20 text-amber-400'
-                      }`}>
-                        {p.admin_status === 'approved' ? 'Verificado' :
-                         p.admin_status === 'rejected' ? 'Rechazado' :
-                         'Pendiente'}
-                      </span>
+                    <div className="flex items-center justify-between gap-3 sm:justify-end sm:text-right">
+                      <div className="flex items-center gap-2">
+                        <p className="text-white font-semibold text-sm sm:mb-1">{formatMoney(p.amount)}</p>
+                        <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                          p.admin_status === 'approved' ? 'bg-fizzia-500/20 text-fizzia-300' :
+                          p.admin_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                          'bg-amber-500/20 text-amber-400'
+                        }`}>
+                          {p.admin_status === 'approved' ? 'Verificado' :
+                           p.admin_status === 'rejected' ? 'Rechazado' :
+                           'Pendiente'}
+                        </span>
+                      </div>
+                      {p.admin_status === 'rejected' && (
+                        <button
+                          onClick={async () => {
+                            if (!confirm('¿Eliminar este pago rechazado?')) return
+                            try {
+                              await deleteClientPayment(p.id)
+                              setPayments(prev => prev.filter(pm => pm.id !== p.id))
+                              toast.success('Pago eliminado')
+                            } catch {
+                              toast.error('Error al eliminar')
+                            }
+                          }}
+                          className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-lg text-dark-500 hover:bg-red-500/20 hover:text-red-400 transition-all shrink-0"
+                          title="Eliminar pago"
+                        >
+                          <span className="material-symbols-rounded text-lg">delete</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1422,6 +1483,35 @@ export function ProjectDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Delete all rejected modal */}
+      <Modal open={showDeleteRejectedModal} onClose={() => !deletingRejected && setShowDeleteRejectedModal(false)}>
+        <div className="text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+            <span className="material-symbols-rounded text-red-400 text-3xl">delete_sweep</span>
+          </div>
+          <h3 className="text-lg font-bold text-white mb-2">Eliminar pagos rechazados</h3>
+          <p className="text-dark-400 text-sm mb-6">
+            ¿Eliminar permanentemente {payments.filter(p => p.admin_status === 'rejected').length} pago(s) rechazado(s)? Esta acción no se puede deshacer.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowDeleteRejectedModal(false)}
+              disabled={deletingRejected}
+              className="cursor-pointer flex-1 py-3 bg-dark-800 text-white font-medium rounded-xl hover:bg-dark-700 disabled:opacity-50 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleDeleteAllRejectedPayments}
+              disabled={deletingRejected}
+              className="cursor-pointer flex-1 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-400 disabled:opacity-50 transition-all"
+            >
+              {deletingRejected ? 'Eliminando...' : 'Eliminar'}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {activeTab === 'files' && (
         <div className="space-y-4">
@@ -1533,6 +1623,8 @@ export function ProjectDetailPage() {
             )}
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   )
