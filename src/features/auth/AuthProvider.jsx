@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
             }
           } catch {
             if (mounted) {
-              const fallback = { role: 'client', full_name: currentSession.user.email }
+              const fallback = { id: currentSession.user.id, role: 'client', full_name: currentSession.user.email }
               setUser(fallback)
               userRef.current = fallback
             }
@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
           .then(u => { if (mounted) { setUser(u); userRef.current = u } })
           .catch(() => {
             if (mounted) {
-              const fb = { role: 'client', full_name: newSession.user.email }
+              const fb = { id: newSession.user.id, role: 'client', full_name: newSession.user.email }
               setUser(fb)
               userRef.current = fb
             }
@@ -98,6 +98,6 @@ export function AuthProvider({ children }) {
 
 async function loadProfile(userId) {
   const profile = await getProfile(userId)
-  if (!profile) return { role: 'client', full_name: 'Usuario' }
-  return { ...profile, role: profile.role || 'client' }
+  if (!profile) return { id: userId, role: 'client', full_name: 'Usuario' }
+  return { ...profile, id: profile.id || userId, role: profile.role || 'client' }
 }
