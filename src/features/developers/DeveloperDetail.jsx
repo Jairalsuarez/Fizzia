@@ -136,7 +136,7 @@ export default function DeveloperDetail({ developer, onUpdate }) {
               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOnline ? 'bg-green-500' : 'bg-dark-500'}`} />
             </div>
             <p className="text-dark-400 text-sm">{developer.email || 'Sin email'}</p>
-            <p className="text-xs mt-0.5" style={{ color: isOnline ? 'var(--accent)' : '#6b7280' }}>
+            <p className="text-xs mt-0.5 font-medium" style={{ color: isOnline ? '#4ade80' : '#9ca3af' }}>
               {isOnline ? 'En línea' : `Última conexión fue ${formatLastSeen(lastSeenAt)}`}
             </p>
           </div>

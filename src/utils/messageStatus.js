@@ -36,7 +36,7 @@ export function mergeRealtimeMessages(messages, incomingMessages = []) {
 export function markMessageSent(messages, tempId, sentMessage) {
   if (!sentMessage?.id) {
     return messages.map(message => (
-      message.id === tempId ? { ...message, _status: 'sent' } : message
+      message.id === tempId ? { ...message, _status: 'error' } : message
     ))
   }
 

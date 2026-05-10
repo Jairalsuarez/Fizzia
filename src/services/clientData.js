@@ -156,15 +156,16 @@ export async function markAllMyMessagesRead() {
 
 export async function sendMessageToTeam(content) {
   const projects = await getMyProjects()
-  if (!projects.length) return null
+  if (!projects.length) throw new Error('No tienes proyectos activos')
   const userId = await getCurrentUserId()
-  if (!userId) return null
+  if (!userId) throw new Error('Debes iniciar sesión para enviar mensajes')
   const projectId = projects[projects.length - 1].id
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('messages')
     .insert({ project_id: projectId, sender_id: userId, content, channel: 'client' })
     .select()
     .single()
+  if (error) throw error
   return data
 }
 

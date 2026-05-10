@@ -373,7 +373,7 @@ export function Chat({ onUnreadChange }) {
                     <p className="text-white text-sm font-semibold truncate">{selectedUser.full_name || selectedUser.first_name || 'Usuario'}</p>
                     <span className={`w-2 h-2 rounded-full shrink-0 ${isOnlineUser ? 'bg-green-500' : 'bg-dark-500'}`} />
                   </div>
-                  <p className="text-xs" style={{ color: isOnlineUser ? '#86efac' : '#6b7280' }}>
+                  <p className="text-xs font-medium" style={{ color: isOnlineUser ? '#4ade80' : '#9ca3af' }}>
                     {isOnlineUser ? 'En línea' : `Última conexión fue ${formatLastSeen(getLastSeenAt(selectedUser))}`}
                   </p>
                 </div>
