@@ -59,6 +59,7 @@ export function DashboardDataProvider({ children }) {
       .channel('dashboard:data:realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'clients' }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' }, scheduleRefresh)
       .subscribe()

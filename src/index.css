@@ -25,6 +25,11 @@
   --color-dark-950: #050605;
 }
 
+:root {
+  --landing-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --landing-ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 html {
   scroll-behavior: smooth;
   background: #050605;
@@ -82,10 +87,49 @@ a {
   touch-action: manipulation;
 }
 
+.landing-page section[id] {
+  scroll-margin-top: 4.75rem;
+}
+
+.landing-page :where(a, button, input, textarea, select) {
+  transition-timing-function: var(--landing-ease-out);
+}
+
+.landing-page :where(a, button):focus-visible {
+  outline: 2px solid rgba(110, 231, 117, 0.72);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .landing-page :where(a, button):not(:disabled):active {
+    transform: translateY(1px) scale(0.985);
+  }
+}
+
 input,
 select,
 textarea {
   caret-color: #44a64a;
+}
+
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 24;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -111,7 +155,7 @@ textarea {
 }
 
 .animate-slide-in-right {
-  animation: slide-in-right 0.3s ease-out;
+  animation: slide-in-right 0.24s var(--landing-ease-out);
 }
 
 @keyframes float-slow {
@@ -162,7 +206,7 @@ textarea {
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out both;
+  animation: fade-in-up 0.48s var(--landing-ease-out) both;
 }
 
 @keyframes blink {
@@ -181,6 +225,15 @@ textarea {
 
 .animate-shimmer {
   animation: shimmer 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 24px 8px rgba(68,166,74,0.4); }
+  50% { box-shadow: 0 0 36px 14px rgba(68,166,74,0.55); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
 }
 
 .terms-gate-screen {
@@ -586,3 +639,9 @@ textarea {
 [data-theme="purple"] { --accent: #a855f7; --accent-lighter: #c084fc; --accent-bg: rgba(168, 85, 247, 0.2); }
 [data-theme="blue"] { --accent: #3b82f6; --accent-lighter: #60a5fa; --accent-bg: rgba(59, 130, 246, 0.2); }
 [data-theme="amber"] { --accent: #f59e0b; --accent-lighter: #fbbf24; --accent-bg: rgba(245, 158, 11, 0.2); }
+
+/* Google Translate UI overrides */
+.goog-te-banner-frame { display: none !important; }
+body { top: 0 !important; }
+#google_translate_element { display: none !important; }
+

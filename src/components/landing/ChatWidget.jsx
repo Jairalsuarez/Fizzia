@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { createLead } from '../../services/landingData'
+import { Icon } from '../ui/Icon'
 
 function ChatToggle({ isOpen, onClick }) {
   return (
@@ -8,9 +9,7 @@ function ChatToggle({ isOpen, onClick }) {
       className="w-14 h-14 bg-fizzia-600 hover:bg-fizzia-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
       aria-label={isOpen ? 'Cerrar chat' : 'Abrir chat'}
     >
-      <span className="material-symbols-rounded text-2xl">
-        {isOpen ? 'close' : 'chat'}
-      </span>
+      <Icon name={isOpen ? 'close' : 'chat'} size={24} />
     </button>
   )
 }
@@ -92,9 +91,7 @@ export function ChatWidget() {
         {isOpen && (
           <div className="absolute bottom-20 right-0 w-80 bg-dark-900 border border-dark-700 rounded-2xl shadow-2xl p-6">
             <div className="text-center">
-              <span className="material-symbols-rounded text-fizzia-400 text-4xl mb-3 block">
-                check_circle
-              </span>
+              <Icon name="check_circle" size={40} className="mx-auto mb-3 text-fizzia-400" />
               <h3 className="text-white font-semibold text-lg mb-2">¡Gracias!</h3>
               <p className="text-dark-300 text-sm">
                 Te contactaré pronto. Respuesta en menos de 24h.

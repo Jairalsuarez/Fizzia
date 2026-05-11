@@ -25,6 +25,7 @@ export function LeadsPage() {
 
   const leads = data?.leads?.filter(l => !['won', 'lost', 'informal'].includes(l.status)) || []
   const filteredLeads = statusFilter === 'all' ? leads : leads.filter(l => l.status === statusFilter)
+  const selectedProject = getLeadProjectRequest(selectedLead)
 
   const handleDelete = async () => {
     const { error } = await deleteLead(selectedLead.id)
@@ -186,7 +187,7 @@ export function LeadsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-dark-400">Empresa</p>
-                  <p className="text-white">{selectedLead.company || '-'}</p>
+                  <p className="text-white">{selectedLead.company || selectedLead.company_name || '-'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-dark-400">Ciudad</p>
@@ -205,6 +206,31 @@ export function LeadsPage() {
                   <StatusBadge status={selectedLead.status} />
                 </div>
               </div>
+
+              {selectedProject && (
+                <div className="mb-6 rounded-xl border border-fizzia-500/20 bg-fizzia-500/5 p-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-fizzia-400">Proyecto involucrado</p>
+                      <h3 className="mt-1 text-lg font-bold text-white">{selectedProject.projectType || 'Proyecto desde estimador'}</h3>
+                    </div>
+                    {selectedProject.total && (
+                      <p className="shrink-0 rounded-lg bg-dark-950 px-3 py-2 text-sm font-bold text-fizzia-300">
+                        {formatMoney(selectedProject.total)}
+                      </p>
+                    )}
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <LeadProjectInfo label="Diseno" value={selectedProject.designLevel} />
+                    <LeadProjectInfo label="Entrega" value={selectedProject.delivery} />
+                    <LeadProjectInfo
+                      label="Funciones"
+                      value={selectedProject.features?.length ? selectedProject.features.join(', ') : 'Sin funciones adicionales'}
+                      wide
+                    />
+                  </div>
+                </div>
+              )}
 
               {selectedLead.need_summary && (
                 <div className="mb-4">
@@ -466,7 +492,8 @@ export function LeadsPage() {
 
 function generateContactMessage(lead) {
   const name = lead.full_name?.split(' ')[0] || lead.full_name || 'estimado cliente'
-  const company = lead.company ? ` de ${lead.company}` : ''
+  const companyName = lead.company || lead.company_name
+  const company = companyName ? ` de ${companyName}` : ''
   const summary = lead.need_summary ? `\n\nHemos revisado tu solicitud sobre: ${lead.need_summary}` : ''
   return `Hola ${name},
 
@@ -487,6 +514,30 @@ Equipo Fizzia`
 
 function generateWhatsAppMessage(lead) {
   const name = lead.full_name?.split(' ')[0] || lead.full_name || 'estimado cliente'
-  const company = lead.company ? ` de ${lead.company}` : ''
+  const companyName = lead.company || lead.company_name
+  const company = companyName ? ` de ${companyName}` : ''
   return `Hola ${name}${company}, gracias por tu interes en Fizzia. Para mayor flexibilidad en el desarrollo de tu proyecto, te invitamos a crear una cuenta en nuestra plataforma. Puedes registrarte en: ${window.location.origin}/register. Si prefieres asesoramiento directo, estamos disponibles por aqui. Saludos, equipo Fizzia.`
+}
+
+function LeadProjectInfo({ label, value, wide = false }) {
+  return (
+    <div className={wide ? 'sm:col-span-2' : ''}>
+      <p className="text-xs text-dark-500">{label}</p>
+      <p className="text-sm font-medium text-white">{value || '-'}</p>
+    </div>
+  )
+}
+
+function getLeadProjectRequest(lead) {
+  if (!lead?.metadata) return null
+  const metadata = typeof lead.metadata === 'string' ? safeJsonParse(lead.metadata) : lead.metadata
+  return metadata?.requested_project || metadata?.simulatorData || null
+}
+
+function safeJsonParse(value) {
+  try {
+    return JSON.parse(value)
+  } catch {
+    return null
+  }
 }

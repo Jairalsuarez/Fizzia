@@ -1,61 +1,48 @@
-import { useState, useEffect, useRef } from 'react'
-import { trustIndicators, techStack } from '../../data/fizziaContent'
+import { useState, useEffect } from 'react'
+import { useLanguage } from '../../contexts/LanguageContext'
 
 export function TrustSection() {
-  const [isVisible, setIsVisible] = useState(false)
-  const sectionRef = useRef(null)
+  const [activeTestimonial, setActiveTestimonial] = useState(0)
+  const { t } = useLanguage()
+
+  const testimonials = t('trust.testimonials')
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true)
-      },
-      { threshold: 0.2 }
-    )
-    if (sectionRef.current) observer.observe(sectionRef.current)
-    return () => observer.disconnect()
-  }, [])
+    const interval = setInterval(() => {
+      setActiveTestimonial(prev => (prev + 1) % testimonials.length)
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [testimonials.length])
 
   return (
-    <section ref={sectionRef} className="py-20 md:py-32 bg-dark-950 relative overflow-hidden">
+    <section className="py-14 md:py-20 bg-dark-950 relative overflow-hidden">
       <div className="absolute inset-0">
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-fizzia-500/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-fizzia-600/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-          {trustIndicators.map((metric, index) => (
-            <div
-              key={metric.label}
-              className={`bg-dark-900/50 border border-dark-800 rounded-xl p-6 text-center hover:border-fizzia-500/30 transition-all duration-700 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-              }`}
-              style={{ transitionDelay: `${index * 100}ms` }}
-            >
-              <strong className="text-fizzia-400 text-3xl md:text-4xl font-black block mb-2">
-                {metric.value}
-              </strong>
-              <span className="text-dark-300 text-sm">{metric.label}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className={`text-center transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <p className="text-dark-400 text-sm font-medium mb-6 uppercase tracking-wider">
-            Tecnologías que utilizo
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {techStack.map((tech) => (
-              <span
-                key={tech}
-                className="bg-dark-900 border border-dark-800 text-dark-200 px-4 py-2 rounded-full text-sm hover:border-fizzia-500/30 hover:text-white transition-all duration-300"
-              >
-                {tech}
-              </span>
-            ))}
+      <div className="relative z-10 px-6 sm:px-12">
+        {testimonials.map((test, i) => (
+          <div
+            key={i}
+            className={`transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${i === activeTestimonial ? 'opacity-100 block' : 'opacity-0 hidden'}`}
+          >
+            {i === activeTestimonial && (
+              <div className="text-center">
+                <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white italic leading-relaxed font-light max-w-6xl mx-auto">
+                  &ldquo;{test.quote}
+                  {test.hasFizzia && <span className="text-fizzia-400 font-bold not-italic">Fizzia</span>}
+                  {test.quote2}&rdquo;
+                </p>
+                <div className="flex items-center justify-center gap-2 mt-5">
+                  <span className="text-dark-300 font-medium text-sm uppercase tracking-wider">{test.name}</span>
+                  <span className="text-dark-600 text-sm">|</span>
+                  <span className="text-fizzia-500/80 text-sm">{test.location}</span>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        ))}
       </div>
     </section>
   )

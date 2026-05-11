@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        margin: 0; width: 1920px; height: 1080px; overflow: hidden;
+        background: #050508; font-family: 'Inter', sans-serif;
+        color: #fff;
+      }
+
+      .bg-grad {
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse at 30% 40%, rgba(108,92,231,0.08) 0%, transparent 60%),
+                    radial-gradient(ellipse at 70% 60%, rgba(99,102,241,0.06) 0%, transparent 50%);
+      }
+
+      .frame { position: absolute; left: 240px; top: 0; right: 0; bottom: 0; background: #0a0a0f; }
+
+      .sidebar {
+        position: absolute; left: 0; top: 0; width: 240px; bottom: 0;
+        background: #08080c; border-right: 1px solid rgba(255,255,255,0.04);
+        display: flex; flex-direction: column; padding: 32px 16px;
+      }
+      .logo { display: flex; align-items: center; gap: 10px; padding: 0 12px 32px; border-bottom: 1px solid rgba(255,255,255,0.04); margin-bottom: 24px; }
+      .logo-icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #6c5ce7, #8b7cf7); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; }
+      .logo-text { font-weight: 700; font-size: 18px; letter-spacing: -0.02em; }
+      .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; margin-bottom: 4px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.4); cursor: pointer; }
+      .nav-item.active { background: rgba(108,92,231,0.12); color: #8b7cf7; }
+      .nav-item .ic { font-size: 20px; width: 24px; text-align: center; }
+
+      .hdr { position: absolute; top: 0; left: 0; right: 0; height: 64px; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: flex-end; padding: 0 32px; gap: 20px; }
+      .hdr-av { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #6c5ce7, #8b7cf7); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+      .hdr-txt { font-size: 13px; color: rgba(255,255,255,0.5); }
+
+      .ca { position: absolute; top: 64px; left: 0; right: 0; bottom: 0; padding: 32px; overflow: hidden; }
+      .pt { font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em; }
+      .ps { font-size: 14px; color: rgba(255,255,255,0.35); margin-bottom: 32px; }
+      .sg { display: flex; gap: 20px; margin-bottom: 32px; }
+      .sc { flex: 1; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 24px; border: 1px solid rgba(255,255,255,0.04); }
+      .sl { font-size: 13px; color: rgba(255,255,255,0.35); margin-bottom: 6px; }
+      .sv { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
+      .sch { font-size: 12px; color: #34d399; margin-top: 4px; }
+      .secl { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.6); margin-bottom: 16px; letter-spacing: -0.01em; }
+      .pl { display: flex; flex-direction: column; gap: 12px; }
+      .pr { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); }
+      .pi { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+      .pif { flex: 1; }
+      .pn { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+      .pd { font-size: 12px; color: rgba(255,255,255,0.3); }
+      .psb { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+      .sa { background: rgba(52,211,153,0.1); color: #34d399; }
+      .sr { background: rgba(251,191,36,0.1); color: #fbbf24; }
+      .sd { background: rgba(99,102,241,0.1); color: #818cf8; }
+
+      .chat { display: flex; flex-direction: column; gap: 16px; }
+      .msg { max-width: 480px; padding: 16px 20px; border-radius: 14px; font-size: 14px; line-height: 1.5; }
+      .mi { background: rgba(255,255,255,0.05); align-self: flex-start; border-bottom-left-radius: 4px; }
+      .mo { background: rgba(108,92,231,0.15); align-self: flex-end; border-bottom-right-radius: 4px; }
+      .mt { font-size: 11px; color: rgba(255,255,255,0.2); margin-top: 4px; }
+
+      .cursor { position: absolute; width: 24px; height: 24px; z-index: 100; pointer-events: none; }
+      .ci { width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,0.8); box-shadow: 0 0 12px rgba(108,92,231,0.4); }
+      .cr { position: absolute; width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(108,92,231,0.6); z-index: 99; pointer-events: none; }
+
+      .ol {
+        position: absolute; inset: 0; display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        background: rgba(5,5,8,0.85); backdrop-filter: blur(8px); z-index: 50;
+      }
+      .olt { font-size: 72px; font-weight: 900; letter-spacing: -0.03em; background: linear-gradient(135deg, #fff 30%, #8b7cf7 70%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px; }
+      .ols { font-size: 24px; color: rgba(255,255,255,0.4); font-weight: 300; }
+      .olt-sm { font-size: 56px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="14" data-width="1920" data-height="1080">
+
+      <div class="bg-grad"></div>
+
+      <div id="s0-ol" class="ol clip" data-start="0" data-duration="2.5" data-track-index="1">
+        <div class="olt">Fizzia</div>
+        <div class="ols">Panel de administración</div>
+      </div>
+
+      <div id="sidebar" class="sidebar clip" data-start="2" data-duration="12" data-track-index="2">
+        <div class="logo"><div class="logo-icon">F</div><span class="logo-text">Fizzia</span></div>
+        <div id="nav-dashboard" class="nav-item active"><span class="ic">◉</span> Dashboard</div>
+        <div id="nav-projects" class="nav-item"><span class="ic">▤</span> Proyectos</div>
+        <div id="nav-messages" class="nav-item"><span class="ic">✉</span> Mensajes</div>
+        <div id="nav-settings" class="nav-item" style="margin-top:auto"><span class="ic">⚙</span> Ajustes</div>
+      </div>
+
+      <div id="frame" class="frame clip" data-start="2.2" data-duration="11.8" data-track-index="3">
+        <div id="hdr" class="hdr clip" data-start="2.2" data-duration="11.8" data-track-index="4">
+          <span class="hdr-txt">Demo — datos ilustrativos</span>
+          <div class="hdr-av">D</div>
+        </div>
+
+        <div id="cd" class="clip ca" data-start="2.5" data-duration="3.5" data-track-index="5">
+          <div id="cd-inner">
+            <div class="pt">Dashboard</div>
+            <div class="ps">Resumen de tu negocio en tiempo real</div>
+            <div class="sg">
+              <div class="sc"><div class="sl">Proyectos activos</div><div class="sv">12</div><div class="sch">+2 esta semana</div></div>
+              <div class="sc"><div class="sl">Clientes</div><div class="sv">48</div><div class="sch">+5 este mes</div></div>
+              <div class="sc"><div class="sl">Ingresos</div><div class="sv">$24.5k</div><div class="sch">+18% vs mes anterior</div></div>
+              <div class="sc"><div class="sl">Tareas</div><div class="sv">86%</div><div class="sch">completadas</div></div>
+            </div>
+            <div class="secl">Proyectos recientes</div>
+            <div class="pl">
+              <div class="pr"><div class="pi" style="background:rgba(108,92,231,0.1);color:#8b7cf7">◉</div><div class="pif"><div class="pn">E-commerce</div><div class="pd">Tienda online con catálogo y pagos</div></div><span class="psb sa">En vivo</span></div>
+              <div class="pr"><div class="pi" style="background:rgba(52,211,153,0.1);color:#34d399">◉</div><div class="pif"><div class="pn">App Delivery</div><div class="pd">Plataforma de pedidos móvil</div></div><span class="psb sr">Revisión</span></div>
+              <div class="pr"><div class="pi" style="background:rgba(251,191,36,0.1);color:#fbbf24">◉</div><div class="pif"><div class="pn">Dashboard Ventas</div><div class="pd">Panel de control para equipo comercial</div></div><span class="psb sd">Desarrollo</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="cp" class="clip ca" data-start="6" data-duration="4" data-track-index="6">
+          <div id="cp-inner">
+            <div class="pt">Proyectos</div>
+            <div class="ps">Gestiona todos tus proyectos desde aquí</div>
+            <div class="pl">
+              <div class="pr"><div class="pi" style="background:rgba(108,92,231,0.1);color:#8b7cf7">◉</div><div class="pif"><div class="pn">Sitio Corporativo</div><div class="pd">Landing page + blog + CMS</div></div><span class="psb sa">En vivo</span></div>
+              <div class="pr"><div class="pi" style="background:rgba(52,211,153,0.1);color:#34d399">◉</div><div class="pif"><div class="pn">App Fitness</div><div class="pd">Suscripciones y rutinas personalizadas</div></div><span class="psb sr">Beta</span></div>
+              <div class="pr"><div class="pi" style="background:rgba(251,191,36,0.1);color:#fbbf24">◉</div><div class="pif"><div class="pn">ERP Restaurant</div><div class="pd">Inventario, facturación y pedidos</div></div><span class="psb sd">En desarrollo</span></div>
+              <div class="pr"><div class="pi" style="background:rgba(99,102,241,0.1);color:#818cf8">◉</div><div class="pif"><div class="pn">Portal Educación</div><div class="pd">Cursos en línea y evaluaciones</div></div><span class="psb sa">Diseño</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="cm" class="clip ca" data-start="10" data-duration="3" data-track-index="7">
+          <div id="cm-inner">
+            <div class="pt">Mensajes</div>
+            <div class="ps">Conversa con tu equipo y clientes</div>
+            <div class="chat" style="padding-right:40%">
+              <div class="msg mi">Hola, ¿cómo va el avance del proyecto?<div class="mt">10:23 AM</div></div>
+              <div class="msg mo">Todo bien, ya terminamos la primera fase. Te comparto avances.<div class="mt">10:25 AM</div></div>
+              <div class="msg mi">¡Perfecto! Se ve increíble. ¿Cuándo pasamos a la siguiente etapa?<div class="mt">10:28 AM</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="s4-ol" class="ol clip" data-start="13" data-duration="1" data-track-index="8">
+        <div class="olt olt-sm">Fizzia</div>
+        <div class="ols">Tu negocio merece herramientas increíbles</div>
+      </div>
+
+      <div id="cursor" class="clip cursor" data-start="0" data-duration="14" data-track-index="9">
+        <div class="ci"></div>
+      </div>
+      <div id="cr1" class="cr" style="opacity:0"></div>
+      <div id="cr2" class="cr" style="opacity:0"></div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      const navDash = document.getElementById('nav-dashboard');
+      const navProj = document.getElementById('nav-projects');
+      const navMsg = document.getElementById('nav-messages');
+      const cursor = document.getElementById('cursor');
+      const cr1 = document.getElementById('cr1');
+      const cr2 = document.getElementById('cr2');
+      const cdi = document.getElementById('cd-inner');
+      const cpi = document.getElementById('cp-inner');
+      const cmi = document.getElementById('cm-inner');
+
+      gsap.set(cpi, { opacity: 0 });
+      gsap.set(cmi, { opacity: 0 });
+      gsap.set(cr1, { opacity: 0, scale: 0.5 });
+      gsap.set(cr2, { opacity: 0, scale: 0.5 });
+
+      function navClick(target, ring) {
+        [navDash, navProj, navMsg].forEach(n => n.classList.remove('active'));
+        target.classList.add('active');
+        gsap.fromTo(ring, { opacity: 1, scale: 0.5 }, { opacity: 0, scale: 1.5, duration: 0.4, ease: 'power2.out', overwrite: 'auto' });
+      }
+
+      // Intro overlay
+      tl.from('#s0-ol .olt', { opacity: 0, y: 40, duration: 0.8, ease: 'power3.out' }, 0.2);
+      tl.from('#s0-ol .ols', { opacity: 0, y: 20, duration: 0.5, ease: 'power2.out' }, 0.6);
+      tl.to('#s0-ol', { opacity: 0, duration: 0.5, ease: 'power2.in' }, 2.0);
+      tl.set('#s0-ol', { opacity: 0 }, 2.5);
+
+      // Sidebar + header
+      tl.from('#sidebar', { x: -240, duration: 0.6, ease: 'expo.out' }, 2.2);
+      tl.from('#hdr', { y: -64, opacity: 0, duration: 0.4, ease: 'power2.out' }, 2.3);
+
+      // Dashboard content
+      tl.from('#cd .pt', { opacity: 0, y: 20, duration: 0.5, ease: 'power3.out' }, 2.6);
+      tl.from('#cd .ps', { opacity: 0, y: 15, duration: 0.4, ease: 'power2.out' }, 2.8);
+      tl.from('#cd .sc', { opacity: 0, y: 30, stagger: 0.08, duration: 0.5, ease: 'power2.out' }, 3.0);
+      tl.from('#cd .secl', { opacity: 0, y: 15, duration: 0.3, ease: 'power2.out' }, 3.5);
+      tl.from('#cd .pr', { opacity: 0, x: -20, stagger: 0.1, duration: 0.4, ease: 'power2.out' }, 3.6);
+
+      // Cursor to Proyectos
+      tl.to('#cursor', { x: 180, y: 220, duration: 1.2, ease: 'power3.inOut' }, 4.8);
+      tl.call(() => navClick(navProj, cr1), [], 6.0);
+
+      tl.to('#cd-inner', { opacity: 0, duration: 0.25, ease: 'power2.in' }, 6.0);
+      tl.set('#cd-inner', { opacity: 0 }, 6.25);
+      tl.set('#cp-inner', { opacity: 1 }, 6.25);
+      tl.from('#cp .pt', { opacity: 0, y: 20, duration: 0.4, ease: 'power3.out' }, 6.3);
+      tl.from('#cp .ps', { opacity: 0, y: 15, duration: 0.3, ease: 'power2.out' }, 6.5);
+      tl.from('#cp .pr', { opacity: 0, x: -20, stagger: 0.1, duration: 0.4, ease: 'power2.out' }, 6.6);
+
+      // Cursor to Mensajes
+      tl.to('#cursor', { x: 180, y: 260, duration: 1.2, ease: 'power3.inOut' }, 8.8);
+      tl.call(() => navClick(navMsg, cr2), [], 10.0);
+
+      tl.to('#cp-inner', { opacity: 0, duration: 0.25, ease: 'power2.in' }, 10.0);
+      tl.set('#cp-inner', { opacity: 0 }, 10.25);
+      tl.set('#cm-inner', { opacity: 1 }, 10.25);
+      tl.from('#cm .pt', { opacity: 0, y: 20, duration: 0.4, ease: 'power3.out' }, 10.3);
+      tl.from('#cm .ps', { opacity: 0, y: 15, duration: 0.3, ease: 'power2.out' }, 10.5);
+      tl.from('#cm .msg', { opacity: 0, y: 20, stagger: 0.15, duration: 0.4, ease: 'power2.out' }, 10.6);
+
+      // Final overlay
+      tl.to('#cm-inner', { opacity: 0, duration: 0.3 }, 12.8);
+      tl.to('#sidebar', { opacity: 0, duration: 0.3 }, 12.9);
+      tl.to('#frame', { opacity: 0, duration: 0.3 }, 12.9);
+      tl.from('#s4-ol .olt', { opacity: 0, y: 30, duration: 0.6, ease: 'power3.out' }, 13.1);
+      tl.from('#s4-ol .ols', { opacity: 0, y: 20, duration: 0.4, ease: 'power2.out' }, 13.4);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
