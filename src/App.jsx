@@ -12,6 +12,7 @@ const LoginPage = lazy(() => import('./features/auth/LoginPage').then(module => 
 const RegisterPage = lazy(() => import('./features/auth/RegisterPage').then(module => ({ default: module.RegisterPage })))
 const LandingPage = lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })))
 const TermsPage = lazy(() => import('./pages/shared/TermsPage').then(module => ({ default: module.TermsPage })))
+const AboutPage = lazy(() => import('./pages/shared/AboutPage').then(module => ({ default: module.AboutPage })))
 
 const AdminDashboardPage = lazy(() => import('./pages/admin/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const AdminProjectDetailPage = lazy(() => import('./pages/admin/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
@@ -21,6 +22,7 @@ const AdminFinancePage = lazy(() => import('./pages/admin/FinancePage').then(mod
 const AdminDevelopersPage = lazy(() => import('./pages/admin/DevelopersPage').then(module => ({ default: module.DevelopersPage })))
 const AdminPaymentsPage = lazy(() => import('./pages/admin/PaymentsPage').then(module => ({ default: module.PaymentsPage })))
 const AdminSettingsPage = lazy(() => import('./pages/admin/SettingsPage').then(module => ({ default: module.SettingsPage })))
+const AdminAnonymousChatPage = lazy(() => import('./pages/admin/AnonymousChatPage').then(module => ({ default: module.AnonymousChatPage })))
 
 const DeveloperDashboardPage = lazy(() => import('./pages/developer/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const DeveloperProjectDetailPage = lazy(() => import('./pages/developer/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
@@ -56,6 +58,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingLayout />}>
               <Route index element={<LandingPage />} />
+              <Route path="quienes-somos" element={<AboutPage />} />
             </Route>
 
           <Route path="/login" element={<LoginPage />} />
@@ -70,6 +73,7 @@ function App() {
               <Route path="/admin/desarrolladores" element={<AdminDevelopersPage />} />
               <Route path="/admin/pagos" element={<AdminPaymentsPage />} />
               <Route path="/admin/finanzas" element={<AdminFinancePage />} />
+              <Route path="/admin/chat-anonimo" element={<AdminAnonymousChatPage />} />
               <Route path="/admin/configuracion" element={<AdminSettingsPage />} />
             </Route>
           </Route>

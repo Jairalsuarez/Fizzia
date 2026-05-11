@@ -137,7 +137,7 @@ export function ProfilePage() {
                 type="text"
                 value={formData.full_name}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-[var(--accent-bg)] focus:border-[var(--accent)] transition-all duration-200"
                 placeholder="Enter your full name"
               />
             </div>
@@ -150,7 +150,7 @@ export function ProfilePage() {
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-[var(--accent-bg)] focus:border-[var(--accent)] transition-all duration-200"
                 placeholder="Enter your email"
               />
             </div>
@@ -163,7 +163,7 @@ export function ProfilePage() {
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-[var(--accent-bg)] focus:border-[var(--accent)] transition-all duration-200"
                 placeholder="Enter your phone number"
               />
             </div>
@@ -173,7 +173,7 @@ export function ProfilePage() {
             <Button
               type="submit"
               disabled={saving}
-              className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              className="px-6 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-lighter)] hover:shadow-lg hover:shadow-[var(--accent-bg)] active:scale-[0.98] text-white rounded-lg font-medium transition-all duration-300 disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </Button>
@@ -188,7 +188,7 @@ export function ProfilePage() {
             <button
               type="button"
               onClick={() => setShowPasswordSection(!showPasswordSection)}
-              className="text-primary-400 hover:text-primary-300 text-sm font-medium transition-colors"
+              className="text-[var(--accent-lighter)] hover:text-[var(--accent)] text-sm font-medium transition-colors duration-200 cursor-pointer"
             >
               {showPasswordSection ? 'Cancel' : 'Change Password'}
             </button>
@@ -204,7 +204,7 @@ export function ProfilePage() {
                   type="password"
                   value={passwordData.current_password}
                   onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-[var(--accent-bg)] focus:border-[var(--accent)] transition-all duration-200"
                   placeholder="Enter current password"
                   required
                 />
@@ -218,7 +218,7 @@ export function ProfilePage() {
                   type="password"
                   value={passwordData.new_password}
                   onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-[var(--accent-bg)] focus:border-[var(--accent)] transition-all duration-200"
                   placeholder="Enter new password"
                   required
                 />
@@ -232,7 +232,7 @@ export function ProfilePage() {
                   type="password"
                   value={passwordData.confirm_password}
                   onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-[var(--accent-bg)] focus:border-[var(--accent)] transition-all duration-200"
                   placeholder="Confirm new password"
                   required
                 />
@@ -242,7 +242,7 @@ export function ProfilePage() {
                 <Button
                   type="submit"
                   disabled={changingPassword}
-                  className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                  className="px-6 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-lighter)] hover:shadow-lg hover:shadow-[var(--accent-bg)] active:scale-[0.98] text-white rounded-lg font-medium transition-all duration-300 disabled:opacity-50 cursor-pointer"
                 >
                   {changingPassword ? 'Updating...' : 'Update Password'}
                 </Button>

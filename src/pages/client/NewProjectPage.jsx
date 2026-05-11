@@ -65,8 +65,28 @@ Preferencia de contacto: ${formData.contactPreference === 'whatsapp' ? 'WhatsApp
     }
   }
 
-  const inputClass = "w-full px-4 py-3.5 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-fizzia-500/50 transition-all text-lg"
-  const btnPrimary = "w-full cursor-pointer px-6 py-4 bg-[var(--accent)] text-white font-bold text-lg rounded-xl hover:bg-[var(--accent-lighter)] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-[var(--accent)]/25 hover:shadow-[var(--accent)]/25"
+  const inputClass = "w-full px-4 py-4 bg-dark-900/50 border-2 border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-[var(--accent)] focus:bg-dark-900 focus:shadow-[0_0_15px_var(--accent-bg)] transition-all duration-300 text-lg hover:border-dark-600"
+  const btnPrimary = "w-full cursor-pointer px-6 py-4 bg-[var(--accent)] text-white font-bold text-lg rounded-xl hover:bg-[var(--accent-lighter)] hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[var(--accent-bg)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:active:scale-100 transition-all duration-300 shadow-lg shadow-[var(--accent)]/20"
+
+  if (step === 6) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto min-h-[70vh] flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-500 fade-in">
+        <div className="w-24 h-24 bg-[var(--accent-bg)] rounded-full flex items-center justify-center mb-8 mx-auto shadow-[0_0_30px_var(--accent-bg)] animate-bounce">
+          <span className="material-symbols-rounded text-6xl text-[var(--accent)]">check_circle</span>
+        </div>
+        <h2 className="text-3xl font-bold text-white mb-4">¡Solicitud Enviada!</h2>
+        <p className="text-dark-300 text-lg mb-8 max-w-md mx-auto">
+          Hemos recibido tu solicitud de proyecto. Nos pondremos en contacto contigo lo antes posible para darte una cotización.
+        </p>
+        <button
+          onClick={() => navigate('/cliente/proyectos')}
+          className="cursor-pointer px-8 py-4 bg-dark-800 hover:bg-dark-700 hover:shadow-lg hover:shadow-black/50 text-white font-medium rounded-xl transition-all duration-300 hover:-translate-y-1 active:scale-95"
+        >
+          Ir a mis proyectos
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 max-w-2xl mx-auto min-h-[70vh] flex flex-col justify-center">
@@ -76,28 +96,28 @@ Preferencia de contacto: ${formData.contactPreference === 'whatsapp' ? 'WhatsApp
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-center mb-8">
+        <div className="bg-[var(--error-bg)] border border-[var(--error-border)] rounded-xl p-4 text-[var(--error-text)] text-center mb-8">
           {error}
         </div>
       )}
 
       {step === 1 && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500" data-tour="new-project-form">
-          <h2 className="text-2xl font-semibold text-center text-white mb-8">¿Este proyecto es personal o para un negocio?</h2>
+          <h2 className="text-2xl font-semibold text-center text-[var(--text-main)] mb-8">¿Este proyecto es personal o para un negocio?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
               onClick={() => { update('type', 'personal'); handleNext(); }}
-              className="cursor-pointer flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 border-dark-700 bg-dark-900/50 hover:border-fizzia-500 hover:bg-fizzia-500/10 transition-all group"
+              className="cursor-pointer flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 border-dark-700 bg-dark-900/50 hover:border-[var(--accent)] hover:bg-[var(--accent-bg)] hover:scale-[1.02] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 shadow-xl shadow-black/50 hover:shadow-2xl hover:shadow-[var(--accent-bg)] group"
             >
-              <span className="material-symbols-rounded text-5xl text-dark-400 group-hover:text-fizzia-400 transition-colors">person</span>
-              <span className="text-xl font-medium text-white">Personal</span>
+              <span className="material-symbols-rounded text-5xl text-dark-400 group-hover:text-[var(--accent-lighter)] group-hover:scale-110 transition-all duration-300">person</span>
+              <span className="text-xl font-medium text-white group-hover:text-[var(--accent-lighter)] transition-colors duration-300">Personal</span>
             </button>
             <button
               onClick={() => { update('type', 'negocio'); handleNext(); }}
-              className="cursor-pointer flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 border-dark-700 bg-dark-900/50 hover:border-fizzia-500 hover:bg-fizzia-500/10 transition-all group"
+              className="cursor-pointer flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 border-dark-700 bg-dark-900/50 hover:border-[var(--accent)] hover:bg-[var(--accent-bg)] hover:scale-[1.02] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 shadow-xl shadow-black/50 hover:shadow-2xl hover:shadow-[var(--accent-bg)] group"
             >
-              <span className="material-symbols-rounded text-5xl text-dark-400 group-hover:text-fizzia-400 transition-colors">store</span>
-              <span className="text-xl font-medium text-white">Para Negocio</span>
+              <span className="material-symbols-rounded text-5xl text-dark-400 group-hover:text-[var(--accent-lighter)] group-hover:scale-110 transition-all duration-300">store</span>
+              <span className="text-xl font-medium text-white group-hover:text-[var(--accent-lighter)] transition-colors duration-300">Para Negocio</span>
             </button>
           </div>
         </div>
@@ -180,25 +200,25 @@ Preferencia de contacto: ${formData.contactPreference === 'whatsapp' ? 'WhatsApp
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <button
               onClick={() => { update('contactPreference', 'whatsapp'); }}
-              className={`cursor-pointer flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+              className={`cursor-pointer flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 hover:shadow-xl hover:shadow-[var(--accent-bg)] group ${
                 formData.contactPreference === 'whatsapp' 
-                  ? 'border-fizzia-500 bg-fizzia-500/10' 
-                  : 'border-dark-700 bg-dark-900/50 hover:border-dark-600'
+                  ? 'border-[var(--accent)] bg-[var(--accent-bg)] shadow-[var(--accent-bg)]' 
+                  : 'border-dark-700 bg-dark-900/50 hover:border-[var(--accent)] hover:bg-[var(--accent-bg)]/50'
               }`}
             >
-              <span className={`material-symbols-rounded text-4xl ${formData.contactPreference === 'whatsapp' ? 'text-fizzia-400' : 'text-dark-400'}`}>chat</span>
-              <span className="text-lg font-medium text-white">Por WhatsApp</span>
+              <span className={`material-symbols-rounded text-4xl group-hover:scale-110 transition-all duration-300 ${formData.contactPreference === 'whatsapp' ? 'text-[var(--accent-lighter)]' : 'text-dark-400 group-hover:text-[var(--accent-lighter)]'}`}>chat</span>
+              <span className={`text-lg font-medium transition-colors duration-300 ${formData.contactPreference === 'whatsapp' ? 'text-[var(--accent-lighter)]' : 'text-white group-hover:text-[var(--accent-lighter)]'}`}>Por WhatsApp</span>
             </button>
             <button
               onClick={() => { update('contactPreference', 'plataforma'); }}
-              className={`cursor-pointer flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+              className={`cursor-pointer flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 hover:shadow-xl hover:shadow-[var(--accent-bg)] group ${
                 formData.contactPreference === 'plataforma' 
-                  ? 'border-fizzia-500 bg-fizzia-500/10' 
-                  : 'border-dark-700 bg-dark-900/50 hover:border-dark-600'
+                  ? 'border-[var(--accent)] bg-[var(--accent-bg)] shadow-[var(--accent-bg)]' 
+                  : 'border-dark-700 bg-dark-900/50 hover:border-[var(--accent)] hover:bg-[var(--accent-bg)]/50'
               }`}
             >
-              <span className={`material-symbols-rounded text-4xl ${formData.contactPreference === 'plataforma' ? 'text-fizzia-400' : 'text-dark-400'}`}>forum</span>
-              <span className="text-lg font-medium text-white">Aquí en Fizzia</span>
+              <span className={`material-symbols-rounded text-4xl group-hover:scale-110 transition-all duration-300 ${formData.contactPreference === 'plataforma' ? 'text-[var(--accent-lighter)]' : 'text-dark-400 group-hover:text-[var(--accent-lighter)]'}`}>forum</span>
+              <span className={`text-lg font-medium transition-colors duration-300 ${formData.contactPreference === 'plataforma' ? 'text-[var(--accent-lighter)]' : 'text-white group-hover:text-[var(--accent-lighter)]'}`}>Aquí en Fizzia</span>
             </button>
           </div>
           <button 

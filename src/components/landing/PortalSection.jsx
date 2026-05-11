@@ -1,41 +1,26 @@
+import { useState, useEffect, useRef } from 'react'
 import { Icon } from '../ui/Icon'
-
-const features = [
-  {
-    icon: 'dashboard',
-    title: 'Panel de proyecto',
-    description: 'Visualiza el avance de tu proyecto en tiempo real con hitos claros y actualizaciones constantes.',
-  },
-  {
-    icon: 'chat',
-    title: 'Comunicación directa',
-    description: 'Habla directamente con tu equipo de desarrollo sin intermediarios ni demoras.',
-  },
-  {
-    icon: 'account_balance_wallet',
-    title: 'Gestión financiera',
-    description: 'Revisa facturas, pagos y el estado de tu inversión de forma organizada y transparente.',
-  },
-  {
-    icon: 'folder_open',
-    title: 'Archivos y entregables',
-    description: 'Accede a todos los archivos de tu proyecto, diseños, documentación y versiones anteriores.',
-  },
-  {
-    icon: 'checklist',
-    title: 'Aprobación de hitos',
-    description: 'Aprueba cada etapa del desarrollo a tu ritmo. Tú decides cuándo avanzamos.',
-  },
-  {
-    icon: 'notifications_active',
-    title: 'Notificaciones',
-    description: 'Recibe alertas cuando haya avances, entregables nuevos o mensajes del equipo.',
-  },
-]
+import { useLanguage } from '../../contexts/LanguageContext'
 
 export function PortalSection() {
+  const [visible, setVisible] = useState(false)
+  const ref = useRef(null)
+  const { t } = useLanguage()
+
+  const features = t('portal.features')
+  const heading = t('portal.heading')
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setVisible(true) },
+      { threshold: 0.1 }
+    )
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <section className="py-24 bg-dark-950 relative overflow-hidden">
+    <section ref={ref} className="py-24 bg-dark-950 relative overflow-hidden">
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-0 w-96 h-96 bg-fizzia-500/5 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-fizzia-600/8 rounded-full blur-3xl" />
@@ -43,21 +28,21 @@ export function PortalSection() {
       </div>
 
       <div className="relative mx-auto max-w-6xl px-6">
-        <div className="text-center mb-16">
-          <span className="inline-block px-4 py-1.5 bg-fizzia-500/10 text-fizzia-400 text-xs font-bold uppercase rounded-full mb-4">Portal de clientes</span>
+        <div className={`text-center mb-16 transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white leading-tight mb-4">
-            Tu proyecto, <span className="text-fizzia-400">siempre visible</span>
+            {heading[0]} <span className="text-fizzia-400">{heading[1]}</span>
           </h2>
           <p className="text-dark-400 text-lg max-w-2xl mx-auto">
-            Al crear una cuenta en Fizzia obtienes acceso a un portal completo donde puedes seguir cada paso del desarrollo de tu proyecto.
+            {t('portal.description')}
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map((feature) => (
+          {features.map((feature, i) => (
             <div
               key={feature.title}
-              className="group p-6 bg-dark-900/50 border border-dark-800 rounded-xl hover:border-fizzia-500/30 hover:bg-dark-900 transition-all duration-300"
+              className={`group p-6 bg-dark-900/50 border border-dark-800 rounded-xl hover:border-fizzia-500/30 hover:bg-dark-900 transition-all duration-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: visible ? `${i * 100}ms` : '0ms', transitionProperty: 'opacity, transform, border-color, background-color' }}
             >
               <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-fizzia-500/10 text-fizzia-400 mb-4 group-hover:bg-fizzia-500/20 transition-colors">
                 <Icon name={feature.icon} size={24} />
@@ -68,15 +53,15 @@ export function PortalSection() {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
+        <div className={`mt-12 text-center transition-all duration-700 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <a
             href="/register"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-fizzia-500 text-white font-semibold rounded-xl hover:bg-fizzia-400 transition-all shadow-lg shadow-fizzia-500/25 hover:shadow-fizzia-500/40 text-lg"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-fizzia-500 text-white font-semibold rounded-xl hover:bg-fizzia-400 transition-all shadow-lg shadow-fizzia-500/25 hover:shadow-fizzia-500/40 text-lg cursor-pointer"
           >
-            Crea tu cuenta ahora
+            {t('portal.cta')}
             <Icon name="arrow_forward" size={20} />
           </a>
-          <p className="text-dark-500 text-sm mt-3">Sin compromiso. Acceso inmediato a tu portal.</p>
+          <p className="text-dark-500 text-sm mt-3">{t('portal.disclaimer')}</p>
         </div>
       </div>
     </section>
