@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '../services/supabase'
 import { ChatListItem } from './ChatListItem'
 import { useAuth } from '../features/auth/authContext'
@@ -7,7 +6,6 @@ import { getMessagesBySender } from '../api/messagesApi'
 
 export function AdminFloatingChat() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
   const [profiles, setProfiles] = useState([])
   const [onlineUsers, setOnlineUsers] = useState(new Set())

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { formatDate, formatMoney } from '../utils/format'
+import { formatDate } from '../utils/format'
+import { parseGitHubUrl } from '../utils/github'
 import { supabase } from '../services/supabase'
 
 const phases = [
@@ -21,13 +22,6 @@ function getDaysRemaining(dueDate) {
   if (!dueDate) return null
   const diff = Math.ceil((new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24))
   return diff
-}
-
-function parseGitHubUrl(url) {
-  if (!url) return null
-  const m = url.match(/github\.com\/([^/]+)\/([^/]+)/)
-  if (!m) return null
-  return { owner: m[1], repo: m[2].replace(/\.git$/, '') }
 }
 
 function CyclingInfo({ items, interval = 4000 }) {
@@ -76,10 +70,9 @@ export function ProjectCard({ project, clientName, to, hidePrice }) {
     if (project.repository_url) {
       const repo = parseGitHubUrl(project.repository_url)
       if (repo) {
-        const token = import.meta.env.VITE_GITHUB_TOKEN
         fetch(
           `https://api.github.com/repos/${repo.owner}/${repo.repo}/commits?per_page=1`,
-          { headers: token ? { Authorization: `Bearer ${token}` } : undefined }
+          { headers: { Accept: 'application/vnd.github+json' } }
         )
           .then(r => r.ok ? r.json() : [])
           .then(data => {

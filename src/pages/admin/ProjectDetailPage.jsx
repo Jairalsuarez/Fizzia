@@ -4,7 +4,23 @@ import { deleteProjectFile, getAllProjectFiles, uploadProjectFileAdmin } from '.
 import { getProjectMessages } from '../../api/messagesApi'
 import { markAdminProjectMessagesRead, sendAdminMessage, subscribeToAdminMessages } from '../../api/messagesApi'
 import { getProjectInvoicesWithPayments, getProjectPayments } from '../../api/paymentsApi'
-import { createProjectFileRequest, createProjectTask, deleteProjectFileRequest, deleteProjectTask, getProjectFileRequests, getProjectTasks, updateProject, updateProjectTask } from '../../api/projectsApi'
+import {
+  createMilestone,
+  createProjectAppointment,
+  createProjectFileRequest,
+  createProjectTask,
+  deleteMilestone,
+  deleteProjectAppointment,
+  deleteProjectFileRequest,
+  deleteProjectTask,
+  ensureProjectMilestones,
+  getProjectAppointments,
+  getProjectFileRequests,
+  getProjectTasks,
+  updateMilestone,
+  updateProject,
+  updateProjectTask,
+} from '../../api/projectsApi'
 import { DeleteProjectModal } from '../../components/projects/DeleteProjectModal'
 import { useToast } from '../../components/Toast'
 import { Modal } from '../../components/ui/Modal'
@@ -18,6 +34,7 @@ import { getDeliveryStatus, markMessageFailed, markMessageSent, mergeRealtimeMes
 import { sumApprovedPayments } from '../../utils/paymentStatus'
 import { readStoredValue, writeStoredValue } from '../../utils/persistedState'
 import { useRealtimeProject } from '../../hooks/useRealtimeProjects'
+import { MeetingCards, ProjectRoadmap } from '../../components/projects/ProjectRoadmap'
 
 let pendingId = Date.now()
 function genId() { return `pending-${pendingId++}` }
@@ -44,7 +61,7 @@ export function ProjectDetailPage() {
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState(() => {
-    return readStoredValue(`admin-project-tab-${projectId}`, 'general', value => ['general', 'mensajes', 'archivos', 'actividad'].includes(value))
+    return readStoredValue(`admin-project-tab-${projectId}`, 'general', value => ['general', 'plan', 'mensajes', 'archivos', 'actividad'].includes(value))
   })
   const [saving, setSaving] = useState(false)
   const [startDate, setStartDate] = useState('')
@@ -79,6 +96,12 @@ export function ProjectDetailPage() {
   const [finalPriceValue, setFinalPriceValue] = useState('')
   const [showPriceEdit, setShowPriceEdit] = useState(false)
   const [savingPrice, setSavingPrice] = useState(false)
+  const [milestones, setMilestones] = useState([])
+  const [appointments, setAppointments] = useState([])
+  const [showMilestoneForm, setShowMilestoneForm] = useState(false)
+  const [newMilestone, setNewMilestone] = useState({ title: '', description: '', due_date: '', type: 'custom' })
+  const [showMeetingForm, setShowMeetingForm] = useState(false)
+  const [meetingForm, setMeetingForm] = useState({ title: '', starts_at: '', platform: 'Google Meet', meeting_url: '', description: '' })
 
   // File requests
   const [fileRequests, setFileRequests] = useState([])
@@ -142,13 +165,15 @@ export function ProjectDetailPage() {
           setClientDeadline(data.client_deadline ? data.client_deadline.split('T')[0] : '')
           setRepoUrl(data.repository_url || '')
           setShowEditDates(!data.start_date && !data.due_date && !data.repository_url)
-          const [msgs, f, inv, pay, fileReqs, tasksRes, devsRes, assignedRes] = await Promise.all([
+          const [msgs, f, inv, pay, fileReqs, tasksRes, milestonesRes, appointmentsRes, devsRes, assignedRes] = await Promise.all([
             getProjectMessages(data.id),
             getAllProjectFiles(data.id),
             getProjectInvoicesWithPayments(data.id),
             getProjectPayments(data.id),
             getProjectFileRequests(data.id),
             getProjectTasks(data.id),
+            ensureProjectMilestones(data.id),
+            getProjectAppointments(data.id),
             getAssignableProfiles(),
             supabase.from('project_developers').select('developer_id, profiles(id, full_name, email, avatar_id)').eq('project_id', data.id),
           ])
@@ -158,6 +183,8 @@ export function ProjectDetailPage() {
           setPayments(pay)
           setFileRequests(fileReqs || [])
           setTasks(tasksRes || [])
+          setMilestones(milestonesRes || [])
+          setAppointments(appointmentsRes || [])
           const allProfiles = devsRes?.data || []
           const currentUserId = userData?.user?.id
           const currentAdmin = allProfiles.find(p => p.id === currentUserId) || {
@@ -233,7 +260,7 @@ export function ProjectDetailPage() {
     const repo = project?.repository_url || project?.repo_url || repoUrl
     if (tab !== 'actividad' || !repo) return
     let cancelled = false
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setCommitsLoading(true)
     fetchGitHubCommits(repo, 15)
       .then(data => { if (!cancelled) setCommits(data || []) })
@@ -426,6 +453,66 @@ export function ProjectDetailPage() {
     toast.success('Tarea eliminada')
   }
 
+  const addMilestone = async () => {
+    if (!newMilestone.title.trim()) return
+    const { data, error } = await createMilestone({
+      project_id: project.id,
+      title: newMilestone.title,
+      description: newMilestone.description,
+      due_date: newMilestone.due_date || null,
+      type: newMilestone.type || 'custom',
+      status: 'todo',
+      sort_order: milestones.length + 1,
+    })
+    if (error) { toast.error(error.message || 'No se pudo crear el paso'); return }
+    setMilestones(prev => [...prev, data])
+    setNewMilestone({ title: '', description: '', due_date: '', type: 'custom' })
+    setShowMilestoneForm(false)
+    toast.success('Paso agregado')
+  }
+
+  const changeMilestoneStatus = async (milestone, status) => {
+    const patch = { status, completed_at: status === 'done' ? new Date().toISOString() : null }
+    const { data, error } = await updateMilestone(milestone.id, patch)
+    if (error) { toast.error(error.message || 'No se pudo actualizar el paso'); return }
+    setMilestones(prev => prev.map(item => item.id === milestone.id ? { ...item, ...data } : item))
+  }
+
+  const removeMilestone = async (id) => {
+    await deleteMilestone(id)
+    setMilestones(prev => prev.filter(item => item.id !== id))
+    toast.success('Paso eliminado')
+  }
+
+  const addMeeting = async () => {
+    if (!meetingForm.title.trim() || !meetingForm.starts_at) {
+      toast.error('Agrega título y fecha de la reunión')
+      return
+    }
+    const { data, error } = await createProjectAppointment({
+      project_id: project.id,
+      client_id: project.client_id,
+      title: meetingForm.title,
+      description: meetingForm.description,
+      starts_at: new Date(meetingForm.starts_at).toISOString(),
+      location: meetingForm.platform,
+      platform: meetingForm.platform,
+      meeting_url: meetingForm.meeting_url || null,
+      status: 'scheduled',
+    })
+    if (error) { toast.error(error.message || 'No se pudo agendar'); return }
+    setAppointments(prev => [...prev, data].sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at)))
+    setMeetingForm({ title: '', starts_at: '', platform: 'Google Meet', meeting_url: '', description: '' })
+    setShowMeetingForm(false)
+    toast.success('Reunión agendada')
+  }
+
+  const removeMeeting = async (id) => {
+    await deleteProjectAppointment(id)
+    setAppointments(prev => prev.filter(item => item.id !== id))
+    toast.success('Reunión eliminada')
+  }
+
   const handleCreateFileRequest = async () => {
     if (!newFileRequest.trim()) return
     setRequestSaving(true)
@@ -500,6 +587,7 @@ export function ProjectDetailPage() {
 
   const tabs = [
     { id: 'general', label: 'General', icon: 'dashboard' },
+    { id: 'plan', label: 'Plan', icon: 'route' },
     { id: 'mensajes', label: 'Mensajes', icon: 'chat' },
     { id: 'archivos', label: 'Archivos', icon: 'folder' },
     { id: 'actividad', label: 'Actividad', icon: 'commit' },
@@ -897,6 +985,71 @@ export function ProjectDetailPage() {
 
             {/* Created date */}
             <p className="text-xs text-dark-600">Creado el {formatDate(project.created_at)}</p>
+          </div>
+        )}
+
+        {tab === 'plan' && (
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+            <section className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-bold text-white">Pasos del proyecto</h3>
+                  <p className="text-sm text-dark-500">Crea una ruta flexible: pagos, reuniones, demos, revisión y entrega.</p>
+                </div>
+                <button onClick={() => setShowMilestoneForm(!showMilestoneForm)} className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-lighter)]">
+                  <span className="material-symbols-rounded text-base">add</span>
+                  Agregar paso
+                </button>
+              </div>
+
+              {showMilestoneForm && (
+                <div className="rounded-2xl border border-dark-800 bg-dark-900/70 p-4">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <input value={newMilestone.title} onChange={e => setNewMilestone(prev => ({ ...prev, title: e.target.value }))} className="rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" placeholder="Ej: Demo de dashboard" />
+                    <input type="date" value={newMilestone.due_date} onChange={e => setNewMilestone(prev => ({ ...prev, due_date: e.target.value }))} className="rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" />
+                    <select value={newMilestone.type} onChange={e => setNewMilestone(prev => ({ ...prev, type: e.target.value }))} className="rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]">
+                      <option value="custom">Personalizado</option>
+                      <option value="payment">Fecha de pago</option>
+                      <option value="meeting">Reunión</option>
+                      <option value="demo">Demo</option>
+                      <option value="delivery">Entrega</option>
+                    </select>
+                    <button onClick={addMilestone} className="cursor-pointer rounded-xl bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white">Guardar paso</button>
+                  </div>
+                  <textarea value={newMilestone.description} onChange={e => setNewMilestone(prev => ({ ...prev, description: e.target.value }))} className="mt-3 w-full rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" rows={2} placeholder="Notas internas o explicación visible para el cliente..." />
+                </div>
+              )}
+
+              <ProjectRoadmap milestones={milestones} admin onStatusChange={changeMilestoneStatus} onDelete={removeMilestone} />
+            </section>
+
+            <section className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-bold text-white">Agenda</h3>
+                  <p className="text-sm text-dark-500">Reuniones, demos y solicitudes del cliente.</p>
+                </div>
+                <button onClick={() => setShowMeetingForm(!showMeetingForm)} className="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-dark-700 px-3 py-2 text-sm font-semibold text-dark-200 hover:bg-dark-800">
+                  <span className="material-symbols-rounded text-base">event</span>
+                  Agendar
+                </button>
+              </div>
+
+              {showMeetingForm && (
+                <div className="rounded-2xl border border-dark-800 bg-dark-900/70 p-4 space-y-3">
+                  <input value={meetingForm.title} onChange={e => setMeetingForm(prev => ({ ...prev, title: e.target.value }))} className="w-full rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" placeholder="Título de la reunión" />
+                  <input type="datetime-local" value={meetingForm.starts_at} onChange={e => setMeetingForm(prev => ({ ...prev, starts_at: e.target.value }))} className="w-full rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input value={meetingForm.platform} onChange={e => setMeetingForm(prev => ({ ...prev, platform: e.target.value }))} className="rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" placeholder="Google Meet, Zoom..." />
+                    <input value={meetingForm.meeting_url} onChange={e => setMeetingForm(prev => ({ ...prev, meeting_url: e.target.value }))} className="rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" placeholder="https://..." />
+                  </div>
+                  <textarea value={meetingForm.description} onChange={e => setMeetingForm(prev => ({ ...prev, description: e.target.value }))} rows={2} className="w-full rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" placeholder="Objetivo o agenda de la reunión" />
+                  <button onClick={addMeeting} className="cursor-pointer w-full rounded-xl bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white">Guardar reunión</button>
+                </div>
+              )}
+
+              <MeetingCards appointments={appointments} admin onDelete={removeMeeting} />
+            </section>
           </div>
         )}
 

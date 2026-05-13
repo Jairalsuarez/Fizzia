@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
 import { useEffect, useState } from 'react'
 import { StatusBadge, EmptyState, Skeleton } from '../../components/ui/'
 import { formatDate } from '../../utils/format'

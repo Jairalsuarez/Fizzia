@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+ 
 import { useState, useCallback, useRef, useMemo } from 'react'
 import { createContext, useContext } from 'react'
 import { useAppTheme } from '../theme/appTheme'

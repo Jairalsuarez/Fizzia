@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
 import { useState, useEffect } from 'react'
 import { Button, Card, Icon, Skeleton } from '../../components/ui/'
 import { getMyProfile, updateProfile } from '../../api/profilesApi'

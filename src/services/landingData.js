@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { cleanPayload, isValidEmail, sanitizeEmail } from '../utils/security'
 
 export async function getPublishedServices() {
   const { data } = await supabase
@@ -43,9 +44,11 @@ export async function getLandingSections() {
 }
 
 export async function createContactMessage(payload) {
-  const cleaned = Object.fromEntries(
-    Object.entries(payload).filter(([, v]) => v !== null && v !== undefined && v !== '')
-  )
+  const cleaned = cleanPayload(payload, ['message', 'need_summary', 'project_description'])
+  if (cleaned.email) cleaned.email = sanitizeEmail(cleaned.email)
+  if (cleaned.email && !isValidEmail(cleaned.email)) {
+    return { data: null, error: { message: 'Correo electrónico inválido' } }
+  }
   return supabase.from('contact_messages').insert(cleaned).select().single()
 }
 
@@ -77,10 +80,17 @@ export async function createLead(payload) {
     'lost_reason',
     'metadata',
   ]
-  const cleaned = Object.fromEntries(
-    Object.entries(normalized).filter(([key, value]) => (
-      allowedFields.includes(key) && value !== null && value !== undefined && value !== ''
-    ))
+  const cleaned = cleanPayload(
+    Object.fromEntries(
+      Object.entries(normalized).filter(([key, value]) => (
+        allowedFields.includes(key) && value !== null && value !== undefined && value !== ''
+      ))
+    ),
+    ['need_summary', 'lost_reason']
   )
+  if (cleaned.email) cleaned.email = sanitizeEmail(cleaned.email)
+  if (cleaned.email && !isValidEmail(cleaned.email)) {
+    return { data: null, error: { message: 'Correo electrónico inválido' } }
+  }
   return supabase.from('leads').insert(cleaned)
 }

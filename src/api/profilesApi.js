@@ -1,4 +1,5 @@
 import { supabase } from '../services/supabase'
+import { cleanPayload, sanitizeString } from '../utils/security'
 
 export async function getCurrentUserId() {
   const { data } = await supabase.auth.getUser()
@@ -29,9 +30,11 @@ export async function updateProfile(payload) {
   const userId = await getCurrentUserId()
   if (!userId) return { data: null, error: 'No se pudo identificar tu usuario' }
 
-  const cleaned = Object.fromEntries(
-    Object.entries(payload)
-      .filter(([key, value]) => key !== 'email' && value !== null && value !== undefined && value !== '')
+  const cleaned = cleanPayload(
+    Object.fromEntries(
+      Object.entries(payload)
+        .filter(([key, value]) => key !== 'email' && value !== null && value !== undefined && value !== '')
+    )
   )
 
   if (Object.keys(cleaned).length === 0) {
@@ -56,10 +59,10 @@ export async function acceptTerms(fullName) {
   const { data, error } = await supabase
     .from('profiles')
     .update({
-      full_name: fullName.trim(),
+      full_name: sanitizeString(fullName, 160),
       terms_accepted_at: acceptedAt,
-      terms_full_name: fullName.trim(),
-      terms_version: '2026-05-09',
+      terms_full_name: sanitizeString(fullName, 160),
+      terms_version: '2026-05-13',
     })
     .eq('id', userId)
     .select()

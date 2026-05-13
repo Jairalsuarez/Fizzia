@@ -67,7 +67,7 @@ export default function ClientDetail({ client, onUpdate }) {
   }
 
   const sendWhatsApp = () => {
-    const phone = client.phone?.replace(/[\s\-\(\)]/g, '') || ''
+    const phone = client.phone?.replace(/[\s\-()]/g, '') || ''
     if (!phone) return toast.error('El cliente no tiene teléfono')
     const name = client.name?.split(' ')[0] || 'estimado cliente'
     const msg = `Hola ${name}, gracias por tu preferencia. Queremos recordarte que estamos disponibles para cualquier consulta sobre tus proyectos. Saludos, equipo Fizzia.`

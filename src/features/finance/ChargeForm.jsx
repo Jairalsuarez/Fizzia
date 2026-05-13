@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
 import { useState, useEffect } from 'react'
 import { Input, Button } from '../../components/ui/'
 import { getAllClients, getAllClientProjects } from '../../api/clientsApi'

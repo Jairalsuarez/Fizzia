@@ -27,7 +27,9 @@ export function CountryProvider({ children }) {
           setCountryCode(data.countryCode.toUpperCase())
           return
         }
-      } catch {}
+      } catch {
+        // Country detection is best-effort only.
+      }
 
       try {
         const res = await fetch('https://ipinfo.io/json')
@@ -36,7 +38,9 @@ export function CountryProvider({ children }) {
           setCountry(names[data.country] || data.country)
           setCountryCode(data.country.toUpperCase())
         }
-      } catch {}
+      } catch {
+        // Country detection is best-effort only.
+      }
     }
 
     detect()

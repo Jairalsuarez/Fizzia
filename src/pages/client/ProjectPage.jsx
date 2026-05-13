@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
 import { useState, useEffect, useCallback } from 'react'
 import { Card, StatusBadge, Icon, EmptyState, Skeleton } from '../../components/ui/'
 import { getMyProjects, getMyProjectMilestones } from '../../api/projectsApi'

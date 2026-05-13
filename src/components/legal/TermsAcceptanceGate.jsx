@@ -2,16 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { acceptTerms } from '../../api/profilesApi'
 import { useAuth } from '../../features/auth/authContext'
 import { useToast } from '../Toast'
+import { consentItems, legalLastUpdated } from '../../data/legalDocuments'
 
 const TERMS_PDF_URL = '/legal/terminos-fizzia.pdf'
-
-const consentItems = [
-  'Estoy de acuerdo en que la solicitud de proyecto sera revisada antes de ser aceptada.',
-  'Estoy de acuerdo en que los pagos son independientes, se validan con comprobantes y no constituyen factura tributaria salvo acuerdo escrito.',
-  'Estoy de acuerdo en que cambios fuera del alcance, integraciones extras o retrasos de informacion pueden modificar tiempos y costos.',
-  'Estoy de acuerdo en que, una vez entregado y aprobado el proyecto, ajustes posteriores pueden cotizarse como soporte o mantenimiento.',
-  'Estoy de acuerdo en mantener trato profesional, confidencialidad y uso responsable de archivos, accesos y credenciales.',
-]
 
 function needsTerms(profile) {
   return !profile?.terms_accepted_at
@@ -123,6 +116,7 @@ export function TermsAcceptanceGate({ profile, onAccepted }) {
           <div className="flex items-start justify-between gap-5">
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-white">Acepta los terminos de Fizzia</h2>
+              <p className="mt-1 text-xs text-dark-500">Incluye privacidad y política de desembolso. Actualizado: {legalLastUpdated}</p>
             </div>
             <span className="material-symbols-rounded rounded-full border border-fizzia-500/30 bg-fizzia-500/10 p-3 text-2xl text-fizzia-300">contract_edit</span>
           </div>

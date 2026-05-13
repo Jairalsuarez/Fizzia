@@ -277,9 +277,13 @@ function SimulatorContent() {
   const handleShare = async () => {
     const text = `${t('simulator.sharedText')}${total?.toLocaleString() || '0'}`
     if (navigator.share) {
-      try { await navigator.share({ title: 'Fizzia', text, url: window.location.href }) } catch {}
+      try { await navigator.share({ title: 'Fizzia', text, url: window.location.href }) } catch {
+        // Sharing can be cancelled by the user.
+      }
     } else {
-      try { await navigator.clipboard.writeText(text) } catch {}
+      try { await navigator.clipboard.writeText(text) } catch {
+        // Clipboard permissions are browser-dependent.
+      }
     }
   }
 

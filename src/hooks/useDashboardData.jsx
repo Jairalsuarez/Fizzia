@@ -45,7 +45,7 @@ export function DashboardDataProvider({ children }) {
   }, [location.pathname])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     refreshData()
   }, [refreshData])
 
@@ -78,5 +78,5 @@ export function DashboardDataProvider({ children }) {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
+ 
 export { useDashboardData } from './dashboardDataContext'

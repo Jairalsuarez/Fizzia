@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { assertAllowedUpload, cleanPayload, sanitizeFileName, sanitizeMultiline } from '../utils/security'
 
 async function getCurrentUserId() {
   const { data } = await supabase.auth.getUser()
@@ -61,6 +62,39 @@ export async function getMyProjectMilestones(projectId) {
   return data || []
 }
 
+export async function getMyProjectAppointments(projectId) {
+  const { data } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('starts_at', { ascending: true })
+  return data || []
+}
+
+export async function requestProjectAppointment(projectId, project, note = '') {
+  const userId = await getCurrentUserId()
+  if (!userId) return { data: null, error: 'No autenticado' }
+  const client = await getMyClient()
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .insert({
+      project_id: projectId,
+      client_id: client?.id || project?.client_id || null,
+      title: `Solicitud de reunión - ${project?.name || 'Proyecto'}`,
+      description: sanitizeMultiline(note || 'El cliente solicitó coordinar una reunión.', 1000),
+      starts_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      location: 'Por confirmar',
+      meeting_url: null,
+      requested_by: userId,
+      status: 'requested',
+    })
+    .select()
+    .single()
+
+  return { data, error }
+}
+
 export async function getMyInvoices() {
   const client = await getMyClient()
   if (!client) return []
@@ -98,9 +132,11 @@ export async function updateProfile(payload) {
   const userId = await getCurrentUserId()
   if (!userId) return { data: null, error: 'No se pudo identificar tu usuario' }
 
-  const cleaned = Object.fromEntries(
-    Object.entries(payload)
-      .filter(([k, v]) => k !== 'email' && v !== null && v !== undefined && v !== '')
+  const cleaned = cleanPayload(
+    Object.fromEntries(
+      Object.entries(payload)
+        .filter(([k, v]) => k !== 'email' && v !== null && v !== undefined && v !== '')
+    )
   )
 
   if (Object.keys(cleaned).length === 0) {
@@ -159,10 +195,12 @@ export async function sendMessageToTeam(content) {
   if (!projects.length) throw new Error('No tienes proyectos activos')
   const userId = await getCurrentUserId()
   if (!userId) throw new Error('Debes iniciar sesión para enviar mensajes')
+  const safeContent = sanitizeMultiline(content, 1200)
+  if (!safeContent) throw new Error('El mensaje está vacío')
   const projectId = projects[projects.length - 1].id
   const { data, error } = await supabase
     .from('messages')
-    .insert({ project_id: projectId, sender_id: userId, content, channel: 'client' })
+    .insert({ project_id: projectId, sender_id: userId, content: safeContent, channel: 'client' })
     .select()
     .single()
   if (error) throw error
@@ -192,15 +230,17 @@ export async function getProjectMessages(projectId) {
 export async function sendProjectMessage(projectId, content) {
   const userId = await getCurrentUserId()
   if (!userId) return null
+  const safeContent = sanitizeMultiline(content, 1200)
+  if (!safeContent) return null
   const { data, error } = await supabase
     .from('messages')
-    .insert({ project_id: projectId, sender_id: userId, content, channel: 'client' })
+    .insert({ project_id: projectId, sender_id: userId, content: safeContent, channel: 'client' })
     .select()
     .single()
   if (error?.code === '42703' || String(error?.message || '').includes('channel')) {
     const fallback = await supabase
       .from('messages')
-      .insert({ project_id: projectId, sender_id: userId, content })
+      .insert({ project_id: projectId, sender_id: userId, content: safeContent })
       .select()
       .single()
     if (fallback.error) console.error('Error sending message:', fallback.error)
@@ -301,8 +341,8 @@ export async function createProjectRequest(name, description, budget, details, d
     .from('projects')
     .insert({
       client_id: client.id,
-      name,
-      description: details ? `${description}\n\n${details}` : description,
+      name: sanitizeMultiline(name, 160),
+      description: sanitizeMultiline(details ? `${description}\n\n${details}` : description, 5000),
       status: 'solicitado',
       budget: budget || 0,
       due_date: dueDate || null,
@@ -385,10 +425,8 @@ export async function createClientPayment(payload) {
 
       let newClient
       if (existingClient) {
-        console.log('Found existing client by email:', existingClient.id)
         newClient = { id: existingClient.id }
       } else {
-        console.log('Creating client record for user:', userId)
         const { data, error: clientError } = await supabase
           .from('clients')
           .insert({
@@ -410,7 +448,6 @@ export async function createClientPayment(payload) {
         newClient = data
       }
 
-      console.log('Linking client:', newClient.id, 'to user:', userId)
       const { error: linkError } = await supabase
         .from('client_users')
         .insert({ user_id: userId, client_id: newClient.id })
@@ -421,7 +458,6 @@ export async function createClientPayment(payload) {
       }
 
       client_id = newClient.id
-      console.log('Client linked successfully. client_id:', client_id)
     }
   }
 
@@ -444,11 +480,7 @@ export async function createClientPayment(payload) {
     insertData.invoice_id = payload.invoice_id
   }
 
-  const cleaned = Object.fromEntries(
-    Object.entries(insertData).filter(([, v]) => v !== null && v !== undefined)
-  )
-
-  console.log('Inserting payment:', cleaned)
+  const cleaned = cleanPayload(insertData, ['notes'])
 
   const { data, error } = await supabase
     .from('payments')
@@ -462,7 +494,6 @@ export async function createClientPayment(payload) {
   }
 
   if (data) {
-    console.log('Payment inserted successfully:', data)
     return { data, error: null }
   }
 
@@ -486,8 +517,16 @@ export async function deleteClientPayment(paymentId) {
 }
 
 export async function uploadPaymentProof(file) {
-  const fileExt = file.name.split('.').pop()
-  const fileName = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${fileExt}`
+  try {
+    assertAllowedUpload(file, {
+      maxBytes: 8 * 1024 * 1024,
+      allowedTypes: ['image/*', 'application/pdf'],
+      allowedExtensions: ['jpeg', 'jpg', 'pdf', 'png', 'webp'],
+    })
+  } catch (error) {
+    return { data: null, error }
+  }
+  const fileName = `${Date.now()}_${crypto.randomUUID()}_${sanitizeFileName(file.name)}`
   const filePath = `payment-proofs/${fileName}`
 
   const { error: uploadError } = await supabase.storage
@@ -503,8 +542,15 @@ export async function uploadProjectFile(projectId, file, uploaderId = null, note
   const userId = uploaderId || await getCurrentUserId()
   if (!userId) return { data: null, error: 'No autenticado' }
 
-  const fileExt = file.name.split('.').pop()
-  const fileName = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${fileExt}`
+  try {
+    assertAllowedUpload(file, {
+      maxBytes: 50 * 1024 * 1024,
+      allowedExtensions: ['ai', 'doc', 'docx', 'fig', 'jpeg', 'jpg', 'mov', 'mp4', 'pdf', 'png', 'psd', 'rar', 'sketch', 'svg', 'webp', 'zip'],
+    })
+  } catch (error) {
+    return { data: null, error }
+  }
+  const fileName = `${Date.now()}_${crypto.randomUUID()}_${sanitizeFileName(file.name)}`
   const filePath = `${projectId}/${fileName}`
 
   const { error: uploadError } = await supabase.storage
@@ -522,13 +568,13 @@ export async function uploadProjectFile(projectId, file, uploaderId = null, note
     .insert({
       project_id: projectId,
       uploader_id: userId,
-      file_name: file.name,
+      file_name: sanitizeFileName(file.name),
       file_url: publicUrl.publicUrl,
       storage_path: filePath,
       file_type: file.type,
       file_size: file.size,
       visibility: 'client',
-      note,
+      note: sanitizeMultiline(note, 1000),
     })
     .select()
     .single()

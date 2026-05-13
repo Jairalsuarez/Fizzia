@@ -10,7 +10,6 @@ import { TrustSection } from '../components/landing/TrustSection'
 import { ProcessSection } from '../components/landing/ProcessSection'
 import { SimulatorSection } from '../components/landing/SimulatorSection'
 import { ContactSection } from '../components/landing/ContactSection'
-import { AnonymousChat } from '../components/landing/AnonymousChat'
 
 export function LandingPage() {
   return (
@@ -27,7 +26,6 @@ export function LandingPage() {
       <SimulatorSection />
       <ContactSection />
       <Footer />
-      <AnonymousChat />
     </div>
     </CountryProvider>
     </LanguageProvider>

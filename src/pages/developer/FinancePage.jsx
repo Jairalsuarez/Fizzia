@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../features/auth/authContext'
 import { supabase } from '../../services/supabase'

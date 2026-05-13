@@ -1,8 +1,18 @@
+import { sanitizeUrl } from './security'
+
 export function parseGitHubUrl(url) {
-  if (!url) return null
-  const match = url.match(/github\.com\/([^/]+)\/([^/]+)/)
-  if (!match) return null
-  return { owner: match[1], repo: match[2].replace(/\.git$/, '') }
+  const safeUrl = sanitizeUrl(url)
+  if (!safeUrl) return null
+
+  try {
+    const parsed = new URL(safeUrl)
+    if (parsed.hostname !== 'github.com') return null
+    const [owner, repo] = parsed.pathname.split('/').filter(Boolean)
+    if (!owner || !repo) return null
+    return { owner, repo: repo.replace(/\.git$/, '') }
+  } catch {
+    return null
+  }
 }
 
 export async function fetchGitHubCommits(repoUrl, limit = 20) {
@@ -10,12 +20,9 @@ export async function fetchGitHubCommits(repoUrl, limit = 20) {
   if (!repo) return []
 
   try {
-    const token = import.meta.env.VITE_GITHUB_TOKEN
     const res = await fetch(
       `https://api.github.com/repos/${repo.owner}/${repo.repo}/commits?per_page=${limit}`,
-      {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      }
+      { headers: { Accept: 'application/vnd.github+json' } }
     )
     if (!res.ok) return []
     return res.json()

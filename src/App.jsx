@@ -23,7 +23,6 @@ const AdminFinancePage = lazy(() => import('./pages/admin/FinancePage').then(mod
 const AdminDevelopersPage = lazy(() => import('./pages/admin/DevelopersPage').then(module => ({ default: module.DevelopersPage })))
 const AdminPaymentsPage = lazy(() => import('./pages/admin/PaymentsPage').then(module => ({ default: module.PaymentsPage })))
 const AdminSettingsPage = lazy(() => import('./pages/admin/SettingsPage').then(module => ({ default: module.SettingsPage })))
-const AdminAnonymousChatPage = lazy(() => import('./pages/admin/AnonymousChatPage').then(module => ({ default: module.AnonymousChatPage })))
 
 const DeveloperDashboardPage = lazy(() => import('./pages/developer/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const DeveloperProjectDetailPage = lazy(() => import('./pages/developer/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
@@ -39,6 +38,7 @@ const ClientFinancesPage = lazy(() => import('./pages/client/FinancesPage').then
 const ClientFilesPage = lazy(() => import('./pages/client/FilesPage').then(module => ({ default: module.FilesPage })))
 const ClientProfilePage = lazy(() => import('./pages/client/ProfilePage').then(module => ({ default: module.ProfilePage })))
 const ClientSettingsPage = lazy(() => import('./pages/client/SettingsPage').then(module => ({ default: module.SettingsPage })))
+const ClientTutorialsPage = lazy(() => import('./pages/client/TutorialsPage').then(module => ({ default: module.TutorialsPage })))
 
 function RouteFallback() {
   return (
@@ -75,7 +75,6 @@ function App() {
               <Route path="/admin/desarrolladores" element={<AdminDevelopersPage />} />
               <Route path="/admin/pagos" element={<AdminPaymentsPage />} />
               <Route path="/admin/finanzas" element={<AdminFinancePage />} />
-              <Route path="/admin/chat-anonimo" element={<AdminAnonymousChatPage />} />
               <Route path="/admin/configuracion" element={<AdminSettingsPage />} />
             </Route>
           </Route>
@@ -90,6 +89,7 @@ function App() {
               <Route path="/cliente/finanzas" element={<ClientFinancesPage />} />
               <Route path="/cliente/archivos" element={<ClientFilesPage />} />
               <Route path="/cliente/perfil" element={<ClientProfilePage />} />
+              <Route path="/cliente/tutoriales" element={<ClientTutorialsPage />} />
               <Route path="/cliente/configuracion" element={<ClientSettingsPage />} />
               <Route path="/cliente/terminos" element={<TermsPage />} />
             </Route>

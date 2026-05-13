@@ -22,7 +22,7 @@ export function DeveloperFloatingChat() {
   const location = useLocation()
   const toast = useToast()
   const [isOpen, setIsOpen] = useState(false)
-  const [projects, setProjects] = useState([])
+  const [, setProjects] = useState([])
   const [adminUsers, setAdminUsers] = useState([])
   const [selectedAdmin, setSelectedAdmin] = useState(null)
   const [messages, setMessages] = useState([])

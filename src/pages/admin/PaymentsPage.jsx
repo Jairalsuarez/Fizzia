@@ -41,11 +41,11 @@ export function PaymentsPage() {
     setRejectionReason('')
   }
 
-  /* eslint-disable react-hooks/set-state-in-effect */
+   
   useEffect(() => {
     loadPayments()
   }, [filter, loadPayments])
-  /* eslint-enable react-hooks/set-state-in-effect */
+   
 
   const filtered = payments.filter(p => {
     if (filter === 'pending') return p.admin_status === 'pending'

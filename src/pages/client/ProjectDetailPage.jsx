@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { getProjectMessages, markProjectMessagesRead, sendProjectMessage, subscribeToMessages } from '../../api/messagesApi'
 import { createClientPayment, deleteClientPayment, getProjectDirectPayments, getProjectInvoices, uploadPaymentProof } from '../../api/paymentsApi'
 import { Modal } from '../../components/ui'
-import { fulfillFileRequest, getClientProjectFileRequests, getMyProjects } from '../../api/projectsApi'
+import { fulfillFileRequest, getClientProjectFileRequests, getMyProjectAppointments, getMyProjectMilestones, getMyProjects, requestProjectAppointment } from '../../api/projectsApi'
 import { getProjectFiles, uploadProjectFile } from '../../api/filesApi'
 import { formatDate, formatMoney } from '../../utils/format'
 import { useToast } from '../../components/Toast'
@@ -17,6 +17,7 @@ import { getDeliveryStatus, markMessageFailed, markMessageSent, mergeRealtimeMes
 import { sumApprovedPayments } from '../../utils/paymentStatus'
 import { readStoredValue, writeStoredValue } from '../../utils/persistedState'
 import { useRealtimeProject } from '../../hooks/useRealtimeProjects'
+import { MeetingCards, ProjectRoadmap } from '../../components/projects/ProjectRoadmap'
 
 let pendingId = Date.now()
 function genId() { return `pending-${pendingId++}` }
@@ -53,7 +54,11 @@ export function ProjectDetailPage() {
   const [invoices, setInvoices] = useState([])
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState(() => readStoredValue(`client-project-tab-${projectId}`, 'info', value => ['info', 'actividad', 'pagos', 'files'].includes(value)))
+  const [activeTab, setActiveTab] = useState(() => readStoredValue(`client-project-tab-${projectId}`, 'info', value => ['info', 'plan', 'actividad', 'pagos', 'files'].includes(value)))
+  const [milestones, setMilestones] = useState([])
+  const [appointments, setAppointments] = useState([])
+  const [meetingNote, setMeetingNote] = useState('')
+  const [requestingMeeting, setRequestingMeeting] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const [editData, setEditData] = useState({ name: '', description: '', budget: '', repo_url: '', live_url: '', notes: '' })
   const [savingEdit, setSavingEdit] = useState(false)
@@ -110,7 +115,7 @@ export function ProjectDetailPage() {
   const selectedAmount = Number(paymentAmount || 0)
   const paymentAmountIsValid = selectedAmount > 0 && selectedAmount <= pending
 
-  /* eslint-disable react-hooks/set-state-in-effect */
+   
   useEffect(() => {
     writeStoredValue(`client-project-tab-${projectId}`, activeTab)
   }, [activeTab, projectId])
@@ -127,7 +132,7 @@ export function ProjectDetailPage() {
       }
     }
   }, [])
-  /* eslint-enable react-hooks/set-state-in-effect */
+   
 
   const canEdit = project?.status === 'solicitado'
 
@@ -182,17 +187,21 @@ export function ProjectDetailPage() {
           notes: found.notes || '',
         })
 
-        const [filesRes, msgsRes, fileReqsRes, invoicesRes, directPaymentsRes] = await Promise.all([
+        const [filesRes, msgsRes, fileReqsRes, invoicesRes, directPaymentsRes, milestonesRes, appointmentsRes] = await Promise.all([
           getProjectFiles(projectId),
           getProjectMessages(projectId),
           getClientProjectFileRequests(projectId),
           getProjectInvoices(projectId),
           getProjectDirectPayments(projectId),
+          getMyProjectMilestones(projectId),
+          getMyProjectAppointments(projectId),
         ])
         setFiles(filesRes || [])
         setMessages(msgsRes || [])
         setFileRequests(fileReqsRes || [])
         setInvoices(invoicesRes || [])
+        setMilestones(milestonesRes || [])
+        setAppointments(appointmentsRes || [])
         const invoicePayments = (invoicesRes || []).flatMap(inv => (inv.payments || []).map(p => ({ ...p, invoice_number: inv.invoice_number })))
         const directPayments = (directPaymentsRes || []).map(p => ({ ...p, invoice_number: '' }))
         const allPayments = [...invoicePayments, ...directPayments].sort((a, b) => new Date(b.paid_at || b.created_at) - new Date(a.paid_at || a.created_at))
@@ -297,7 +306,7 @@ export function ProjectDetailPage() {
     }
   }, [paymentMethod, paymentStep, paymentAmount, pending, project?.name, recordPayPalPayment, toast])
 
-  /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const orderId = params.get('token')
@@ -312,7 +321,7 @@ export function ProjectDetailPage() {
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [])
-  /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   useEffect(() => {
     if (project && activeTab === 'mensajes') {
@@ -354,7 +363,7 @@ export function ProjectDetailPage() {
     const repo = project?.repo_url || project?.repository_url
     if (activeTab !== 'actividad' || !repo) return
     let cancelled = false
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setCommitsLoading(true)
     fetchGitHubCommits(repo, 15)
       .then(data => { if (!cancelled) setCommits(data || []) })
@@ -601,6 +610,21 @@ export function ProjectDetailPage() {
     }
   }
 
+  const handleRequestMeeting = async () => {
+    setRequestingMeeting(true)
+    try {
+      const { data, error } = await requestProjectAppointment(projectId, project, meetingNote)
+      if (error) throw error
+      setAppointments(prev => [...prev, data].sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at)))
+      setMeetingNote('')
+      toast.success('Solicitud de reunión enviada')
+    } catch {
+      toast.error('No se pudo solicitar la reunión')
+    } finally {
+      setRequestingMeeting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">
@@ -754,6 +778,7 @@ export function ProjectDetailPage() {
       <div className="flex gap-1 bg-dark-900/50 border border-dark-800 rounded-xl p-1">
         {[
           { key: 'info', label: 'Detalles' },
+          { key: 'plan', label: 'Plan' },
           { key: 'pagos', label: 'Pagos' },
           { key: 'actividad', label: 'Cambios' },
           { key: 'files', label: 'Archivos' },
@@ -773,7 +798,7 @@ export function ProjectDetailPage() {
       </div>
 
       {/* Tab content */}
-      {project.status === 'solicitado' && ['pagos', 'actividad', 'files'].includes(activeTab) ? (
+      {project.status === 'solicitado' && ['plan', 'pagos', 'actividad', 'files'].includes(activeTab) ? (
         <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-12 text-center flex flex-col items-center justify-center animate-in fade-in duration-500">
           <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mb-4">
             <span className="material-symbols-rounded text-4xl text-dark-500">lock</span>
@@ -942,6 +967,44 @@ export function ProjectDetailPage() {
               <span className="material-symbols-rounded text-lg">send</span>
             </button>
           </form>
+        </div>
+      )}
+
+      {activeTab === 'plan' && (
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <section className="space-y-4">
+            <div className="rounded-2xl border border-dark-800 bg-dark-900/70 p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--accent)]">Ruta del proyecto</p>
+              <h3 className="mt-2 text-xl font-bold text-white">Lo que sigue, sin ruido</h3>
+              <p className="mt-2 text-sm leading-6 text-dark-400">
+                Aquí ves los pasos importantes: revisión, reuniones, pagos, demos, ajustes y entrega.
+              </p>
+            </div>
+            <ProjectRoadmap milestones={milestones} />
+          </section>
+
+          <section className="space-y-4">
+            <div className="rounded-2xl border border-dark-800 bg-dark-900/70 p-5">
+              <h3 className="text-lg font-bold text-white">Reuniones</h3>
+              <p className="mt-1 text-sm leading-6 text-dark-400">Cuando una reunión esté confirmada, verás plataforma, fecha y enlace disponible.</p>
+              <textarea
+                value={meetingNote}
+                onChange={(event) => setMeetingNote(event.target.value)}
+                rows={3}
+                className="mt-4 w-full rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]"
+                placeholder="Opcional: cuéntanos qué quieres revisar en la reunión..."
+              />
+              <button
+                onClick={handleRequestMeeting}
+                disabled={requestingMeeting}
+                className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-lighter)] disabled:opacity-50"
+              >
+                <span className="material-symbols-rounded text-base">event_available</span>
+                {requestingMeeting ? 'Enviando...' : 'Solicitar reunión'}
+              </button>
+            </div>
+            <MeetingCards appointments={appointments} />
+          </section>
         </div>
       )}
 

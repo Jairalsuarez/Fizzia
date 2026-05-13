@@ -16,7 +16,6 @@ async function handleStartProject() {
   } catch (error) {
     console.warn(error)
   }
-  window.dispatchEvent(new Event('open-chatbot'))
 }
 
 export function ContactSection() {

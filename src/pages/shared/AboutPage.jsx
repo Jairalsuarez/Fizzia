@@ -2,7 +2,6 @@ import { LanguageProvider } from '../../contexts/LanguageContext'
 import { CountryProvider } from '../../contexts/CountryContext'
 import { Header } from '../../components/landing/Header'
 import { Footer } from '../../components/landing/Footer'
-import { AnonymousChat } from '../../components/landing/AnonymousChat'
 import { useLanguage } from '../../contexts/LanguageContext'
 
 function AboutContent() {
@@ -142,7 +141,6 @@ function AboutContent() {
       </section>
 
       <Footer />
-      <AnonymousChat />
     </>
   )
 }

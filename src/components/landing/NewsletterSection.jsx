@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { isValidEmail, sanitizeEmail } from '../../utils/security'
 
 export function NewsletterSection() {
   const [email, setEmail] = useState('')
@@ -10,7 +11,8 @@ export function NewsletterSection() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (email) {
+    const cleanedEmail = sanitizeEmail(email)
+    if (isValidEmail(cleanedEmail)) {
       setSubmitted(true)
       setEmail('')
       setTimeout(() => setSubmitted(false), 3000)
@@ -44,7 +46,7 @@ export function NewsletterSection() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.slice(0, 254))}
                   placeholder={t('newsletter.placeholder')}
                   required
                   className="flex-1 px-5 py-3 bg-dark-950 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-fizzia-500 transition-colors"

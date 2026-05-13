@@ -21,7 +21,7 @@ export function LoginPage() {
   useEffect(() => {
     const hash = window.location.hash
     if (hash.includes('type=signup') || hash.includes('type=recovery')) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setSuccess('¡Email confirmado! Ya puedes iniciar sesión')
       window.history.replaceState(null, '', '/login')
     }

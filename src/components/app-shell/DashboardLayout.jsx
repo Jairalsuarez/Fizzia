@@ -129,7 +129,7 @@ export function DashboardLayout({
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl border border-dark-700 bg-dark-900 shadow-2xl shadow-black/40">
+                  <div className="absolute right-0 top-full mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-dark-700 bg-dark-900 shadow-2xl shadow-black/40">
                     <div className="p-4 border-b border-dark-700">
                       <p className="text-white text-sm font-semibold truncate">{displayName}</p>
                       <p className="text-dark-400 text-xs truncate mt-0.5">{email}</p>
@@ -167,17 +167,20 @@ export function DashboardLayout({
                         </NavLink>
                       )}
                       {isClientLayout && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDropdownOpen(false)
-                            window.dispatchEvent(new CustomEvent('fizzia-start-client-tour', { detail: { path: location.pathname } }))
-                          }}
-                          className="cursor-pointer flex items-center gap-3 w-full px-4 py-2.5 text-sm text-dark-300 hover:text-white hover:bg-dark-800 transition-colors"
+                        <NavLink
+                          to="/cliente/tutoriales"
+                          onClick={() => setDropdownOpen(false)}
+                          className={({ isActive }) =>
+                            `cursor-pointer flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-colors ${
+                              isActive
+                                ? `${palette.activeText} ${palette.activeBg}`
+                                : 'text-dark-300 hover:text-white hover:bg-dark-800'
+                            }`
+                          }
                         >
-                          <span className="material-symbols-rounded text-base">tips_and_updates</span>
-                          Tutoriales
-                        </button>
+                          <span className="material-symbols-rounded text-base">menu_book</span>
+                          Tutoriales y ayuda
+                        </NavLink>
                       )}
                       <button
                         onClick={handleSignOut}

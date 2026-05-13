@@ -1,0 +1,19 @@
+{
+  "name": "Fizzia",
+  "short_name": "Fizzia",
+  "description": "Páginas web, apps, tiendas online y sistemas digitales a medida.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050806",
+  "theme_color": "#050806",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/images/Solo%20la%20figura%20del%20logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

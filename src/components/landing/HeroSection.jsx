@@ -70,12 +70,12 @@ export function HeroSection() {
                   <span className="text-sm font-semibold">{b.label}</span>
                 </div>
               ))}
-              <button onClick={() => window.dispatchEvent(new CustomEvent('open-chatbot'))} className="flex items-center gap-3 text-dark-400 hover:text-fizzia-400 transition-colors cursor-pointer group">
+              <a href="#contacto" className="flex items-center gap-3 text-dark-400 hover:text-fizzia-400 transition-colors cursor-pointer group">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-dark-800 text-dark-400 group-hover:bg-fizzia-500/10 group-hover:text-fizzia-400 transition-colors">
                   <Icon name="chat" size={16} />
                 </div>
                 <span className="text-sm font-semibold">{t('hero.ctaQuote')}</span>
-              </button>
+              </a>
             </div>
           </div>
 
