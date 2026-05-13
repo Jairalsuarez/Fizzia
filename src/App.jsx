@@ -13,6 +13,7 @@ const RegisterPage = lazy(() => import('./features/auth/RegisterPage').then(modu
 const LandingPage = lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })))
 const TermsPage = lazy(() => import('./pages/shared/TermsPage').then(module => ({ default: module.TermsPage })))
 const AboutPage = lazy(() => import('./pages/shared/AboutPage').then(module => ({ default: module.AboutPage })))
+const SimulatorPage = lazy(() => import('./pages/shared/SimulatorPage').then(module => ({ default: module.SimulatorPage })))
 
 const AdminDashboardPage = lazy(() => import('./pages/admin/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const AdminProjectDetailPage = lazy(() => import('./pages/admin/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
@@ -61,6 +62,7 @@ function App() {
               <Route path="quienes-somos" element={<AboutPage />} />
             </Route>
 
+          <Route path="/simulador" element={<SimulatorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
