@@ -51,7 +51,7 @@ export function DashboardPage() {
   }, [user?.id])
 
   if (loading) return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {Array.from({ length: 4 }).map((_, i) => <ProjectCardSkeleton key={i} />)}
       </div>
@@ -59,7 +59,7 @@ export function DashboardPage() {
   )
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       <Greeting
         name={user?.full_name?.split(' ')[0] || user?.first_name || 'Developer'}
         phrases={devPhrases}

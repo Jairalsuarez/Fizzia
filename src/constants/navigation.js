@@ -5,6 +5,7 @@ export const adminNav = [
   { to: '/admin/desarrolladores', label: 'Desarrolladores', icon: 'code', preload: () => import('../pages/admin/DevelopersPage') },
   { to: '/admin/pagos', label: 'Pagos', icon: 'payments', preload: () => import('../pages/admin/PaymentsPage') },
   { to: '/admin/finanzas', label: 'Finanzas', icon: 'account_balance_wallet', preload: () => import('../pages/admin/FinancePage') },
+  { to: '/admin/calculadora', label: 'Calculadora', icon: 'calculate', preload: () => import('../pages/admin/PriceCalculatorPage') },
 ]
 
 export const clientNav = [

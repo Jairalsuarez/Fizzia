@@ -98,7 +98,7 @@ export function LeadsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       <h1 className="text-2xl font-bold text-white mb-6">Potenciales Clientes</h1>
 
       <div className="flex gap-6 h-[calc(100vh-180px)]">

@@ -91,7 +91,7 @@ export function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 p-6 max-w-2xl">
+      <div className="space-y-6 p-4 sm:p-6 max-w-2xl mx-auto">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-96" />
       </div>
@@ -100,7 +100,7 @@ export function ProfilePage() {
 
   if (error && !profile) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6 max-w-2xl mx-auto">
         <div className="bg-red-900/20 border border-red-700 text-red-400 px-4 py-3 rounded">
           {error}
         </div>
@@ -109,8 +109,8 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6 p-6 max-w-2xl">
-      <h1 className="text-2xl font-bold text-white">My Profile</h1>
+    <div className="space-y-6 p-4 sm:p-6 max-w-2xl mx-auto w-full">
+      <h1 className="text-2xl font-bold text-white px-1">My Profile</h1>
 
       {error && (
         <div className="bg-red-900/20 border border-red-700 text-red-400 px-4 py-3 rounded">
@@ -124,8 +124,8 @@ export function ProfilePage() {
         </div>
       )}
 
-      <Card className="bg-dark-900 border-dark-700" data-tour="profile-form">
-        <form onSubmit={handleSaveProfile} className="p-6 space-y-6">
+      <Card className="bg-dark-900 border-dark-700 overflow-hidden" data-tour="profile-form">
+        <form onSubmit={handleSaveProfile} className="p-5 sm:p-6 space-y-6">
           <h2 className="text-lg font-semibold text-white">Personal Information</h2>
 
           <div className="space-y-4">
@@ -181,8 +181,8 @@ export function ProfilePage() {
         </form>
       </Card>
 
-      <Card className="bg-dark-900 border-dark-700" data-tour="profile-password">
-        <div className="p-6">
+      <Card className="bg-dark-900 border-dark-700 overflow-hidden" data-tour="profile-password">
+        <div className="p-5 sm:p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-white">Password</h2>
             <button
@@ -252,8 +252,8 @@ export function ProfilePage() {
         </div>
       </Card>
 
-      <Card className="bg-dark-900 border-dark-700">
-        <div className="p-6">
+      <Card className="bg-dark-900 border-dark-700 overflow-hidden">
+        <div className="p-5 sm:p-6">
           <h2 className="text-lg font-semibold text-white mb-4">Contact Fizzia</h2>
           <p className="text-dark-300 text-sm mb-4">
             Need help or have questions? Reach out to us directly:

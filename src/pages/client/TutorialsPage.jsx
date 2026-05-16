@@ -74,7 +74,7 @@ export function TutorialsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       <section className="rounded-2xl border border-dark-800 bg-dark-900/70 p-6 md:p-8">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">

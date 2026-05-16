@@ -72,9 +72,9 @@ export function Header() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex-shrink-0">
-            <a href="/" className="flex items-center gap-2">
-              <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-8 w-auto" onError={(e) => { e.target.style.display = 'none' }} />
-              <span className="text-fizzia-500 font-black text-2xl">Fizzia</span>
+            <a href="/" className="flex items-center gap-1.5 sm:gap-2">
+              <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-7 w-auto sm:h-8" onError={(e) => { e.target.style.display = 'none' }} />
+              <span className="text-fizzia-500 font-black text-xl sm:text-2xl">Fizzia</span>
             </a>
           </div>
 
@@ -98,11 +98,11 @@ export function Header() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <div className="relative">
               <button
                 onClick={() => setLangOpen(!langOpen)}
-                className="flex items-center gap-1 text-dark-300 hover:text-white px-2 py-2 text-sm font-medium transition-colors cursor-pointer"
+                className="flex items-center gap-0.5 sm:gap-1 text-dark-300 hover:text-white px-1 sm:px-2 py-2 text-xs sm:text-sm font-medium transition-colors cursor-pointer"
               >
                 {lang.toUpperCase()}
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -126,13 +126,13 @@ export function Header() {
             </div>
             <a
               href="/login"
-              className="text-dark-300 hover:text-white text-sm font-medium transition-colors px-3 py-2 cursor-pointer"
+              className="text-dark-300 hover:text-white text-xs sm:text-sm font-medium transition-colors px-2 sm:px-3 py-2 cursor-pointer"
             >
               {t('header.signIn')}
             </a>
             <a
               href="/register"
-              className="bg-fizzia-500 hover:bg-fizzia-400 active:translate-y-px text-white px-4 sm:px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-lg shadow-fizzia-500/20 hover:shadow-fizzia-500/30 cursor-pointer"
+              className="bg-fizzia-500 hover:bg-fizzia-400 active:translate-y-px text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all shadow-lg shadow-fizzia-500/20 hover:shadow-fizzia-500/30 cursor-pointer"
             >
               {t('header.createAccount')}
             </a>

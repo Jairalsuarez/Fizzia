@@ -51,7 +51,7 @@ export function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         <div className="space-y-2">
           <div className="h-8 w-64 bg-dark-800 rounded-lg animate-pulse" />
           <div className="h-4 w-48 bg-dark-800 rounded animate-pulse" />
@@ -67,14 +67,14 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4" data-tour="client-welcome">
+    <div className="p-4 sm:p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-tour="client-welcome">
         <Greeting
           name={user?.full_name?.split(' ')[0] || 'Usuario'}
           phrases={clientPhrases}
           fallback="un placer tenerte aquí"
         />
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
           {projects.length > 0 && (
             <button
               type="button"

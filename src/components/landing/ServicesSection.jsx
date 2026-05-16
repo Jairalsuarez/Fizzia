@@ -95,7 +95,7 @@ export function ServicesSection() {
 
           <div className="border-t border-b border-dark-800/60 bg-dark-900/30 backdrop-blur-sm overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-fizzia-500/5 via-transparent to-violet-500/5 pointer-events-none" />
-            <div className="mx-auto max-w-[100vw] overflow-hidden">
+            <div className="mx-auto max-w-full overflow-hidden">
               <div
                 ref={trackRef}
                 className="flex gap-5 px-6 py-8 md:px-8 md:py-10 will-change-transform"

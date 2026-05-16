@@ -33,6 +33,7 @@
 html {
   scroll-behavior: smooth;
   background: #050605;
+  overflow-x: hidden;
 }
 
 body {
@@ -43,6 +44,8 @@ body {
   background-image:
     radial-gradient(ellipse 80% 60% at 50% -20%, rgba(50, 168, 82, 0.08), transparent),
     radial-gradient(ellipse 60% 40% at 80% 100%, rgba(50, 168, 82, 0.04), transparent);
+  overflow-x: hidden;
+  width: 100%;
 }
 
 * {
@@ -645,3 +648,13 @@ textarea {
 body { top: 0 !important; }
 #google_translate_element { display: none !important; }
 
+
+ . h i d e - s c r o l l b a r : : - w e b k i t - s c r o l l b a r   { 
+     d i s p l a y :   n o n e ; 
+ } 
+ . h i d e - s c r o l l b a r   { 
+     - m s - o v e r f l o w - s t y l e :   n o n e ; 
+     s c r o l l b a r - w i d t h :   n o n e ; 
+ } 
+  
+ 

@@ -34,7 +34,6 @@ import { getDeliveryStatus, markMessageFailed, markMessageSent, mergeRealtimeMes
 import { sumApprovedPayments } from '../../utils/paymentStatus'
 import { readStoredValue, writeStoredValue } from '../../utils/persistedState'
 import { useRealtimeProject } from '../../hooks/useRealtimeProjects'
-import { MeetingCards, ProjectRoadmap } from '../../components/projects/ProjectRoadmap'
 
 let pendingId = Date.now()
 function genId() { return `pending-${pendingId++}` }
@@ -102,6 +101,9 @@ export function ProjectDetailPage() {
   const [newMilestone, setNewMilestone] = useState({ title: '', description: '', due_date: '', type: 'custom' })
   const [showMeetingForm, setShowMeetingForm] = useState(false)
   const [meetingForm, setMeetingForm] = useState({ title: '', starts_at: '', platform: 'Google Meet', meeting_url: '', description: '' })
+  const [meetingLinkValue, setMeetingLinkValue] = useState('')
+  const [savingMeetingLink, setSavingMeetingLink] = useState(false)
+  const [uploadingPlanDoc, setUploadingPlanDoc] = useState(false)
 
   // File requests
   const [fileRequests, setFileRequests] = useState([])
@@ -127,6 +129,7 @@ export function ProjectDetailPage() {
   const messagesEndRef = useRef(null)
   const channelRef = useRef(null)
   const fileInputRef = useRef(null)
+  const planDocInputRef = useRef(null)
 
   const handleRealtimeProject = useCallback((updatedProject) => {
     if (!updatedProject) return navigate('/admin')
@@ -282,6 +285,11 @@ export function ProjectDetailPage() {
     if (tab === 'mensajes') scrollMessagesToEnd('auto')
   }, [tab])
 
+  useEffect(() => {
+    const link = appointments.find(item => item.meeting_url)?.meeting_url || ''
+    setMeetingLinkValue(link)
+  }, [appointments])
+
   const saveDates = async () => {
     setSaving(true)
     await updateProject(project.id, { start_date: startDate || null, due_date: dueDate || null, client_deadline: clientDeadline || null, repository_url: repoUrl || null })
@@ -348,6 +356,27 @@ export function ProjectDetailPage() {
     setFileNote('')
     if (fileInputRef.current) fileInputRef.current.value = ''
     toast.success(`${selectedFiles.length > 1 ? `${selectedFiles.length} archivos subidos` : 'Archivo subido'}`)
+  }
+
+  const handlePlanDocumentUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !project) return
+    const extension = file.name.split('.').pop()?.toLowerCase()
+    if (!['doc', 'docx'].includes(extension)) {
+      toast.error('Sube un archivo Word .doc o .docx')
+      if (planDocInputRef.current) planDocInputRef.current.value = ''
+      return
+    }
+    setUploadingPlanDoc(true)
+    const result = await uploadProjectFileAdmin(project.id, file, 'Documento Word del plan')
+    setUploadingPlanDoc(false)
+    if (planDocInputRef.current) planDocInputRef.current.value = ''
+    if (result.error) {
+      toast.error(result.error.message || 'No se pudo subir el documento')
+      return
+    }
+    setFiles(prev => [result.data, ...prev])
+    toast.success('Documento actualizado')
   }
 
   const handleDeleteFile = async (fileId, storagePath) => {
@@ -513,6 +542,43 @@ export function ProjectDetailPage() {
     toast.success('Reunión eliminada')
   }
 
+  const updateMeetingLink = async (id, meetingUrl) => {
+    const { data, error } = await updateProjectAppointment(id, { meeting_url: meetingUrl || null })
+    if (error) { toast.error(error.message || 'No se pudo actualizar el link'); return }
+    setAppointments(prev => prev.map(item => item.id === id ? { ...item, meeting_url: data?.meeting_url || null } : item))
+    toast.success(meetingUrl ? 'Link de reunion actualizado' : 'Link de reunion eliminado')
+  }
+
+  const saveSingleMeetingLink = async () => {
+    const cleanLink = meetingLinkValue.trim()
+    setSavingMeetingLink(true)
+    const existing = appointments.find(item => item.meeting_url) || appointments[0]
+    if (existing) {
+      const { data, error } = await updateProjectAppointment(existing.id, { meeting_url: cleanLink || null })
+      setSavingMeetingLink(false)
+      if (error) { toast.error(error.message || 'No se pudo guardar el link'); return }
+      setAppointments(prev => prev.map(item => item.id === existing.id ? { ...item, meeting_url: data?.meeting_url || null } : item))
+      toast.success(cleanLink ? 'Link guardado' : 'Link eliminado')
+      return
+    }
+
+    const { data, error } = await createProjectAppointment({
+      project_id: project.id,
+      client_id: project.client_id,
+      title: 'Reunion del proyecto',
+      description: '',
+      starts_at: new Date().toISOString(),
+      location: 'Online',
+      platform: 'Online',
+      meeting_url: cleanLink || null,
+      status: 'scheduled',
+    })
+    setSavingMeetingLink(false)
+    if (error) { toast.error(error.message || 'No se pudo guardar el link'); return }
+    setAppointments(prev => [data, ...prev])
+    toast.success(cleanLink ? 'Link guardado' : 'Link eliminado')
+  }
+
   const handleCreateFileRequest = async () => {
     if (!newFileRequest.trim()) return
     setRequestSaving(true)
@@ -584,6 +650,11 @@ export function ProjectDetailPage() {
   const invoicedTotal = invoices.reduce((s, i) => s + Number(i.total || 0), 0)
   const approvedPaid = sumApprovedPayments(payments)
   const pendingPaymentTotal = Math.max(invoicedTotal - approvedPaid, 0)
+  const planDocument = files.find(file => {
+    const name = String(file.file_name || '').toLowerCase()
+    return name.endsWith('.doc') || name.endsWith('.docx')
+  })
+  const meetingLink = appointments.find(item => item.meeting_url)?.meeting_url || ''
 
   const tabs = [
     { id: 'general', label: 'General', icon: 'dashboard' },
@@ -687,12 +758,12 @@ export function ProjectDetailPage() {
       {/* Tabs */}
       <div className="border-b border-dark-800/70 bg-dark-950/25 shrink-0">
         <div className="px-6">
-          <div className="flex gap-1">
+          <div className="flex gap-1 overflow-x-auto hide-scrollbar snap-x">
             {tabs.map(t => (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`cursor-pointer flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${
+                className={`cursor-pointer min-w-max snap-start flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${
                     tab === t.id
                       ? `border-[var(--accent)] text-white`
                       : 'border-transparent text-dark-400 hover:text-white hover:border-dark-600'
@@ -989,66 +1060,86 @@ export function ProjectDetailPage() {
         )}
 
         {tab === 'plan' && (
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <section className="space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-lg font-bold text-white">Pasos del proyecto</h3>
-                  <p className="text-sm text-dark-500">Crea una ruta flexible: pagos, reuniones, demos, revisión y entrega.</p>
-                </div>
-                <button onClick={() => setShowMilestoneForm(!showMilestoneForm)} className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-lighter)]">
-                  <span className="material-symbols-rounded text-base">add</span>
-                  Agregar paso
-                </button>
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+            <section className="rounded-2xl border border-dark-800 bg-dark-900/70 p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <h3 className="text-xl font-bold text-white">Instrucciones</h3>
+                {planDocument && (
+                  <a href={planDocument.file_url} target="_blank" rel="noopener noreferrer" className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dark-700 px-4 py-2 text-sm font-semibold text-dark-200 hover:bg-dark-800">
+                    <span className="material-symbols-rounded text-base">download</span>
+                    Descargar
+                  </a>
+                )}
               </div>
-
-              {showMilestoneForm && (
-                <div className="rounded-2xl border border-dark-800 bg-dark-900/70 p-4">
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <input value={newMilestone.title} onChange={e => setNewMilestone(prev => ({ ...prev, title: e.target.value }))} className="rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" placeholder="Ej: Demo de dashboard" />
-                    <input type="date" value={newMilestone.due_date} onChange={e => setNewMilestone(prev => ({ ...prev, due_date: e.target.value }))} className="rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" />
-                    <select value={newMilestone.type} onChange={e => setNewMilestone(prev => ({ ...prev, type: e.target.value }))} className="rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]">
-                      <option value="custom">Personalizado</option>
-                      <option value="payment">Fecha de pago</option>
-                      <option value="meeting">Reunión</option>
-                      <option value="demo">Demo</option>
-                      <option value="delivery">Entrega</option>
-                    </select>
-                    <button onClick={addMilestone} className="cursor-pointer rounded-xl bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white">Guardar paso</button>
+              <input
+                ref={planDocInputRef}
+                type="file"
+                accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handlePlanDocumentUpload}
+                className="hidden"
+              />
+              <div className="mt-5 rounded-xl border border-dark-800 bg-dark-950 p-4">
+                {planDocument ? (
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--accent)]/10 text-[var(--accent)]">
+                      <span className="material-symbols-rounded">description</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-white">{planDocument.file_name}</p>
+                      <p className="text-xs text-dark-500">{formatDate(planDocument.created_at)}</p>
+                    </div>
                   </div>
-                  <textarea value={newMilestone.description} onChange={e => setNewMilestone(prev => ({ ...prev, description: e.target.value }))} className="mt-3 w-full rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" rows={2} placeholder="Notas internas o explicación visible para el cliente..." />
-                </div>
-              )}
-
-              <ProjectRoadmap milestones={milestones} admin onStatusChange={changeMilestoneStatus} onDelete={removeMilestone} />
+                ) : (
+                  <div className="py-8 text-center">
+                    <span className="material-symbols-rounded text-4xl text-dark-600">description</span>
+                    <p className="mt-2 text-sm text-dark-500">Sin documento</p>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => planDocInputRef.current?.click()}
+                disabled={uploadingPlanDoc}
+                className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white hover:bg-[var(--accent-lighter)] disabled:opacity-50 sm:w-auto"
+              >
+                {uploadingPlanDoc ? (
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" />
+                  </svg>
+                ) : (
+                  <span className="material-symbols-rounded text-base">upload_file</span>
+                )}
+                {uploadingPlanDoc ? 'Subiendo...' : 'Subir Word'}
+              </button>
             </section>
 
-            <section className="space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-lg font-bold text-white">Agenda</h3>
-                  <p className="text-sm text-dark-500">Reuniones, demos y solicitudes del cliente.</p>
+            <section className="rounded-2xl border border-dark-800 bg-dark-900/70 p-5">
+              <h3 className="text-xl font-bold text-white">Reunion</h3>
+              <div className="mt-5 flex flex-col gap-3">
+                <input
+                  value={meetingLinkValue}
+                  onChange={event => setMeetingLinkValue(event.target.value)}
+                  className="w-full rounded-xl border border-dark-700 bg-dark-950 px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)]"
+                  placeholder="https://meet.google.com/..."
+                />
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <button
+                    onClick={saveSingleMeetingLink}
+                    disabled={savingMeetingLink}
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white hover:bg-[var(--accent-lighter)] disabled:opacity-50"
+                  >
+                    {savingMeetingLink ? 'Guardando...' : 'Guardar link'}
+                  </button>
+                  {meetingLink && (
+                    <button
+                      onClick={() => setMeetingLinkValue('')}
+                      className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dark-700 px-4 py-3 text-sm font-semibold text-dark-200 hover:bg-dark-800"
+                    >
+                      Limpiar
+                    </button>
+                  )}
                 </div>
-                <button onClick={() => setShowMeetingForm(!showMeetingForm)} className="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-dark-700 px-3 py-2 text-sm font-semibold text-dark-200 hover:bg-dark-800">
-                  <span className="material-symbols-rounded text-base">event</span>
-                  Agendar
-                </button>
               </div>
-
-              {showMeetingForm && (
-                <div className="rounded-2xl border border-dark-800 bg-dark-900/70 p-4 space-y-3">
-                  <input value={meetingForm.title} onChange={e => setMeetingForm(prev => ({ ...prev, title: e.target.value }))} className="w-full rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" placeholder="Título de la reunión" />
-                  <input type="datetime-local" value={meetingForm.starts_at} onChange={e => setMeetingForm(prev => ({ ...prev, starts_at: e.target.value }))} className="w-full rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" />
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <input value={meetingForm.platform} onChange={e => setMeetingForm(prev => ({ ...prev, platform: e.target.value }))} className="rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" placeholder="Google Meet, Zoom..." />
-                    <input value={meetingForm.meeting_url} onChange={e => setMeetingForm(prev => ({ ...prev, meeting_url: e.target.value }))} className="rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" placeholder="https://..." />
-                  </div>
-                  <textarea value={meetingForm.description} onChange={e => setMeetingForm(prev => ({ ...prev, description: e.target.value }))} rows={2} className="w-full rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" placeholder="Objetivo o agenda de la reunión" />
-                  <button onClick={addMeeting} className="cursor-pointer w-full rounded-xl bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white">Guardar reunión</button>
-                </div>
-              )}
-
-              <MeetingCards appointments={appointments} admin onDelete={removeMeeting} />
             </section>
           </div>
         )}

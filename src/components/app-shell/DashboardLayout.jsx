@@ -21,7 +21,9 @@ export function DashboardLayout({
   const location = useLocation()
   const [profile, setProfile] = useState(user)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const dropdownRef = useRef(null)
+  const mobileNavRef = useRef(null)
   const { theme: activeTheme, palette } = useAppTheme(theme)
   const preloadRoute = (item) => item.preload?.()
 
@@ -29,6 +31,9 @@ export function DashboardLayout({
     function handleClickOutside(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false)
+      }
+      if (mobileNavRef.current && !mobileNavRef.current.contains(e.target)) {
+        setMobileNavOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -46,6 +51,11 @@ export function DashboardLayout({
     return () => { cancelled = true }
   }, [session, user])
 
+  useEffect(() => {
+    setMobileNavOpen(false)
+    setDropdownOpen(false)
+  }, [location.pathname])
+
   const handleSignOut = async () => {
     await signOut()
     navigate('/login')
@@ -56,6 +66,11 @@ export function DashboardLayout({
   const displayName = profile?.full_name || profile?.first_name || roleLabel || 'Usuario'
   const summaryPath = navItems[0]?.to || '/'
   const isClientLayout = termsPath?.startsWith('/cliente')
+  const activeNavItem = navItems.find(item => (
+    item.end
+      ? location.pathname === item.to
+      : location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
+  )) || navItems[0]
 
   const handleTermsAccepted = (updatedProfile) => {
     setProfile(updatedProfile || profile)
@@ -71,7 +86,7 @@ export function DashboardLayout({
 
   return (
     <div className="min-h-[100dvh] bg-dark-950" data-theme={activeTheme}>
-      <div className="fixed inset-0 pointer-events-none z-0">
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className={`absolute -top-24 -left-24 w-[500px] h-[500px] ${palette.glow} rounded-full blur-3xl`} />
         <div className={`absolute top-1/2 -right-24 w-[400px] h-[400px] ${palette.glowSoft} rounded-full blur-3xl`} />
         <img
@@ -197,34 +212,54 @@ export function DashboardLayout({
           </div>
         </div>
 
-        <div className="lg:hidden border-t border-dark-800/50 bg-dark-950/70">
-          <div className="flex overflow-x-auto px-4 py-2 gap-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onMouseEnter={() => preloadRoute(item)}
-                onFocus={() => preloadRoute(item)}
-                onTouchStart={() => preloadRoute(item)}
-                end={item.end ?? item.to.endsWith('/admin') ?? item.to.endsWith('/dev') ?? item.to.endsWith('/cliente')}
-                className={({ isActive }) =>
-                  `flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                    isActive
-                      ? `${palette.activeText} ${palette.activeBg}`
-                      : 'text-dark-400 hover:text-white'
-                  }`
-                }
-              >
-                <span className="material-symbols-rounded text-base">{item.icon}</span>
-                {item.label}
-              </NavLink>
-            ))}
+        <div className="lg:hidden border-t border-dark-800/50 bg-dark-950/80 px-4 py-2">
+          <div className="relative" ref={mobileNavRef}>
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(open => !open)}
+              className={`flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${
+                mobileNavOpen ? 'border-[var(--accent)]/50 bg-dark-900' : 'border-dark-800 bg-dark-900/70'
+              }`}
+            >
+              <span className="flex min-w-0 items-center gap-2.5">
+                <span className={`material-symbols-rounded text-lg ${palette.activeText}`}>{activeNavItem?.icon || 'dashboard'}</span>
+                <span className="truncate text-sm font-semibold text-white">{activeNavItem?.label || 'Menu'}</span>
+              </span>
+              <span className={`material-symbols-rounded text-dark-400 transition-transform ${mobileNavOpen ? 'rotate-180' : ''}`}>expand_more</span>
+            </button>
+
+            {mobileNavOpen && (
+              <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-dark-800 bg-dark-900 shadow-2xl shadow-black/50">
+                <div className="max-h-[60dvh] overflow-y-auto p-1.5">
+                  {navItems.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      onMouseEnter={() => preloadRoute(item)}
+                      onFocus={() => preloadRoute(item)}
+                      onTouchStart={() => preloadRoute(item)}
+                      end={item.end ?? item.to.endsWith('/admin') ?? item.to.endsWith('/dev') ?? item.to.endsWith('/cliente')}
+                      className={({ isActive }) =>
+                        `flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all ${
+                          isActive
+                            ? `${palette.activeText} ${palette.activeBg}`
+                            : 'text-dark-300 hover:bg-dark-800 hover:text-white'
+                        }`
+                      }
+                    >
+                      <span className="material-symbols-rounded text-lg">{item.icon}</span>
+                      {item.label}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </nav>
 
-      <main className="pt-24 pb-10 lg:pt-20 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="pt-28 pb-10 lg:pt-20 relative z-10">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
           <ThemeProvider value={{ theme: activeTheme, palette }}>
             {children || <Outlet key={location.key} />}
             {termsPath && (

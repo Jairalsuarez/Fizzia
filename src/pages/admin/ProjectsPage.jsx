@@ -39,7 +39,7 @@ export function ProjectsPage() {
   const filtered = statusFilter === 'all' ? finished : finished.filter(p => p.status === statusFilter)
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <h1 className="text-2xl font-bold text-white mb-6">Proyectos Cerrados</h1>
 
       <div className="flex gap-2 mb-4">

@@ -118,7 +118,7 @@ export function FinancesPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 p-6">
+      <div className="space-y-6 p-4 sm:p-6">
         <Skeleton className="h-9 w-80" />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-28" />)}
@@ -130,14 +130,14 @@ export function FinancesPage() {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="rounded-xl border border-red-700 bg-red-900/20 px-4 py-3 text-red-400">{error}</div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 p-6" data-tour="client-finance-page">
+    <div className="space-y-6 p-4 sm:p-6" data-tour="client-finance-page">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <h1 className="finance-greeting text-3xl font-bold leading-tight text-white">
           Tus pagos al dia, <span>saldo claro y soporte listo.</span>

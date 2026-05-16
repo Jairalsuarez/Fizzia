@@ -68,7 +68,7 @@ export function ProjectPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 p-6">
+      <div className="space-y-6 p-4 sm:p-6">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-64" />
         <Skeleton className="h-96" />
@@ -78,7 +78,7 @@ export function ProjectPage() {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="bg-red-900/20 border border-red-700 text-red-400 px-4 py-3 rounded">
           {error}
         </div>
@@ -88,7 +88,7 @@ export function ProjectPage() {
 
   if (projects.length === 0) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <EmptyState
           title="No Projects Found"
           description="You don't have any projects yet. Please contact us to get started."
@@ -103,7 +103,7 @@ export function ProjectPage() {
     : 0
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <h1 className="text-2xl font-bold text-white">My Projects</h1>
 
       {projects.length > 1 && (

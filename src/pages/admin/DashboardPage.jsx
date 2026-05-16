@@ -27,7 +27,7 @@ export function DashboardPage() {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4">
           <p className="text-red-400">Error: {error}</p>
           <button onClick={refreshData} className="mt-2 text-sm text-red-400 hover:text-red-300">Reintentar</button>
@@ -42,7 +42,7 @@ export function DashboardPage() {
   const requests = projects.filter(p => p.status === 'solicitado')
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       <Greeting
         name={user?.full_name?.split(' ')[0] || user?.first_name || 'Admin'}
         phrases={adminPhrases}

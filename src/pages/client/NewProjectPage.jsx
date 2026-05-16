@@ -70,7 +70,7 @@ Preferencia de contacto: ${formData.contactPreference === 'whatsapp' ? 'WhatsApp
 
   if (step === 6) {
     return (
-      <div className="p-6 max-w-2xl mx-auto min-h-[70vh] flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-500 fade-in">
+      <div className="p-4 sm:p-6 max-w-2xl mx-auto min-h-[70vh] flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-500 fade-in">
         <div className="w-24 h-24 bg-[var(--accent-bg)] rounded-full flex items-center justify-center mb-8 mx-auto shadow-[0_0_30px_var(--accent-bg)] animate-bounce">
           <span className="material-symbols-rounded text-6xl text-[var(--accent)]">check_circle</span>
         </div>
@@ -89,7 +89,7 @@ Preferencia de contacto: ${formData.contactPreference === 'whatsapp' ? 'WhatsApp
   }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto min-h-[70vh] flex flex-col justify-center">
+    <div className="p-4 sm:p-6 max-w-2xl mx-auto min-h-[70vh] flex flex-col justify-center">
       <div className="mb-10 text-center" data-tour="new-project-title">
         <h1 className="text-4xl font-bold text-white mb-2">Comencemos tu proyecto</h1>
         <p className="text-dark-400 text-lg">Solo unas cuantas preguntas sencillas para entender lo que necesitas</p>

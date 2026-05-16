@@ -8,7 +8,6 @@ import { ProjectsSection } from '../components/landing/ProjectsSection'
 import { TrustSection } from '../components/landing/TrustSection'
 
 import { ProcessSection } from '../components/landing/ProcessSection'
-import { SimulatorSection } from '../components/landing/SimulatorSection'
 import { ContactSection } from '../components/landing/ContactSection'
 
 export function LandingPage() {
@@ -23,7 +22,6 @@ export function LandingPage() {
       <TrustSection />
 
       <ProcessSection />
-      <SimulatorSection />
       <ContactSection />
       <Footer />
     </div>

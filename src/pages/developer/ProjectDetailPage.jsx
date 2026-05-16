@@ -132,18 +132,18 @@ export function ProjectDetailPage() {
   if (loading) return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col">
       <div className="border-b border-dark-800/70 bg-dark-950/45 backdrop-blur-sm shrink-0">
-        <div className="px-6 py-4">
+        <div className="px-4 sm:px-6 py-4">
           <div className="h-8 w-64 bg-dark-800 rounded animate-pulse" />
         </div>
       </div>
-      <div className="flex-1 px-6 py-6">
+      <div className="flex-1 p-4 sm:p-6">
         <div className="h-96 bg-dark-800 rounded-xl animate-pulse" />
       </div>
     </div>
   )
 
   if (!project) return (
-    <div className="min-h-[calc(100vh-4rem)] p-6">
+    <div className="min-h-[calc(100vh-4rem)] p-4 sm:p-6">
       <button onClick={() => navigate('/dev')} className="cursor-pointer text-purple-400 hover:text-purple-300 text-sm mb-4 inline-flex items-center gap-1">
         <span className="material-symbols-rounded text-sm">arrow_back</span> Volver
       </button>
@@ -161,7 +161,7 @@ export function ProjectDetailPage() {
     <div className="min-h-[calc(100vh-4rem)] flex flex-col">
       {/* Header */}
       <div className="border-b border-dark-800/70 bg-dark-950/45 backdrop-blur-sm shrink-0">
-        <div className="px-6 py-4">
+        <div className="px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 min-w-0">
               <button onClick={() => navigate('/dev')} className="cursor-pointer p-2 text-dark-400 hover:text-white transition-colors shrink-0">
@@ -191,13 +191,13 @@ export function ProjectDetailPage() {
 
       {/* Tabs */}
       <div className="border-b border-dark-800/70 bg-dark-950/25 shrink-0">
-        <div className="px-6">
-          <div className="flex gap-1">
+        <div className="px-4 sm:px-6">
+          <div className="flex gap-1 overflow-x-auto hide-scrollbar snap-x">
             {tabs.map(t => (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`cursor-pointer flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${
+                className={`cursor-pointer min-w-max snap-start flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${
                   tab === t.id
                     ? 'border-[var(--accent)] text-white'
                     : 'border-transparent text-dark-400 hover:text-white hover:border-dark-600'
@@ -212,7 +212,7 @@ export function ProjectDetailPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-6 py-6 overflow-auto">
+      <div className="flex-1 p-4 sm:p-6 overflow-auto">
         {/* General tab */}
         {tab === 'general' && (
           <div className="space-y-6">

@@ -131,7 +131,7 @@ export function FinancePage() {
   const isPersonal = expenseForm.category === 'pago_personal'
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Finanzas</h1>

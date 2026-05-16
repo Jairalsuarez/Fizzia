@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { getProjectMessages, markProjectMessagesRead, sendProjectMessage, subscribeToMessages } from '../../api/messagesApi'
 import { createClientPayment, deleteClientPayment, getProjectDirectPayments, getProjectInvoices, uploadPaymentProof } from '../../api/paymentsApi'
 import { Modal } from '../../components/ui'
-import { fulfillFileRequest, getClientProjectFileRequests, getMyProjectAppointments, getMyProjectMilestones, getMyProjects, requestProjectAppointment } from '../../api/projectsApi'
+import { fulfillFileRequest, getClientProjectFileRequests, getMyProjectAppointments, getMyProjectMilestones, getMyProjects } from '../../api/projectsApi'
 import { getProjectFiles, uploadProjectFile } from '../../api/filesApi'
 import { formatDate, formatMoney } from '../../utils/format'
 import { useToast } from '../../components/Toast'
@@ -17,7 +17,6 @@ import { getDeliveryStatus, markMessageFailed, markMessageSent, mergeRealtimeMes
 import { sumApprovedPayments } from '../../utils/paymentStatus'
 import { readStoredValue, writeStoredValue } from '../../utils/persistedState'
 import { useRealtimeProject } from '../../hooks/useRealtimeProjects'
-import { MeetingCards, ProjectRoadmap } from '../../components/projects/ProjectRoadmap'
 
 let pendingId = Date.now()
 function genId() { return `pending-${pendingId++}` }
@@ -57,8 +56,7 @@ export function ProjectDetailPage() {
   const [activeTab, setActiveTab] = useState(() => readStoredValue(`client-project-tab-${projectId}`, 'info', value => ['info', 'plan', 'actividad', 'pagos', 'files'].includes(value)))
   const [milestones, setMilestones] = useState([])
   const [appointments, setAppointments] = useState([])
-  const [meetingNote, setMeetingNote] = useState('')
-  const [requestingMeeting, setRequestingMeeting] = useState(false)
+  const [showMeetingLink, setShowMeetingLink] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const [editData, setEditData] = useState({ name: '', description: '', budget: '', repo_url: '', live_url: '', notes: '' })
   const [savingEdit, setSavingEdit] = useState(false)
@@ -610,24 +608,9 @@ export function ProjectDetailPage() {
     }
   }
 
-  const handleRequestMeeting = async () => {
-    setRequestingMeeting(true)
-    try {
-      const { data, error } = await requestProjectAppointment(projectId, project, meetingNote)
-      if (error) throw error
-      setAppointments(prev => [...prev, data].sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at)))
-      setMeetingNote('')
-      toast.success('Solicitud de reunión enviada')
-    } catch {
-      toast.error('No se pudo solicitar la reunión')
-    } finally {
-      setRequestingMeeting(false)
-    }
-  }
-
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         <div className="h-8 w-48 bg-dark-800 rounded animate-pulse" />
         <div className="h-64 bg-dark-800 rounded-xl animate-pulse" />
       </div>
@@ -636,17 +619,23 @@ export function ProjectDetailPage() {
 
   if (!project) return null
 
+  const planDocument = files.find(file => {
+    const name = String(file.file_name || '').toLowerCase()
+    return name.endsWith('.doc') || name.endsWith('.docx')
+  })
+  const meetingLink = appointments.find(item => item.meeting_url)?.meeting_url || ''
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="space-y-5 p-4 sm:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <button onClick={() => navigate('/cliente')} className="cursor-pointer text-dark-400 hover:text-white transition-colors">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-white">{project.name}</h1>
+            <h1 className="truncate text-xl font-bold text-white sm:text-2xl">{project.name}</h1>
             <span className={`text-sm font-medium ${phase.textColor}`}>{phase.icon} {phase.label}</span>
           </div>
         </div>
@@ -775,7 +764,7 @@ export function ProjectDetailPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-dark-900/50 border border-dark-800 rounded-xl p-1">
+      <div className="flex gap-1 rounded-xl border border-dark-800 bg-dark-900/50 p-1 overflow-x-auto snap-x hide-scrollbar">
         {[
           { key: 'info', label: 'Detalles' },
           { key: 'plan', label: 'Plan' },
@@ -786,10 +775,10 @@ export function ProjectDetailPage() {
           <button
             key={tab.key}
             onClick={() => { setActiveTab(tab.key); if (tab.key !== 'pagos') resetPaymentForm() }}
-            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium cursor-pointer transition-all ${
+            className={`min-w-max snap-start flex-1 rounded-lg px-4 py-2.5 text-sm font-medium cursor-pointer transition-all ${
               activeTab === tab.key
                 ? 'bg-[var(--accent)] text-white'
-                : 'text-dark-400 hover:text-white'
+                : 'text-dark-400 hover:text-white hover:bg-dark-800/50'
             }`}
           >
             {tab.label}
@@ -971,39 +960,52 @@ export function ProjectDetailPage() {
       )}
 
       {activeTab === 'plan' && (
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="space-y-4">
-            <div className="rounded-2xl border border-dark-800 bg-dark-900/70 p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--accent)]">Ruta del proyecto</p>
-              <h3 className="mt-2 text-xl font-bold text-white">Lo que sigue, sin ruido</h3>
-              <p className="mt-2 text-sm leading-6 text-dark-400">
-                Aquí ves los pasos importantes: revisión, reuniones, pagos, demos, ajustes y entrega.
-              </p>
+        <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+          <section className="rounded-2xl border border-dark-800 bg-dark-900/70 p-5">
+            <h3 className="text-xl font-bold text-white">Instrucciones</h3>
+            <div className="mt-5 rounded-xl border border-dark-800 bg-dark-950 p-4">
+              {planDocument ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--accent)]/10 text-[var(--accent)]">
+                    <span className="material-symbols-rounded">description</span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-white">{planDocument.file_name}</p>
+                    <p className="text-xs text-dark-500">{formatDate(planDocument.created_at)}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <span className="material-symbols-rounded text-4xl">description</span>
+                  <p className="mt-2 text-sm text-dark-500">Sin documento</p>
+                </div>
+              )}
             </div>
-            <ProjectRoadmap milestones={milestones} />
+            {planDocument && (
+              <a href={planDocument.file_url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white hover:bg-[var(--accent-lighter)] sm:w-auto">
+                <span className="material-symbols-rounded text-base">download</span>
+                Descargar
+              </a>
+            )}
           </section>
 
-          <section className="space-y-4">
-            <div className="rounded-2xl border border-dark-800 bg-dark-900/70 p-5">
-              <h3 className="text-lg font-bold text-white">Reuniones</h3>
-              <p className="mt-1 text-sm leading-6 text-dark-400">Cuando una reunión esté confirmada, verás plataforma, fecha y enlace disponible.</p>
-              <textarea
-                value={meetingNote}
-                onChange={(event) => setMeetingNote(event.target.value)}
-                rows={3}
-                className="mt-4 w-full rounded-xl border border-dark-700 bg-dark-950 px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]"
-                placeholder="Opcional: cuéntanos qué quieres revisar en la reunión..."
-              />
-              <button
-                onClick={handleRequestMeeting}
-                disabled={requestingMeeting}
-                className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-lighter)] disabled:opacity-50"
-              >
-                <span className="material-symbols-rounded text-base">event_available</span>
-                {requestingMeeting ? 'Enviando...' : 'Solicitar reunión'}
-              </button>
-            </div>
-            <MeetingCards appointments={appointments} />
+          <section className="rounded-2xl border border-dark-800 bg-dark-900/70 p-5">
+            <h3 className="text-xl font-bold text-white">Reunion</h3>
+            <button
+              type="button"
+              onClick={() => setShowMeetingLink(value => !value)}
+              disabled={!meetingLink}
+              className="mt-5 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white hover:bg-[var(--accent-lighter)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            >
+              <span className="material-symbols-rounded text-base">videocam</span>
+              Unirse a la Reunion
+            </button>
+            {showMeetingLink && meetingLink && (
+              <a href={meetingLink} target="_blank" rel="noopener noreferrer" className="mt-4 flex min-w-0 items-center gap-2 rounded-xl border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-3 py-3 text-sm text-[var(--accent)] hover:bg-[var(--accent)]/15">
+                <span className="material-symbols-rounded text-base">open_in_new</span>
+                <span className="truncate">{meetingLink}</span>
+              </a>
+            )}
           </section>
         </div>
       )}

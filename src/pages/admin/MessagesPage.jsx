@@ -212,14 +212,14 @@ export function MessagesPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="h-96 bg-dark-800 rounded-xl animate-pulse" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-5 p-6">
+    <div className="space-y-5 p-4 sm:p-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Mensajes</h1>
         <p className="mt-1 text-sm text-dark-400">Conversa con clientes y con el equipo interno por proyecto</p>

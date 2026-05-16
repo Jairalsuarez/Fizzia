@@ -19,7 +19,7 @@ export function ProjectCreatedPage() {
   if (!project) return null
 
   return (
-    <div className="p-6 max-w-2xl mx-auto text-center">
+    <div className="p-4 sm:p-6 max-w-2xl mx-auto text-center">
       {/* Success animation */}
       <div className="mb-8 relative">
         <div className="w-24 h-24 mx-auto rounded-full bg-fizzia-500/20 flex items-center justify-center animate-pulse">

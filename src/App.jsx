@@ -23,6 +23,7 @@ const AdminFinancePage = lazy(() => import('./pages/admin/FinancePage').then(mod
 const AdminDevelopersPage = lazy(() => import('./pages/admin/DevelopersPage').then(module => ({ default: module.DevelopersPage })))
 const AdminPaymentsPage = lazy(() => import('./pages/admin/PaymentsPage').then(module => ({ default: module.PaymentsPage })))
 const AdminSettingsPage = lazy(() => import('./pages/admin/SettingsPage').then(module => ({ default: module.SettingsPage })))
+const AdminPriceCalculatorPage = lazy(() => import('./pages/admin/PriceCalculatorPage').then(module => ({ default: module.PriceCalculatorPage })))
 
 const DeveloperDashboardPage = lazy(() => import('./pages/developer/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const DeveloperProjectDetailPage = lazy(() => import('./pages/developer/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
@@ -75,6 +76,7 @@ function App() {
               <Route path="/admin/desarrolladores" element={<AdminDevelopersPage />} />
               <Route path="/admin/pagos" element={<AdminPaymentsPage />} />
               <Route path="/admin/finanzas" element={<AdminFinancePage />} />
+              <Route path="/admin/calculadora" element={<AdminPriceCalculatorPage />} />
               <Route path="/admin/configuracion" element={<AdminSettingsPage />} />
             </Route>
           </Route>

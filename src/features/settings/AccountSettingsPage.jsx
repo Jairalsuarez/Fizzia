@@ -152,10 +152,10 @@ export function AccountSettingsPage({
 
   if (loading) {
     return (
-      <div className="p-6 max-w-2xl space-y-6">
+      <div className="p-4 sm:p-6 max-w-2xl mx-auto space-y-6">
         <div className="h-8 w-48 bg-dark-800 rounded animate-pulse" />
         <div className="h-12 bg-dark-800 rounded-xl animate-pulse" />
-        <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-6 space-y-6">
+        <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-5 sm:p-6 space-y-6">
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-full bg-dark-800 animate-pulse" />
             <div className="space-y-2">
@@ -174,13 +174,13 @@ export function AccountSettingsPage({
   }
 
   return (
-    <div className="p-6 max-w-2xl space-y-6">
+    <div className="p-4 sm:p-6 max-w-2xl mx-auto space-y-6 w-full">
       <div>
-        <h1 className="text-2xl font-bold text-white">Configuracion</h1>
-        <p className="text-dark-400 text-sm mt-1">Gestiona tu perfil y preferencias</p>
+        <h1 className="text-2xl font-bold text-white px-1">Configuracion</h1>
+        <p className="text-dark-400 text-sm mt-1 px-1">Gestiona tu perfil y preferencias</p>
       </div>
 
-      <div className="flex gap-1 bg-dark-900/50 border border-dark-800 rounded-xl p-1" data-tour="settings-tabs">
+      <div className="flex gap-1 bg-dark-900/50 border border-dark-800 rounded-xl p-1 overflow-x-auto snap-x hide-scrollbar" data-tour="settings-tabs">
         {[
           { key: 'perfil', label: 'Perfil', icon: 'person' },
           { key: 'seguridad', label: 'Seguridad', icon: 'lock' },
@@ -190,7 +190,7 @@ export function AccountSettingsPage({
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`cursor-pointer flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+            className={`cursor-pointer flex-1 flex min-w-max items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all snap-start ${
               activeTab === tab.key ? palette.activeButton : 'text-dark-400 hover:text-white hover:bg-white/5'
             }`}
           >
@@ -212,7 +212,7 @@ export function AccountSettingsPage({
       )}
 
       {activeTab === 'perfil' && (
-        <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-6">
+        <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-5 sm:p-6">
           <div className="flex items-center gap-4 mb-6">
             <button
               type="button"
@@ -283,7 +283,7 @@ export function AccountSettingsPage({
 
       {activeTab === 'seguridad' && (
         <div className="space-y-4">
-          <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-6">
+          <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-5 sm:p-6">
             <h3 className="text-white font-semibold mb-4">Cambiar contrasena</h3>
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               {[
@@ -323,7 +323,7 @@ export function AccountSettingsPage({
             </form>
           </div>
 
-          <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-6">
+          <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-5 sm:p-6">
             <h3 className="text-white font-semibold mb-2">Cerrar sesion</h3>
             <p className="text-dark-400 text-sm mb-4">Cierra tu sesion en todos los dispositivos</p>
             <button
@@ -337,7 +337,7 @@ export function AccountSettingsPage({
       )}
 
       {activeTab === 'tema' && (
-        <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-6">
+        <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-5 sm:p-6">
           <h3 className="text-white font-semibold mb-4">Color del tema</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {appThemeOptions.map(option => {
@@ -366,7 +366,7 @@ export function AccountSettingsPage({
       )}
 
       {activeTab === 'notificaciones' && (
-        <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-6">
+        <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-5 sm:p-6">
           <h3 className="text-white font-semibold mb-4">Preferencias de notificacion</h3>
           <p className="text-dark-400 text-sm">Las notificaciones por email se enviaran automaticamente cuando:</p>
           <ul className="mt-4 space-y-3">
