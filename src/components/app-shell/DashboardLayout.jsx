@@ -144,7 +144,14 @@ export function DashboardLayout({
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-dark-700 bg-dark-900 shadow-2xl shadow-black/40">
+                  <>
+                    {/* Mobile backdrop — tap outside to close */}
+                    <div
+                      className="fixed inset-0 z-[55] lg:hidden"
+                      onClick={() => setDropdownOpen(false)}
+                      aria-hidden="true"
+                    />
+                  <div className="absolute right-0 top-full mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-dark-700 bg-dark-900 shadow-2xl shadow-black/40 z-[60]">
                     <div className="p-4 border-b border-dark-700">
                       <p className="text-white text-sm font-semibold truncate">{displayName}</p>
                       <p className="text-dark-400 text-xs truncate mt-0.5">{email}</p>
@@ -206,6 +213,7 @@ export function DashboardLayout({
                       </button>
                     </div>
                   </div>
+                  </>
                 )}
               </div>
             </div>
