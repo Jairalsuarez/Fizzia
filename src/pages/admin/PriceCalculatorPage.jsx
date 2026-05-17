@@ -112,8 +112,6 @@ const INTEGRATIONS = [
   { key: 'ml', label: 'Machine Learning / IA', price: 500, difficulty: 7, risk: 6, maintenance: 5, types: ['saas', 'crm', 'education', 'hospital'] },
 ]
 
-const COUPON_EXPIRY_MONTHS = 3
-
 const COUNTRIES = [
   { code: 'EC', label: 'Ecuador' },
   { code: 'CO', label: 'Colombia' },
@@ -131,12 +129,6 @@ const DEFAULT_COUPONS = [
   { id: 'coupon-20', label: '20%', percent: 20, expiresAt: '2026-08-15' },
   { id: 'coupon-30', label: '30%', percent: 30, expiresAt: '2026-08-15' },
 ]
-
-function addMonths(date, months) {
-  const d = new Date(date)
-  d.setMonth(d.getMonth() + months)
-  return d
-}
 
 function isCouponValid(coupon) {
   if (!coupon) return false
