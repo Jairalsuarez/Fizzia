@@ -22,7 +22,7 @@ export function ServicesSection() {
     let isAuto = true
     let scrollTimeout
     let lastTime = 0
-    const SPEED = 0.00008
+    const SPEED = window.innerWidth < 768 ? 0.000025 : 0.00008
 
     const apply = () => {
       const maxMove = Math.max(0, track.scrollWidth - container.clientWidth)
