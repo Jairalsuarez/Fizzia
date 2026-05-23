@@ -21,18 +21,14 @@ export function DashboardLayout({
   const navigate = useNavigate()
   const location = useLocation()
   const [profile, setProfile] = useState(user)
-  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const dropdownRef = useRef(null)
+  const [updateVersion, setUpdateVersion] = useState(null)
   const mobileNavRef = useRef(null)
   const { theme: activeTheme, palette } = useAppTheme(theme)
   const preloadRoute = (item) => item.preload?.()
 
   useEffect(() => {
     function handleClickOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false)
-      }
       if (mobileNavRef.current && !mobileNavRef.current.contains(e.target)) {
         setMobileNavOpen(false)
       }
@@ -54,8 +50,13 @@ export function DashboardLayout({
 
   useEffect(() => {
     setMobileNavOpen(false)
-    setDropdownOpen(false)
   }, [location.pathname])
+
+  useEffect(() => {
+    const handler = (e) => setUpdateVersion(e.detail)
+    window.addEventListener('fizzia-update', handler)
+    return () => window.removeEventListener('fizzia-update', handler)
+  }, [])
 
   const handleSignOut = async () => {
     await signOut()
@@ -241,8 +242,17 @@ export function DashboardLayout({
               Cerrar sesion
             </button>
           </div>
-          <div className="px-4 py-2.5 border-t border-dark-800">
+          <div className="px-4 py-2.5 border-t border-dark-800 flex items-center justify-between">
             <p className="text-[11px] text-dark-500 font-mono">v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0'}</p>
+            {updateVersion && (
+              <button
+                onClick={() => { sessionStorage.removeItem('fizzia_version_dismissed'); window.location.reload() }}
+                className="cursor-pointer flex items-center gap-1.5 rounded-lg bg-fizzia-500/15 px-2.5 py-1 text-[11px] font-semibold text-fizzia-400 hover:bg-fizzia-500/25 transition-colors"
+              >
+                <span className="material-symbols-rounded text-sm">new_releases</span>
+                Actualizar
+              </button>
+            )}
           </div>
         </div>
       </>

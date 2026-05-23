@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { getMyProjects } from '../../api/projectsApi'
 import { useAuth } from '../../features/auth/authContext'
 import { ProjectCard, ProjectCardSkeleton } from '../../components/ProjectCard'
@@ -19,6 +19,7 @@ const clientPhrases = [
 
 export function DashboardPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -88,18 +89,37 @@ export function DashboardPage() {
               </span>
             </button>
           )}
-          <Link
-            to="/cliente/nuevo-proyecto"
-            data-tour="client-new-project"
-            className={`cursor-pointer font-bold rounded-xl transition-all inline-flex items-center gap-2 ${
-              projects.length === 0
-                ? 'px-8 py-5 text-lg bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/30 hover:bg-[var(--accent-lighter)] hover:shadow-xl active:scale-[0.97]'
-                : 'px-4 py-2.5 bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/25 hover:bg-[var(--accent-lighter)]'
-            }`}
-          >
-            <span className={`material-symbols-rounded ${projects.length === 0 ? 'text-2xl' : 'text-lg'}`}>add_circle</span>
-            Nuevo proyecto
-          </Link>
+          <div className="flex flex-col items-start gap-1.5">
+            <div className="relative inline-flex">
+              <button
+                onClick={() => {
+                  if (projects.length === 0) {
+                    navigate('/cliente/nuevo-proyecto', { state: { showConfetti: true } })
+                  } else {
+                    navigate('/cliente/nuevo-proyecto')
+                  }
+                }}
+                data-tour="client-new-project"
+                className={`cursor-pointer font-bold rounded-xl transition-all inline-flex items-center gap-2 ${
+                  projects.length === 0
+                    ? 'px-8 py-5 text-lg bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/30 hover:bg-[var(--accent-lighter)] hover:shadow-xl active:scale-[0.97]'
+                    : 'px-4 py-2.5 bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/25 hover:bg-[var(--accent-lighter)]'
+                }`}
+              >
+                <span className={`material-symbols-rounded ${projects.length === 0 ? 'text-2xl' : 'text-lg'}`}>add_circle</span>
+                Nuevo proyecto
+              </button>
+              {projects.length === 0 && (
+                <span className="absolute -top-2.5 -right-2.5 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-black text-amber-950 shadow-lg shadow-amber-400/30">
+                  50% OFF
+                </span>
+              )}
+            </div>
+            {projects.length === 0 && (
+              <span className="text-[11px] text-dark-200 ml-1">* 50% OFF en tu primer proyecto</span>
+            )}
+
+          </div>
         </div>
       </div>
 
