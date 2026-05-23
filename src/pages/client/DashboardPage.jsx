@@ -6,6 +6,8 @@ import { ProjectCard, ProjectCardSkeleton } from '../../components/ProjectCard'
 import { Greeting } from '../../components/Greeting'
 import { mergeRealtimeProject, useRealtimeProjects } from '../../hooks/useRealtimeProjects'
 
+const FIRST_PROJECT_PROMO_START = new Date('2026-05-23T00:00:00-05:00')
+
 const clientPhrases = [
   'un placer tenerte aquí',
   'qué alegría verte de nuevo',
@@ -18,7 +20,7 @@ const clientPhrases = [
 ]
 
 export function DashboardPage() {
-  const { user } = useAuth()
+  const { session, user } = useAuth()
   const navigate = useNavigate()
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
@@ -35,6 +37,8 @@ export function DashboardPage() {
       detail: { projectId: projects[0]?.id },
     }))
   }
+  const createdAt = session?.user?.created_at || user?.created_at
+  const firstProjectOfferAvailable = projects.length === 0 && createdAt && new Date(createdAt) >= FIRST_PROJECT_PROMO_START
 
   useEffect(() => {
     const loadData = async () => {
@@ -93,7 +97,7 @@ export function DashboardPage() {
             <div className="relative inline-flex">
               <button
                 onClick={() => {
-                  if (projects.length === 0) {
+                  if (firstProjectOfferAvailable) {
                     navigate('/cliente/nuevo-proyecto', { state: { showConfetti: true } })
                   } else {
                     navigate('/cliente/nuevo-proyecto')
@@ -109,13 +113,13 @@ export function DashboardPage() {
                 <span className={`material-symbols-rounded ${projects.length === 0 ? 'text-2xl' : 'text-lg'}`}>add_circle</span>
                 Nuevo proyecto
               </button>
-              {projects.length === 0 && (
+              {firstProjectOfferAvailable && (
                 <span className="absolute -top-2.5 -right-2.5 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-black text-amber-950 shadow-lg shadow-amber-400/30">
                   50% OFF
                 </span>
               )}
             </div>
-            {projects.length === 0 && (
+            {firstProjectOfferAvailable && (
               <span className="text-[11px] text-dark-200 ml-1">* 50% OFF en tu primer proyecto</span>
             )}
 

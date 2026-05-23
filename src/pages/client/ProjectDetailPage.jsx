@@ -106,11 +106,12 @@ export function ProjectDetailPage() {
   const proofInputRef = useRef(null)
   const paypalButtonRef = useRef(null)
   const paypalButtonsRef = useRef(null)
+  const transferSubmittingRef = useRef(false)
+  const paypalReferencesRef = useRef(new Set())
 
   const projectTotal = project?.final_price || project?.budget || 0
   const approvedPaid = sumApprovedPayments(payments)
   const pending = Math.max(projectTotal - approvedPaid, 0)
-  const paymentProgress = projectTotal > 0 ? Math.min((approvedPaid / projectTotal) * 100, 100) : 0
   const selectedAmount = Number(paymentAmount || 0)
   const paymentAmountIsValid = selectedAmount > 0 && selectedAmount <= pending
 
@@ -151,6 +152,8 @@ export function ProjectDetailPage() {
     const capture = details.purchase_units?.[0]?.payments?.captures?.[0]
     const amount = Number(capture?.amount?.value || paymentAmount || pending)
     const transactionId = capture?.id || fallbackOrderId
+    if (transactionId && paypalReferencesRef.current.has(transactionId)) return
+    if (transactionId) paypalReferencesRef.current.add(transactionId)
     const { data: paymentData, error } = await createClientPayment({
       invoice_id: invoices[0]?.id,
       project_id: projectId,
@@ -161,7 +164,10 @@ export function ProjectDetailPage() {
       paid_at: new Date().toISOString(),
       admin_status: 'approved',
     })
-    if (error) throw error
+    if (error) {
+      if (transactionId) paypalReferencesRef.current.delete(transactionId)
+      throw error
+    }
     setPayments(prev => [{ ...paymentData, invoice_number: invoices[0]?.invoice_number }, ...prev])
     setPaymentSuccess(true)
     toast.success('Pago verificado exitosamente')
@@ -205,6 +211,7 @@ export function ProjectDetailPage() {
         const directPayments = (directPaymentsRes || []).map(p => ({ ...p, invoice_number: '' }))
         const allPayments = [...invoicePayments, ...directPayments].sort((a, b) => new Date(b.paid_at || b.created_at) - new Date(a.paid_at || a.created_at))
         setPayments(allPayments)
+        paypalReferencesRef.current = new Set(allPayments.map(p => p.reference).filter(Boolean))
       } catch (err) {
         console.error('Error loading project:', err)
       } finally {
@@ -422,7 +429,10 @@ export function ProjectDetailPage() {
   }
 
   const handleSubmitTransferPayment = async () => {
+    if (paymentSubmitting || transferSubmittingRef.current) return
     if (!proofFile) { toast.error('Sube el comprobante'); return }
+    if (!paymentAmountIsValid) { toast.error('Ingresa un monto válido'); return }
+    transferSubmittingRef.current = true
     setPaymentSubmitting(true)
     try {
       const { data: proofUrl, error: uploadErr } = await uploadPaymentProof(proofFile)
@@ -442,13 +452,14 @@ export function ProjectDetailPage() {
       })
       if (error) throw error
       setPayments(prev => [{ ...data, invoice_number: invoices[0]?.invoice_number || '' }, ...prev])
-      setPaymentSubmitting(false)
       toast.success('Comprobante enviado, pendiente de verificación')
       setPaymentStep(4)
       setPaymentSuccess(true)
     } catch (err) {
       console.error('Payment error:', err)
       toast.error(err.message || 'Error al registrar el pago')
+    } finally {
+      transferSubmittingRef.current = false
       setPaymentSubmitting(false)
     }
   }
@@ -1061,58 +1072,9 @@ export function ProjectDetailPage() {
 
       {activeTab === 'pagos' && (
         <div className="space-y-5">
-          {/* Summary */}
-          <div className="rounded-2xl border border-dark-800 bg-dark-900/40 p-4 sm:p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-fizzia-400">Pagos del proyecto</p>
-                <h3 className="mt-1 text-xl font-bold text-white">{formatMoney(projectTotal)}</h3>
-              </div>
-              <div className="text-left sm:text-right">
-                <p className="text-xs text-dark-500">Pendiente</p>
-                <p className="text-lg font-bold text-amber-300">{formatMoney(pending)}</p>
-              </div>
-            </div>
-
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-dark-800">
-              <div
-                className="h-full rounded-full bg-fizzia-500 transition-[width] duration-300 ease-out"
-                style={{ width: `${paymentProgress}%` }}
-              />
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <div className="rounded-xl border border-dark-800 bg-dark-950/70 p-3">
-                <p className="text-xs text-dark-500">{project.final_price ? 'Precio final' : 'Presupuesto'}</p>
-                <p className="mt-1 text-base font-semibold text-white">{formatMoney(projectTotal)}</p>
-              </div>
-              <div className="rounded-xl border border-fizzia-500/20 bg-fizzia-500/10 p-3">
-                <p className="text-xs text-fizzia-300">Verificado</p>
-                <p className="mt-1 text-base font-semibold text-fizzia-300">{formatMoney(approvedPaid)}</p>
-              </div>
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3">
-                <p className="text-xs text-amber-200">Por pagar</p>
-                <p className="mt-1 text-base font-semibold text-amber-200">{formatMoney(pending)}</p>
-              </div>
-            </div>
-          </div>
-
           {/* Payment flow */}
           {pending > 0 && !paymentSuccess && (
-            <div className="overflow-hidden rounded-2xl border border-dark-800 bg-dark-900/40">
-              <div className="flex flex-col gap-3 border-b border-dark-800 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-dark-500">Checkout</p>
-                  <h3 className="mt-1 text-base font-semibold text-white">
-                    {paymentMethod === 'paypal' ? 'Pago con PayPal' : paymentMethod === 'transfer' ? 'Pago por banco' : 'Elige como quieres pagar'}
-                  </h3>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-dark-400">
-                  <span className={`h-2 w-2 rounded-full ${paymentAmountIsValid ? 'bg-fizzia-400' : 'bg-dark-600'}`} />
-                  <span>{paymentAmountIsValid ? `${formatMoney(selectedAmount)} listo` : `${formatMoney(pending)} disponible`}</span>
-                </div>
-              </div>
-              <div className="p-4 sm:p-5">
+            <div>
               {/* Step 0: Method selection */}
               {paymentStep === 0 && (
                 <>
@@ -1407,7 +1369,7 @@ export function ProjectDetailPage() {
                         </button>
                         <button
                           onClick={handleSubmitTransferPayment}
-                          disabled={paymentSubmitting}
+                          disabled={paymentSubmitting || !paymentAmountIsValid}
                           className="cursor-pointer flex-1 rounded-xl bg-[var(--accent)] py-2.5 text-sm font-semibold text-white transition-all hover:bg-[var(--accent-lighter)] disabled:opacity-50"
                         >
                           {paymentSubmitting ? 'Enviando...' : 'Enviar comprobante'}
@@ -1435,7 +1397,6 @@ export function ProjectDetailPage() {
                   </button>
                 </div>
               )}
-              </div>
             </div>
           )}
 

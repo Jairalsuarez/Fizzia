@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../../components/Toast'
-import { createProjectRequest } from '../../api/projectsApi'
+import { createProjectRequest, getMyProjects } from '../../api/projectsApi'
 import { useAuth } from '../../features/auth/authContext'
 import { AvatarIcon } from '../../data/avatars'
 
@@ -40,12 +40,14 @@ function buildFlow(steps, formData) {
 const BASE_PRICES = { web: 800, tienda: 1500, app: 2500, rediseno: 500, asesoria: 300 }
 const COUNTRY_DISCOUNT = 0.15
 const FIRST_PROJECT_DISCOUNT = 0.50
+const FIRST_PROJECT_PROMO_START = new Date('2026-05-23T00:00:00-05:00')
 const LABELS = { business: 'Negocio', personal: 'Personal', web: 'Página web', tienda: 'Tienda online', app: 'App', design: 'Diseño', sales_system: 'Sistema de ventas', not_sure: 'No estoy seguro' }
 
 export function NewProjectPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const toast = useToast()
+  const { session, user } = useAuth()
   const [showWelcome, setShowWelcome] = useState(location.state?.showConfetti || false)
 
   const [formData, setFormData] = useState({})
@@ -53,6 +55,7 @@ export function NewProjectPage() {
   const [submitting, setSubmitting] = useState(false)
   const [userPrice, setUserPrice] = useState(null)
   const [priceChanged, setPriceChanged] = useState(false)
+  const [firstProjectEligible, setFirstProjectEligible] = useState(false)
 
   const flow = buildFlow(schema.steps, formData)
   const currentStep = flow[stepIndex]
@@ -61,13 +64,30 @@ export function NewProjectPage() {
   const needs = formData.businessNeeds || formData.personalNeeds || []
   const basePrice = needs.reduce((max, n) => Math.max(max, BASE_PRICES[n] || 0), 0) || 500
   const countryDiscountAmount = Math.round(basePrice * COUNTRY_DISCOUNT)
-  const firstProjectDiscountAmount = Math.round(basePrice * FIRST_PROJECT_DISCOUNT)
+  const firstProjectDiscountAmount = firstProjectEligible ? Math.round(basePrice * FIRST_PROJECT_DISCOUNT) : 0
   const estimatedPrice = basePrice - countryDiscountAmount - firstProjectDiscountAmount
   const displayPrice = userPrice !== null ? userPrice : estimatedPrice
   const priceDiff = displayPrice - estimatedPrice
   const pctChange = estimatedPrice > 0 ? Math.round((priceDiff / estimatedPrice) * 100) : 0
 
   const handleStart = () => setShowWelcome(false)
+
+  useEffect(() => {
+    let mounted = true
+
+    const loadEligibility = async () => {
+      const createdAt = session?.user?.created_at || user?.created_at
+      const createdAfterPromoStart = createdAt ? new Date(createdAt) >= FIRST_PROJECT_PROMO_START : false
+      const projects = await getMyProjects()
+      if (mounted) setFirstProjectEligible(createdAfterPromoStart && projects.length === 0)
+    }
+
+    loadEligibility().catch(() => {
+      if (mounted) setFirstProjectEligible(false)
+    })
+
+    return () => { mounted = false }
+  }, [session?.user?.created_at, user?.created_at])
 
   const update = (key, value) => setFormData(prev => ({ ...prev, [key]: value }))
   const toggleArray = (key, value) => setFormData(prev => {
@@ -87,6 +107,10 @@ export function NewProjectPage() {
       : `Idea: ${formData.personalIdea || '—'}\nObjetivo: ${formData.personalGoal || '—'}`
     fullDesc += `\n\nReferencias: ${formData.references || '—'}\nInfo extra: ${formData.extraInfo || '—'}\nUrgencia: ${formData.urgency || '—'}`
     fullDesc += `\n\n---\nPrecio base: $${basePrice}\nDto. país (15%): -$${countryDiscountAmount}\nDto. 1er proyecto (50%): -$${firstProjectDiscountAmount}\nPrecio estimado: $${estimatedPrice}\nPrecio ajustado por cliente: $${displayPrice}`
+
+    if (!firstProjectEligible) {
+      fullDesc = fullDesc.replace(/\nDto\. 1er proyecto \(50%\): -\$\d+/, '')
+    }
 
     try {
       const result = await createProjectRequest('Nuevo Proyecto', fullDesc, displayPrice, '', null)
@@ -115,7 +139,7 @@ export function NewProjectPage() {
       }))
     : [], [showWelcome])
 
-  if (showWelcome) {
+  if (showWelcome && firstProjectEligible) {
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-dark-950/90 backdrop-blur-sm">
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -282,10 +306,12 @@ export function NewProjectPage() {
               <span>Dto. país (15%)</span>
               <span className="font-semibold">-${countryDiscountAmount.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between items-center text-amber-400">
-              <span>Dto. primer proyecto (50%)</span>
-              <span className="font-semibold">-${firstProjectDiscountAmount.toLocaleString()}</span>
-            </div>
+            {firstProjectEligible && (
+              <div className="flex justify-between items-center text-amber-400">
+                <span>Dto. primer proyecto (50%)</span>
+                <span className="font-semibold">-${firstProjectDiscountAmount.toLocaleString()}</span>
+              </div>
+            )}
             <div className="h-px bg-dark-700" />
             <div className="flex justify-between items-center text-lg">
               <span className="text-white font-bold">Estimado</span>
