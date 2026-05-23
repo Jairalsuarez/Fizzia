@@ -11,6 +11,7 @@ import { getProjectStatusLabel, getProjectStatusColor, isProjectClosed } from '.
 import { fetchGitHubCommits, formatCommitTime, getCommitAuthorName } from '../../utils/github'
 import { readStoredValue, writeStoredValue } from '../../utils/persistedState'
 import { useRealtimeProject } from '../../hooks/useRealtimeProjects'
+import { ProjectDetailTabs } from '../../components/projects/ProjectDetailTabs'
 
 const devStatusOptions = [
   { key: 'trabajando', icon: 'build', label: 'Trabajando' },
@@ -192,22 +193,7 @@ export function ProjectDetailPage() {
       {/* Tabs */}
       <div className="border-b border-dark-800/70 bg-dark-950/25 shrink-0">
         <div className="px-4 sm:px-6">
-          <div className="flex gap-1 overflow-x-auto hide-scrollbar snap-x">
-            {tabs.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`cursor-pointer min-w-max snap-start flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${
-                  tab === t.id
-                    ? 'border-[var(--accent)] text-white'
-                    : 'border-transparent text-dark-400 hover:text-white hover:border-dark-600'
-                }`}
-              >
-                <span className="material-symbols-rounded text-lg">{t.icon}</span>
-                {t.label}
-              </button>
-            ))}
-          </div>
+          <ProjectDetailTabs tabs={tabs} activeTab={tab} onChange={setTab} density="compact" />
         </div>
       </div>
 

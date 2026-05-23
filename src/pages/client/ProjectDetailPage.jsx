@@ -17,6 +17,7 @@ import { getDeliveryStatus, markMessageFailed, markMessageSent, mergeRealtimeMes
 import { sumApprovedPayments } from '../../utils/paymentStatus'
 import { readStoredValue, writeStoredValue } from '../../utils/persistedState'
 import { useRealtimeProject } from '../../hooks/useRealtimeProjects'
+import { ProjectDetailTabs } from '../../components/projects/ProjectDetailTabs'
 
 let pendingId = Date.now()
 function genId() { return `pending-${pendingId++}` }
@@ -628,12 +629,7 @@ export function ProjectDetailPage() {
   return (
     <div className="space-y-5 p-4 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-          <button onClick={() => navigate('/cliente')} className="cursor-pointer text-dark-400 hover:text-white transition-colors">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </button>
+        <div className="flex min-w-0 items-center">
           <div>
             <h1 className="truncate text-xl font-bold text-white sm:text-2xl">{project.name}</h1>
             <span className={`text-sm font-medium ${phase.textColor}`}>{phase.icon} {phase.label}</span>
@@ -763,28 +759,17 @@ export function ProjectDetailPage() {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-1 rounded-xl border border-dark-800 bg-dark-900/50 p-1 overflow-x-auto snap-x hide-scrollbar">
-        {[
-          { key: 'info', label: 'Detalles' },
-          { key: 'plan', label: 'Plan' },
-          { key: 'pagos', label: 'Pagos' },
-          { key: 'actividad', label: 'Cambios' },
-          { key: 'files', label: 'Archivos' },
-        ].map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => { setActiveTab(tab.key); if (tab.key !== 'pagos') resetPaymentForm() }}
-            className={`min-w-max snap-start flex-1 rounded-lg px-4 py-2.5 text-sm font-medium cursor-pointer transition-all ${
-              activeTab === tab.key
-                ? 'bg-[var(--accent)] text-white'
-                : 'text-dark-400 hover:text-white hover:bg-dark-800/50'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <ProjectDetailTabs
+        tabs={[
+          { id: 'info', label: 'Detalles', icon: 'dashboard' },
+          { id: 'plan', label: 'Plan', icon: 'route' },
+          { id: 'pagos', label: 'Pagos', icon: 'payments' },
+          { id: 'actividad', label: 'Cambios', icon: 'commit' },
+          { id: 'files', label: 'Archivos', icon: 'folder' },
+        ]}
+        activeTab={activeTab}
+        onChange={(nextTab) => { setActiveTab(nextTab); if (nextTab !== 'pagos') resetPaymentForm() }}
+      />
 
       {/* Tab content */}
       {project.status === 'solicitado' && ['plan', 'pagos', 'actividad', 'files'].includes(activeTab) ? (

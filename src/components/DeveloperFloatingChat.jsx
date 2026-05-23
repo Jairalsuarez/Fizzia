@@ -165,13 +165,13 @@ export function DeveloperFloatingChat() {
         ref={buttonRef}
         onClick={handleToggle}
         title={isMessagesPage ? 'El chat ya esta abierto en esta pagina' : 'Hablar con admin'}
-        className="cursor-pointer fixed bottom-5 right-5 z-[900] flex h-14 w-14 items-center justify-center rounded-full bg-purple-500 text-white shadow-2xl shadow-purple-500/25 transition-all hover:bg-purple-400 active:scale-95 sm:bottom-6 sm:right-6"
+        className="project-chat-fab cursor-pointer fixed bottom-5 right-5 z-[900] flex h-14 w-14 items-center justify-center rounded-full bg-purple-500 text-white shadow-2xl shadow-purple-500/25 transition-all hover:bg-purple-400 active:scale-95 sm:bottom-6 sm:right-6"
       >
         <span className="material-symbols-rounded text-2xl">{chatIsOpen ? 'close' : 'forum'}</span>
       </button>
 
       {chatIsOpen && (
-        <div ref={panelRef} className="fixed inset-x-3 bottom-24 z-[900] flex h-[min(520px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-dark-700 bg-dark-900 shadow-2xl shadow-black/40 sm:inset-x-auto sm:right-6 sm:w-96">
+        <div ref={panelRef} className="project-chat-panel fixed inset-x-3 bottom-24 z-[900] flex h-[min(520px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-dark-700 bg-dark-900 shadow-2xl shadow-black/40 sm:inset-x-auto sm:right-6 sm:w-96">
           <div className="border-b border-dark-700 bg-dark-950 p-3">
             <div className="flex items-center justify-between gap-2">
               <div>
