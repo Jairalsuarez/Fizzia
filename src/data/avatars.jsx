@@ -14,9 +14,6 @@ function getAvatarColor(name) {
 }
 
 export function AvatarIcon({ id, name, size = 40, className = '', zoom = 1.5 }) {
-  const initials = useMemo(() => name ? getInitials(name) : null, [name])
-  const bgColor = useMemo(() => name ? getAvatarColor(name) : null, [name])
-
   if (!id) {
     return (
       <div
@@ -28,15 +25,12 @@ export function AvatarIcon({ id, name, size = 40, className = '', zoom = 1.5 }) 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: bgColor || 'var(--accent)',
-          color: '#fff',
-          fontWeight: 600,
-          fontSize: Math.max(size * 0.4, 10),
-          lineHeight: 1,
+          backgroundColor: '#1a1a1a',
+          color: '#555',
           flexShrink: 0,
         }}
       >
-        {initials || '?'}
+        <span className="material-symbols-rounded" style={{ fontSize: size * 0.6 }}>person</span>
       </div>
     )
   }

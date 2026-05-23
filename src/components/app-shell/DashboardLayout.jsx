@@ -6,6 +6,7 @@ import { AvatarIcon } from '../../data/avatars.jsx'
 import { useAppTheme } from '../../theme/appTheme'
 import { ThemeProvider } from '../../theme/ThemeContext'
 import { TermsAcceptanceGate } from '../legal/TermsAcceptanceGate'
+import { VersionChecker } from '../VersionChecker'
 
 export function DashboardLayout({
   navItems,
@@ -84,6 +85,16 @@ export function DashboardLayout({
     }
   }
 
+  const needsTerms = profile && !profile.terms_accepted_at
+
+  if (needsTerms) {
+    return (
+      <div className="min-h-dvh bg-dark-950" data-theme={activeTheme}>
+        <TermsAcceptanceGate profile={profile} onAccepted={handleTermsAccepted} />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-[100dvh] bg-dark-950" data-theme={activeTheme}>
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -102,10 +113,20 @@ export function DashboardLayout({
         <div className="absolute inset-0 bg-gradient-to-b from-dark-950/50 to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <NavLink to={navItems[0]?.to || '/'} className="cursor-pointer flex-shrink-0 flex items-center gap-2" title="Ir al resumen">
-              <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-8 w-auto" onError={(e) => { e.target.style.display = 'none' }} />
-              <span className="text-fizzia-500 font-black text-xl">Fizzia</span>
-            </NavLink>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen(true)}
+                className="lg:hidden inline-flex cursor-pointer items-center justify-center rounded-lg p-2 text-dark-400 hover:bg-dark-800 hover:text-white transition-colors"
+                aria-label="Abrir menu"
+              >
+                <span className="material-symbols-rounded text-2xl">menu</span>
+              </button>
+              <NavLink to={navItems[0]?.to || '/'} className="cursor-pointer flex-shrink-0 flex items-center gap-2" title="Ir al resumen">
+                <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-8 w-auto" onError={(e) => { e.target.style.display = 'none' }} />
+                <span className="text-fizzia-500 font-black text-xl">Fizzia</span>
+              </NavLink>
+            </div>
 
             <div className="hidden lg:flex items-center space-x-1">
               {navItems.map((item) => (
@@ -132,153 +153,118 @@ export function DashboardLayout({
 
             <div className="flex items-center gap-1">
               {topActions}
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="cursor-pointer flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg hover:bg-dark-800 transition-colors"
-                >
-                  <div className={`w-8 h-8 rounded-full bg-white border ${palette.avatarBorder} overflow-hidden shrink-0`}>
-                    <AvatarIcon id={avatarId} name={displayName} size={32} />
-                  </div>
-                  <span className="material-symbols-rounded text-dark-400 text-lg">expand_more</span>
-                </button>
-
-                {dropdownOpen && (
-                  <>
-                    {/* Mobile backdrop — tap outside to close */}
-                    <div
-                      className="fixed inset-0 z-[55] lg:hidden"
-                      onClick={() => setDropdownOpen(false)}
-                      aria-hidden="true"
-                    />
-                  <div className="absolute right-0 top-full mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-dark-700 bg-dark-900 shadow-2xl shadow-black/40 z-[60]">
-                    <div className="p-4 border-b border-dark-700">
-                      <p className="text-white text-sm font-semibold truncate">{displayName}</p>
-                      <p className="text-dark-400 text-xs truncate mt-0.5">{email}</p>
-                      <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${palette.badgeBg} ${palette.badgeText} font-medium`}>{roleLabel}</span>
-                    </div>
-                    <div className="py-1">
-                      <NavLink
-                        to={settingsPath}
-                        onClick={() => setDropdownOpen(false)}
-                        className={({ isActive }) =>
-                          `cursor-pointer flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-colors ${
-                            isActive
-                              ? `${palette.activeText} ${palette.activeBg}`
-                              : 'text-dark-300 hover:text-white hover:bg-dark-800'
-                          }`
-                        }
-                      >
-                        <span className="material-symbols-rounded text-base">settings</span>
-                        Configuracion
-                      </NavLink>
-                      {termsPath && (
-                        <NavLink
-                          to={termsPath}
-                          onClick={() => setDropdownOpen(false)}
-                          className={({ isActive }) =>
-                            `cursor-pointer flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-colors ${
-                              isActive
-                                ? `${palette.activeText} ${palette.activeBg}`
-                                : 'text-dark-300 hover:text-white hover:bg-dark-800'
-                            }`
-                          }
-                        >
-                          <span className="material-symbols-rounded text-base">contract</span>
-                          Terminos y condiciones
-                        </NavLink>
-                      )}
-                      {isClientLayout && (
-                        <NavLink
-                          to="/cliente/tutoriales"
-                          onClick={() => setDropdownOpen(false)}
-                          className={({ isActive }) =>
-                            `cursor-pointer flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-colors ${
-                              isActive
-                                ? `${palette.activeText} ${palette.activeBg}`
-                                : 'text-dark-300 hover:text-white hover:bg-dark-800'
-                            }`
-                          }
-                        >
-                          <span className="material-symbols-rounded text-base">menu_book</span>
-                          Tutoriales y ayuda
-                        </NavLink>
-                      )}
-                      <button
-                        onClick={handleSignOut}
-                        className="cursor-pointer flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-dark-800 transition-colors"
-                      >
-                        <span className="material-symbols-rounded text-base">logout</span>
-                        Cerrar sesion
-                      </button>
-                    </div>
-                  </div>
-                  </>
-                )}
-              </div>
+              <NavLink
+                to={`${settingsPath}/perfil`}
+                className="flex cursor-pointer items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg hover:bg-dark-800 transition-colors"
+              >
+                <div className={`w-8 h-8 rounded-full bg-white border ${palette.avatarBorder} overflow-hidden shrink-0`}>
+                  <AvatarIcon id={avatarId} name={displayName} size={32} />
+                </div>
+              </NavLink>
             </div>
           </div>
         </div>
 
-        <div className="lg:hidden border-t border-dark-800/50 bg-dark-950/80 px-4 py-2">
-          <div className="relative" ref={mobileNavRef}>
+      </nav>
+
+      {/* Mobile side drawer */}
+      <>
+        {/* Backdrop */}
+        <div
+          className={`fixed inset-0 z-[100] bg-black/60 transition-opacity duration-300 lg:hidden ${
+            mobileNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => setMobileNavOpen(false)}
+          aria-hidden="true"
+        />
+        {/* Drawer */}
+        <div
+          ref={mobileNavRef}
+          className={`fixed top-0 left-0 z-[110] flex h-full w-72 flex-col bg-dark-950 border-r border-dark-800 shadow-2xl shadow-black/50 transition-transform duration-300 ease-out lg:hidden ${
+            mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="flex items-center justify-between px-5 py-4 border-b border-dark-800">
+            <span className="text-sm font-semibold text-white">Menu</span>
             <button
               type="button"
-              onClick={() => setMobileNavOpen(open => !open)}
-              className={`flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${
-                mobileNavOpen ? 'border-[var(--accent)]/50 bg-dark-900' : 'border-dark-800 bg-dark-900/70'
-              }`}
+              onClick={() => setMobileNavOpen(false)}
+              className="inline-flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-dark-400 hover:bg-dark-800 hover:text-white transition-colors"
+              aria-label="Cerrar menu"
             >
-              <span className="flex min-w-0 items-center gap-2.5">
-                <span className={`material-symbols-rounded text-lg ${palette.activeText}`}>{activeNavItem?.icon || 'dashboard'}</span>
-                <span className="truncate text-sm font-semibold text-white">{activeNavItem?.label || 'Menu'}</span>
-              </span>
-              <span className={`material-symbols-rounded text-dark-400 transition-transform ${mobileNavOpen ? 'rotate-180' : ''}`}>expand_more</span>
+              <span className="material-symbols-rounded text-xl">close</span>
             </button>
-
-            {mobileNavOpen && (
-              <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-dark-800 bg-dark-900 shadow-2xl shadow-black/50">
-                <div className="max-h-[60dvh] overflow-y-auto p-1.5">
-                  {navItems.map((item) => (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      onMouseEnter={() => preloadRoute(item)}
-                      onFocus={() => preloadRoute(item)}
-                      onTouchStart={() => preloadRoute(item)}
-                      end={item.end ?? item.to.endsWith('/admin') ?? item.to.endsWith('/dev') ?? item.to.endsWith('/cliente')}
-                      className={({ isActive }) =>
-                        `flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all ${
-                          isActive
-                            ? `${palette.activeText} ${palette.activeBg}`
-                            : 'text-dark-300 hover:bg-dark-800 hover:text-white'
-                        }`
-                      }
-                    >
-                      <span className="material-symbols-rounded text-lg">{item.icon}</span>
-                      {item.label}
-                    </NavLink>
-                  ))}
-                </div>
-              </div>
-            )}
+          </div>
+          <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={() => setMobileNavOpen(false)}
+                onMouseEnter={() => preloadRoute(item)}
+                onFocus={() => preloadRoute(item)}
+                onTouchStart={() => preloadRoute(item)}
+                end={item.end ?? item.to.endsWith('/admin') ?? item.to.endsWith('/dev') ?? item.to.endsWith('/cliente')}
+                className={({ isActive }) =>
+                  `flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all ${
+                    isActive
+                      ? `${palette.activeText} ${palette.activeBg}`
+                      : 'text-dark-300 hover:bg-dark-800 hover:text-white'
+                  }`
+                }
+              >
+                <span className="material-symbols-rounded text-lg">{item.icon}</span>
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="border-t border-dark-800 px-3 py-3 space-y-1">
+            <NavLink
+              to={settingsPath}
+              onClick={() => setMobileNavOpen(false)}
+              className={({ isActive }) =>
+                `flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all ${
+                  isActive
+                    ? `${palette.activeText} ${palette.activeBg}`
+                    : 'text-dark-300 hover:bg-dark-800 hover:text-white'
+                }`
+              }
+            >
+              <span className="material-symbols-rounded text-lg">settings</span>
+              Configuracion
+            </NavLink>
+            <button
+              onClick={handleSignOut}
+              className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-red-400 transition-colors hover:bg-dark-800 hover:text-red-300"
+            >
+              <span className="material-symbols-rounded text-lg">logout</span>
+              Cerrar sesion
+            </button>
+          </div>
+          <div className="px-4 py-2.5 border-t border-dark-800">
+            <p className="text-[11px] text-dark-500 font-mono">v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0'}</p>
           </div>
         </div>
-      </nav>
+      </>
 
       <main className="pt-28 pb-10 lg:pt-20 relative z-10">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+          {location.pathname !== navItems[0]?.to && (
+            <button
+              onClick={() => navigate(-1)}
+              className="mb-4 flex items-center gap-1 text-sm text-dark-400 hover:text-white transition-colors cursor-pointer"
+              aria-label="Volver atras"
+            >
+              <span className="material-symbols-rounded text-lg">arrow_back</span>
+              Volver
+            </button>
+          )}
           <ThemeProvider value={{ theme: activeTheme, palette }}>
             {children || <Outlet key={location.key} />}
-            {termsPath && (
-              <TermsAcceptanceGate
-                profile={profile}
-                onAccepted={handleTermsAccepted}
-              />
-            )}
           </ThemeProvider>
         </div>
       </main>
+      <VersionChecker />
     </div>
   )
 }

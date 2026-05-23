@@ -38,15 +38,50 @@ export function LoginPage() {
     redirect()
   }, [session, user, loading, redirecting, navigate])
 
+  const getRateLimit = () => {
+    try {
+      const stored = localStorage.getItem(`login_attempts:${email}`)
+      return stored ? JSON.parse(stored) : null
+    } catch { return null }
+  }
+
+  const setRateLimit = (data) => {
+    localStorage.setItem(`login_attempts:${email}`, JSON.stringify(data))
+  }
+
+  const clearRateLimit = () => {
+    localStorage.removeItem(`login_attempts:${email}`)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setSuccess('')
+
+    const rl = getRateLimit()
+    if (rl?.blockedUntil && Date.now() < rl.blockedUntil) {
+      const min = Math.ceil((rl.blockedUntil - Date.now()) / 60000)
+      setError(`Demasiados intentos. Intenta de nuevo en ${min} minuto${min !== 1 ? 's' : ''}.`)
+      return
+    }
+
     setSubmitting(true)
     try {
       const { error } = await signIn(email, password)
       setSubmitting(false)
-      if (error) setError(error.message)
+      if (error) {
+        const rl2 = getRateLimit()
+        const count = (rl2?.count || 0) + 1
+        if (count >= 3) {
+          setRateLimit({ count, blockedUntil: Date.now() + 30 * 60 * 1000 })
+          setError('Demasiados intentos. Espera 30 minutos antes de intentar de nuevo.')
+        } else {
+          setRateLimit({ count, blockedUntil: null })
+          setError(error.message)
+        }
+      } else {
+        clearRateLimit()
+      }
     } catch {
       setSubmitting(false)
       setError('Error al conectar con el servidor')

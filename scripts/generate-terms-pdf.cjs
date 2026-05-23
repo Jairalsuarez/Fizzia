@@ -1,6 +1,12 @@
-export const legalLastUpdated = '22 de mayo de 2026'
+const puppeteer = require('puppeteer');
+const path = require('path');
+const fs = require('fs');
 
-export const termsSections = [
+const OUTPUT = path.resolve(__dirname, '..', 'public', 'legal', 'terminos-fizzia.pdf');
+
+const legalLastUpdated = '22 de mayo de 2026';
+
+const termsSections = [
   {
     id: 'definiciones',
     title: '1. Definiciones',
@@ -179,13 +185,170 @@ export const termsSections = [
       'Si existe un contrato particular firmado entre las Partes, dicho contrato prevalecerá sobre estos términos únicamente en las cláusulas que entren en conflicto directo.',
     ],
   },
-]
+];
 
-export const consentItems = [
-  'Acepto que mi proyecto se rige por el alcance aprobado, fechas estimadas, entregables y cambios documentados.',
-  'Acepto que los pagos se validan administrativamente y pueden quedar pendientes, aprobados o rechazados.',
-  'Acepto la política de cancelación y reembolso: si cancelo, se descuenta el trabajo realmente ejecutado y solo se devuelve el saldo no consumido si corresponde.',
-  'Acepto la política de privacidad y el tratamiento de mis datos para gestionar proyectos, pagos, reuniones, soporte y operación de la plataforma.',
-  'Acepto mantener confidencialidad, trato profesional y uso responsable de archivos, accesos y credenciales.',
-  'Acepto que la propiedad intelectual del proyecto me será transferida únicamente tras el pago total del mismo.',
-]
+function buildHtml() {
+  const sectionsHtml = termsSections.map(s => `
+    <section>
+      <h2>${s.title}</h2>
+      ${s.body.map(p => `<p>${p}</p>`).join('\n      ')}
+    </section>
+  `).join('\n    ');
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 9.5pt;
+    line-height: 1.55;
+    color: #1a1a1a;
+    widows: 2;
+    orphans: 2;
+  }
+
+  @page {
+    size: A4;
+    margin: 2.2cm 2.5cm 2.2cm 2.5cm;
+  }
+
+  @page :first {
+    margin: 0;
+  }
+
+  /* ── cover ── */
+  .cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    page-break-after: always;
+    padding: 2cm;
+  }
+  .cover .logo-text {
+    font-size: 36pt;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: #0f3b1a;
+    margin-bottom: 0.3cm;
+  }
+  .cover .divider {
+    width: 4cm;
+    height: 2.5px;
+    background: #32a852;
+    margin: 0.8cm auto;
+    border-radius: 2px;
+  }
+  .cover h1 {
+    font-size: 24pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0f3b1a;
+    margin-bottom: 0.5cm;
+    line-height: 1.15;
+  }
+  .cover .sub {
+    font-size: 11pt;
+    color: #2d6b3d;
+    font-weight: 500;
+    max-width: 12cm;
+    margin-bottom: 1.5cm;
+    line-height: 1.4;
+  }
+  .cover .meta {
+    font-size: 8.5pt;
+    color: #777;
+  }
+
+  /* ── sections ── */
+  section {
+    margin-bottom: 0.9em;
+  }
+
+  section h2 {
+    font-size: 10.5pt;
+    font-weight: 700;
+    color: #0f3b1a;
+    margin-bottom: 0.35em;
+    padding-bottom: 0.12em;
+    border-bottom: 1.5px solid #c8e6d0;
+  }
+
+  p {
+    margin-bottom: 0.45em;
+    text-align: justify;
+  }
+
+  .footer-note {
+    margin-top: 1.2em;
+    padding-top: 0.6em;
+    border-top: 1px solid #d0d0d0;
+    font-size: 7pt;
+    color: #999;
+    text-align: center;
+  }
+
+  .page-break {
+    page-break-after: always;
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="logo-text">Fizzia</div>
+  <div class="divider"></div>
+  <h1>Términos y Condiciones Generales</h1>
+  <p class="sub">Servicios de diseño, desarrollo web, aplicaciones, automatizaciones, integraciones, soporte técnico y consultoría</p>
+  <p class="meta">Versión 2.0 &mdash; ${legalLastUpdated}<br>Fizzia.dev</p>
+</div>
+
+${sectionsHtml}
+
+<p class="footer-note">Este documento constituye los Términos y Condiciones Generales de Fizzia.dev. Al aceptar estos términos mediante la plataforma, el Cliente reconoce haber leído, entendido y aceptado todas las disposiciones aquí contenidas.</p>
+
+</body>
+</html>`;
+}
+
+(async () => {
+  const html = buildHtml();
+  const tmp = path.resolve(__dirname, '..', 'public', 'legal', '__terms_temp.html');
+  fs.writeFileSync(tmp, html, 'utf-8');
+
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
+
+  const page = await browser.newPage();
+  await page.goto('file://' + tmp, { waitUntil: 'networkidle0' });
+  await page.pdf({
+    path: OUTPUT,
+    format: 'A4',
+    printBackground: true,
+    margin: { top: '2.2cm', bottom: '2.2cm', left: '2.5cm', right: '2.5cm' },
+    displayHeaderFooter: true,
+    headerTemplate: '<span></span>',
+    footerTemplate: `
+      <div style="width:100%;font-size:7.5pt;font-family:Inter,sans-serif;color:#999;text-align:center;padding:0 2.5cm;">
+        <span style="float:left">Fizzia &mdash; Términos y Condiciones</span>
+        <span style="float:right">P\xe1gina <span class="pageNumber"></span> de <span class="totalPages"></span></span>
+      </div>
+    `,
+  });
+
+  await browser.close();
+  fs.unlinkSync(tmp);
+
+  const size = fs.statSync(OUTPUT).size;
+  console.log('PDF generado:', OUTPUT, `(${(size / 1024).toFixed(0)} KB)`);
+})();

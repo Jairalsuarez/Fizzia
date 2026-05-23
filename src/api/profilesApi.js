@@ -51,7 +51,7 @@ export async function updateProfile(payload) {
   return { data: data ? { ...data } : null, error }
 }
 
-export async function acceptTerms(fullName) {
+export async function acceptTerms() {
   const userId = await getCurrentUserId()
   if (!userId) return { data: null, error: { message: 'No se pudo identificar tu usuario' } }
 
@@ -59,10 +59,7 @@ export async function acceptTerms(fullName) {
   const { data, error } = await supabase
     .from('profiles')
     .update({
-      full_name: sanitizeString(fullName, 160),
       terms_accepted_at: acceptedAt,
-      terms_full_name: sanitizeString(fullName, 160),
-      terms_version: '2026-05-13',
     })
     .eq('id', userId)
     .select()

@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './features/auth/AuthProvider'
 import { ToastProvider } from './components/Toast'
 import { ProtectedRoute } from './features/auth/ProtectedRoute'
+import { CountryProvider } from './contexts/CountryContext'
 
 const LandingLayout = lazy(() => import('./layouts/LandingLayout').then(module => ({ default: module.LandingLayout })))
 const AdminLayout = lazy(() => import('./layouts/AdminLayout').then(module => ({ default: module.AdminLayout })))
@@ -65,7 +66,7 @@ function App() {
 
           <Route path="/simulador" element={<SimulatorPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register" element={<CountryProvider><RegisterPage /></CountryProvider>} />
 
           <Route element={<ProtectedRoute role="admin" />}>
             <Route element={<AdminLayout />}>
@@ -78,6 +79,7 @@ function App() {
               <Route path="/admin/finanzas" element={<AdminFinancePage />} />
               <Route path="/admin/calculadora" element={<AdminPriceCalculatorPage />} />
               <Route path="/admin/configuracion" element={<AdminSettingsPage />} />
+              <Route path="/admin/configuracion/:section" element={<AdminSettingsPage />} />
             </Route>
           </Route>
 
@@ -93,6 +95,7 @@ function App() {
               <Route path="/cliente/perfil" element={<ClientProfilePage />} />
               <Route path="/cliente/tutoriales" element={<ClientTutorialsPage />} />
               <Route path="/cliente/configuracion" element={<ClientSettingsPage />} />
+              <Route path="/cliente/configuracion/:section" element={<ClientSettingsPage />} />
               <Route path="/cliente/terminos" element={<TermsPage />} />
             </Route>
           </Route>
@@ -103,6 +106,7 @@ function App() {
               <Route path="/dev/proyecto/:projectId" element={<DeveloperProjectDetailPage />} />
               <Route path="/dev/finanzas" element={<DeveloperFinancePage />} />
               <Route path="/dev/configuracion" element={<DeveloperSettingsPage />} />
+              <Route path="/dev/configuracion/:section" element={<DeveloperSettingsPage />} />
               <Route path="/dev/terminos" element={<TermsPage />} />
             </Route>
           </Route>

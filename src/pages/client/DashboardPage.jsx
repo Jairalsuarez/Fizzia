@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { getMyProjects } from '../../api/projectsApi'
 import { useAuth } from '../../features/auth/authContext'
-import { ProjectCard, ProjectCardSkeleton, EmptyProjects } from '../../components/ProjectCard'
+import { ProjectCard, ProjectCardSkeleton } from '../../components/ProjectCard'
 import { Greeting } from '../../components/Greeting'
 import { mergeRealtimeProject, useRealtimeProjects } from '../../hooks/useRealtimeProjects'
 
@@ -68,13 +68,13 @@ export function DashboardPage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-tour="client-welcome">
+      <div className="flex flex-col items-center sm:items-start gap-6" data-tour="client-welcome">
         <Greeting
           name={user?.full_name?.split(' ')[0] || 'Usuario'}
           phrases={clientPhrases}
           fallback="un placer tenerte aquí"
         />
-        <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
+        <div className="flex flex-wrap items-center gap-2">
           {projects.length > 0 && (
             <button
               type="button"
@@ -91,23 +91,19 @@ export function DashboardPage() {
           <Link
             to="/cliente/nuevo-proyecto"
             data-tour="client-new-project"
-            className="cursor-pointer px-4 py-2.5 bg-[var(--accent)] text-white font-semibold rounded-xl hover:bg-[var(--accent-lighter)] transition-all shadow-lg shadow-[var(--accent)]/25 inline-flex items-center gap-2"
+            className={`cursor-pointer font-bold rounded-xl transition-all inline-flex items-center gap-2 ${
+              projects.length === 0
+                ? 'px-8 py-5 text-lg bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/30 hover:bg-[var(--accent-lighter)] hover:shadow-xl active:scale-[0.97]'
+                : 'px-4 py-2.5 bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/25 hover:bg-[var(--accent-lighter)]'
+            }`}
           >
-            <span className="material-symbols-rounded text-lg">add_circle</span>
+            <span className={`material-symbols-rounded ${projects.length === 0 ? 'text-2xl' : 'text-lg'}`}>add_circle</span>
             Nuevo proyecto
           </Link>
         </div>
       </div>
 
-      {projects.length === 0 ? (
-        <div data-tour="client-projects">
-          <EmptyProjects
-            message="Aun no tienes proyectos"
-            actionLabel="Crear mi primer proyecto"
-            actionTo="/cliente/nuevo-proyecto"
-          />
-        </div>
-      ) : (
+      {projects.length === 0 ? null : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-tour="client-projects">
           {projects.map((project) => (
             <ProjectCard

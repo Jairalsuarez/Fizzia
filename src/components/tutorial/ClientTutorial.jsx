@@ -90,12 +90,36 @@ function getRect(selector) {
   const element = document.querySelector(selector)
   if (!element) return null
   const rect = element.getBoundingClientRect()
+  const isMobile = window.innerWidth < 640
   return {
     top: Math.max(rect.top - 8, 12),
     left: Math.max(rect.left - 8, 12),
     width: Math.min(rect.width + 16, window.innerWidth - 24),
     height: Math.min(rect.height + 16, window.innerHeight - 24),
   }
+}
+
+function getCardPosition(rect) {
+  if (!rect) return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
+  const isMobile = window.innerWidth < 640
+  const cardWidth = Math.min(312, window.innerWidth - 36)
+
+  if (isMobile) {
+    const topBelow = rect.bottom + 18
+    const fitsBelow = topBelow + 220 < window.innerHeight
+    return {
+      top: fitsBelow ? Math.max(12, rect.bottom + 14) : Math.max(12, rect.top - 210),
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: cardWidth,
+    }
+  }
+
+  const top = rect.bottom + 18 > window.innerHeight - 170
+    ? Math.max(18, rect.top - 190)
+    : rect.bottom + 18
+  const left = Math.min(Math.max(18, rect.left), window.innerWidth - 360)
+  return { top, left }
 }
 
 export function ClientTutorial() {
@@ -141,11 +165,14 @@ export function ClientTutorial() {
 
   useEffect(() => {
     if (!active || !current) return
+    const el = document.querySelector(current.selector)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
     const update = () => setRect(getRect(current.selector))
-    update()
+    const id = window.setTimeout(update, 120)
     window.addEventListener('resize', update)
     window.addEventListener('scroll', update, true)
-    const id = window.setTimeout(update, 80)
     return () => {
       window.removeEventListener('resize', update)
       window.removeEventListener('scroll', update, true)
@@ -169,14 +196,7 @@ export function ClientTutorial() {
     setStep(prev => prev + 1)
   }
 
-  const cardStyle = rect
-    ? {
-      top: rect.top + rect.height + 18 > window.innerHeight - 170
-        ? Math.max(18, rect.top - 190)
-        : rect.top + rect.height + 18,
-      left: Math.min(Math.max(18, rect.left), window.innerWidth - 360),
-    }
-    : { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
+  const cardStyle = getCardPosition(rect)
 
   return (
     <div className="client-tour-layer" aria-live="polite">

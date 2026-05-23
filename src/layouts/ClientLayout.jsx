@@ -4,7 +4,6 @@ import { Chat } from '../components/Chat'
 import { PresenceTracker } from '../components/PresenceTracker'
 import { NotificationBell } from '../components/NotificationBell'
 import { ClientTutorial } from '../components/tutorial/ClientTutorial'
-import { ThemeToggle } from '../components/ThemeToggle'
 import { clientNav } from '../constants/navigation'
 
 export function ClientLayout() {
@@ -20,7 +19,6 @@ export function ClientLayout() {
         theme="fizzia"
         topActions={
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <NotificationBell unreadCount={unreadCount} />
           </div>
         }
