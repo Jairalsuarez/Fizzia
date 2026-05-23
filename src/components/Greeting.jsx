@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 
+const WELCOME_KEY = 'fizzia_welcome_rotate'
+
 export function getTimeGreeting() {
   const h = new Date().getHours()
   if (h < 12) return 'Buenos días'
@@ -39,12 +41,31 @@ function randomItem(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
+function isWelcomeEnabled() {
+  try {
+    return JSON.parse(localStorage.getItem(WELCOME_KEY)) !== false
+  } catch {
+    return true
+  }
+}
+
 export function Greeting({ name, phrases, fallback }) {
   const [phrase] = useState(() => randomItem(phrases || [fallback]))
+  const [enabled, setEnabled] = useState(isWelcomeEnabled)
+
+  useEffect(() => {
+    const handler = () => setEnabled(isWelcomeEnabled())
+    window.addEventListener('storage', handler)
+    window.addEventListener('fizzia-welcome-change', handler)
+    return () => {
+      window.removeEventListener('storage', handler)
+      window.removeEventListener('fizzia-welcome-change', handler)
+    }
+  }, [])
 
   return (
     <h1 className="text-3xl font-bold text-white leading-tight animate-fade-in-up">
-      {getTimeGreeting()}, {name}, <Typewriter text={phrase} />
+      {getTimeGreeting()}, {name}{enabled ? <>, <Typewriter text={phrase} /></> : ''}
     </h1>
   )
 }

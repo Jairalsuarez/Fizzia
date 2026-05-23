@@ -80,6 +80,7 @@ export function AccountSettingsPage({
   const togglePref = (key, value) => {
     saveNotif(key, value)
     setPrefs(prev => ({ ...prev, [key]: value }))
+    window.dispatchEvent(new Event('fizzia-welcome-change'))
   }
 
   const handleSaveProfile = async (e) => {
