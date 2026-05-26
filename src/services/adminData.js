@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { isMissingLastSeenColumn } from '../utils/presence'
 import { assertAllowedUpload, cleanPayload, sanitizeEmail, sanitizeFileName, sanitizeMultiline, sanitizeString } from '../utils/security'
+import { getAuthRedirectUrl } from '../utils/authRedirect'
 
 export function getSession() {
   return supabase.auth.getSession()
@@ -18,7 +19,10 @@ export function signUp(email, password, fullName, metadata) {
   return supabase.auth.signUp({
     email: sanitizeEmail(email),
     password,
-    options: { data: { full_name: sanitizeString(fullName, 160), role: 'client', ...metadata } }
+    options: {
+      data: { full_name: sanitizeString(fullName, 160), role: 'client', ...metadata },
+      emailRedirectTo: getAuthRedirectUrl('/login'),
+    }
   })
 }
 
@@ -37,7 +41,7 @@ export async function signOut() {
 
 export function resetPassword(email) {
   return supabase.auth.resetPasswordForEmail(sanitizeEmail(email), {
-    redirectTo: `${window.location.origin}/login`,
+    redirectTo: getAuthRedirectUrl('/login'),
   })
 }
 
