@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useInView } from 'motion/react'
 
 const RANDOM_CHARS = '_!X$0-+*#'
@@ -22,13 +22,14 @@ export function SpecialText({
   const containerRef = useRef(null)
   const isInView = useInView(containerRef, { once, margin: '-100px' })
   const shouldAnimate = inView ? isInView : true
-  const text = children
+  const text = String(children ?? '')
   const [hasStarted, setHasStarted] = useState(() => !inView && delay <= 0)
   const [displayText, setDisplayText] = useState(' '.repeat(text.length))
   const [currentPhase, setCurrentPhase] = useState('phase1')
   const [animationStep, setAnimationStep] = useState(0)
   const intervalRef = useRef(null)
   const startTimeoutRef = useRef(null)
+  const [reservedWidth, setReservedWidth] = useState(null)
 
   const clearStartTimeout = () => {
     if (startTimeoutRef.current === null) return
@@ -133,9 +134,44 @@ export function SpecialText({
     }
   }, [text, hasStarted])
 
+  useLayoutEffect(() => {
+    const element = containerRef.current
+    if (!element || !text) return undefined
+
+    const measure = () => {
+      const styles = window.getComputedStyle(element)
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d')
+      if (!context) return
+
+      context.font = [
+        styles.fontStyle,
+        styles.fontVariant,
+        styles.fontWeight,
+        styles.fontSize,
+        styles.fontFamily,
+      ].join(' ')
+
+      setReservedWidth(Math.ceil(context.measureText(text).width))
+    }
+
+    measure()
+    document.fonts?.ready?.then(measure)
+    window.addEventListener('resize', measure)
+
+    return () => window.removeEventListener('resize', measure)
+  }, [text])
+
   return (
-    <span ref={containerRef} className={`inline-flex font-[inherit] leading-none ${className}`}>
-      {displayText}
+    <span
+      ref={containerRef}
+      className={`relative inline-block font-[inherit] leading-[inherit] align-baseline ${className}`}
+      style={{ width: reservedWidth ? `${reservedWidth}px` : `${text.length}ch` }}
+      aria-label={text}
+    >
+      <span className="whitespace-nowrap" aria-hidden="true">
+        {displayText}
+      </span>
     </span>
   )
 }
