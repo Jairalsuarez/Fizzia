@@ -78,7 +78,9 @@ export function Footer() {
             </a>
             <address className="not-italic text-dark-300 text-sm space-y-1">
               <p>Ecuador</p>
-              <p>fizziadev@outlook.com</p>
+              <a href="mailto:fizziadev@outlook.com" className="block hover:text-fizzia-400 transition-colors">
+                fizziadev@outlook.com
+              </a>
             </address>
             <a
               href="/login"

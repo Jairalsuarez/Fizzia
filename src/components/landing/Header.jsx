@@ -1,14 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
+import { ArrowRight, ChevronDown, Menu } from 'lucide-react'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { AnimatedThemeToggler } from '../ui/AnimatedThemeToggler'
 
 export function Header() {
   const [activeSection, setActiveSection] = useState('inicio')
   const [langOpen, setLangOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [openDropdown, setOpenDropdown] = useState(null)
   const navRef = useRef(null)
+  const menuRef = useRef(null)
+  const triggerRef = useRef(null)
+  const dropdownRef = useRef(null)
   const lockedRef = useRef(false)
   const { lang, setLang, t } = useLanguage()
 
   const navItems = t('header.nav')
+  const services = t('services.items').slice(0, 5)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -27,6 +35,36 @@ export function Header() {
 
     return () => observer.disconnect()
   }, [])
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    if (menuOpen) document.body.style.overflow = 'hidden'
+
+    const onDocumentClick = (event) => {
+      if (menuOpen &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target)
+      ) {
+        setMenuOpen(false)
+      }
+
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setOpenDropdown(null)
+      }
+    }
+
+    document.addEventListener('mousedown', onDocumentClick)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('mousedown', onDocumentClick)
+    }
+  }, [menuOpen, openDropdown])
 
   const isHome = window.location.pathname === '/'
 
@@ -63,52 +101,125 @@ export function Header() {
     setLangOpen(false)
   }
 
+  const handleMobileNavClick = (event, id) => {
+    setMenuOpen(false)
+    setOpenDropdown(null)
+    handleNavClick(event, id)
+  }
+
+  const toggleDropdown = (name) => {
+    setOpenDropdown((current) => (current === name ? null : name))
+  }
+
+  const renderNavLink = (item) => (
+    <a
+      key={item.id}
+      href={isHome ? `#${item.id}` : `/#${item.id}`}
+      onClick={(e) => {
+        setOpenDropdown(null)
+        handleNavClick(e, item.id)
+      }}
+      className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+        isHome && activeSection === item.id
+          ? 'text-dark-50'
+          : 'text-dark-300 hover:text-dark-50'
+      }`}
+    >
+      {item.label}
+    </a>
+  )
+
   return (
     <nav
       ref={navRef}
-      className="fixed top-0 left-0 right-0 z-50 bg-dark-950/85 backdrop-blur-xl border-b border-dark-800/60"
+      className="fixed top-0 left-0 right-0 z-50 border-b border-dark-800 bg-dark-950/82 backdrop-blur-md"
+      aria-label="Navegacion principal"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-transparent" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex-shrink-0">
-            <a href="/" className="flex items-center gap-1.5 sm:gap-2">
-              <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-7 w-auto sm:h-8" onError={(e) => { e.target.style.display = 'none' }} />
-              <span className="text-fizzia-500 font-black text-xl sm:text-2xl">Fizzia</span>
+          <div className="flex items-center gap-6">
+            <a href="/" className="text-xl font-black tracking-tight text-fizzia-500 transition-opacity hover:opacity-75">
+              Fizzia
             </a>
+
+            <nav className="hidden text-dark-300 font-medium lg:flex" aria-label="Secciones">
+              <ul className="flex items-center space-x-2">
+                {navItems.map((item) => (
+                  <li key={item.id} className="relative">
+                    {item.id === 'servicios' ? (
+                      <div ref={dropdownRef}>
+                        <button
+                          type="button"
+                          onClick={() => toggleDropdown('services')}
+                          className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                            openDropdown === 'services' || (isHome && activeSection === item.id)
+                              ? 'text-dark-50'
+                              : 'text-dark-300 hover:text-dark-50'
+                          }`}
+                        >
+                          {item.label}
+                          <ChevronDown className={`ml-1 h-4 w-4 transition-transform ${openDropdown === 'services' ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openDropdown === 'services' && (
+                          <ul className="absolute left-0 top-full z-20 mt-2 w-64 rounded-xl border border-dark-800 bg-dark-950 p-2 shadow-xl">
+                            {services.map((service) => (
+                              <li key={service.name}>
+                                <a
+                                  href={isHome ? '#servicios' : '/#servicios'}
+                                  onClick={(event) => {
+                                    setOpenDropdown(null)
+                                    handleNavClick(event, 'servicios')
+                                  }}
+                                  className="block rounded-lg px-3 py-2 text-sm text-dark-300 transition-colors hover:bg-dark-900 hover:text-dark-50"
+                                >
+                                  {service.name}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ) : (
+                      renderNavLink(item)
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex lg:hidden items-center space-x-6">
             {navItems.map((item) => (
               <a
                 key={item.id}
                 href={isHome ? `#${item.id}` : `/#${item.id}`}
                 onClick={(e) => handleNavClick(e, item.id)}
-                className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                className={`relative text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-dark-50 ${
                   isHome && activeSection === item.id
-                    ? 'text-fizzia-300 bg-fizzia-500/10'
-                    : 'text-dark-200 hover:text-white hover:bg-dark-900'
+                    ? 'text-dark-50'
+                    : 'text-dark-300 hover:text-dark-50'
                 }`}
               >
                 {item.label}
                 {isHome && activeSection === item.id && (
-                  <span className="absolute bottom-1.5 left-3 right-3 h-px bg-fizzia-400 rounded-full" />
+                  <span className="absolute -bottom-2 left-0 right-0 h-0.5 rounded-full bg-fizzia-500" />
                 )}
               </a>
             ))}
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <AnimatedThemeToggler />
             <div className="relative">
               <button
                 onClick={() => setLangOpen(!langOpen)}
-                className="flex items-center gap-0.5 sm:gap-1 text-dark-300 hover:text-white px-1 sm:px-2 py-2 text-xs sm:text-sm font-medium transition-colors cursor-pointer"
+                className="flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-dark-300 transition-colors hover:text-dark-50 sm:text-sm"
               >
                 {lang.toUpperCase()}
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                <ChevronDown className={`h-4 w-4 transition-transform ${langOpen ? 'rotate-180' : ''}`} />
               </button>
               {langOpen && (
-                <div className="absolute top-full right-0 mt-2 w-32 bg-dark-900 border border-dark-800 rounded-lg shadow-xl overflow-hidden py-1 z-50">
+                <div className="absolute top-full right-0 mt-2 w-32 bg-dark-950 border border-dark-800 rounded-xl shadow-xl overflow-hidden p-1 z-50">
                   {['ES', 'EN'].map(code => {
                     const langKey = code.toLowerCase()
                     return (
@@ -126,19 +237,97 @@ export function Header() {
             </div>
             <a
               href="/login"
-              className="text-dark-300 hover:text-white text-xs sm:text-sm font-medium transition-colors px-2 sm:px-3 py-2 cursor-pointer"
+              className="hidden rounded-xl px-4 py-2 text-sm font-medium text-dark-50 transition-colors hover:text-dark-300 lg:inline-flex"
             >
               {t('header.signIn')}
             </a>
             <a
               href="/register"
-              className="bg-fizzia-500 hover:bg-fizzia-400 active:translate-y-px text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all shadow-lg shadow-fizzia-500/20 hover:shadow-fizzia-500/30 cursor-pointer"
+              className="hidden items-center gap-2 rounded-xl bg-dark-50 px-5 py-2.5 text-sm font-medium text-dark-950 transition-colors hover:bg-dark-300 lg:inline-flex"
             >
               {t('header.createAccount')}
+              <ArrowRight className="h-4 w-4" />
             </a>
+            <button
+              ref={triggerRef}
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+              className="inline-flex rounded-xl p-2 text-dark-50 transition-colors hover:bg-dark-900 lg:hidden"
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+              aria-haspopup="menu"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
           </div>
         </div>
       </div>
+      {menuOpen && (
+        <div
+          id="mobile-menu"
+          ref={menuRef}
+          className="absolute right-4 top-full mt-2 w-64 rounded-xl border border-dark-800 bg-dark-950/95 p-2 shadow-xl backdrop-blur-md lg:hidden"
+          role="menu"
+          aria-label="Menu movil"
+        >
+          <div className="flex flex-col space-y-2">
+            {navItems.map((item) => (
+              item.id === 'servicios' ? (
+                <div key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => toggleDropdown('mobile-services')}
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-dark-50 transition-colors hover:bg-dark-900"
+                  >
+                    {item.label}
+                    <ChevronDown className={`h-4 w-4 transition-transform ${openDropdown === 'mobile-services' ? 'rotate-180' : ''}`} />
+                  </button>
+                  {openDropdown === 'mobile-services' && (
+                    <ul className="ml-4 mt-1 border-l border-dark-800 pl-3">
+                      {services.map((service) => (
+                        <li key={service.name}>
+                          <a
+                            href={isHome ? '#servicios' : '/#servicios'}
+                            onClick={(event) => handleMobileNavClick(event, 'servicios')}
+                            className="block rounded-lg px-3 py-1.5 text-sm text-dark-300 transition-colors hover:bg-dark-900 hover:text-dark-50"
+                          >
+                            {service.name}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : (
+                <a
+                  key={item.id}
+                  href={isHome ? `#${item.id}` : `/#${item.id}`}
+                  onClick={(event) => handleMobileNavClick(event, item.id)}
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-dark-50 transition-colors hover:bg-dark-900"
+                  role="menuitem"
+                >
+                  {item.label}
+                </a>
+              )
+            ))}
+            <div className="mt-2 space-y-2 border-t border-dark-800 pt-2">
+              <a
+                href="/login"
+                className="block rounded-lg px-3 py-2 text-center text-sm font-medium text-dark-50 transition-colors hover:bg-dark-900"
+              >
+                {t('header.signIn')}
+              </a>
+              <a
+                href="/register"
+                className="flex items-center justify-center gap-2 rounded-lg bg-dark-50 px-3 py-2.5 text-sm font-medium text-dark-950"
+              >
+                {t('header.createAccount')}
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   )
 }

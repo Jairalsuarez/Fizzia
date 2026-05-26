@@ -114,6 +114,70 @@ const icons = {
     ['circle', { cx: '12', cy: '12', r: '9' }],
     ['path', { d: 'm8 12 3 3 5-6' }],
   ],
+  restaurant: [
+    ['path', { d: 'M7 2v20' }],
+    ['path', { d: 'M4 2v6a3 3 0 0 0 6 0V2' }],
+    ['path', { d: 'M17 2v20' }],
+    ['path', { d: 'M17 2c2 1.5 3 3.5 3 6 0 2.8-1.2 5-3 6' }],
+  ],
+  storefront: [
+    ['path', { d: 'M4 10h16' }],
+    ['path', { d: 'M5 10l1-6h12l1 6' }],
+    ['path', { d: 'M6 10v10h12V10' }],
+    ['path', { d: 'M9 20v-6h6v6' }],
+  ],
+  hardware: [
+    ['path', { d: 'M14 7 7 14' }],
+    ['path', { d: 'M8 13l3 3' }],
+    ['path', { d: 'M16 5l3 3-3 3-3-3 3-3Z' }],
+    ['path', { d: 'M5 19l4-4' }],
+  ],
+  local_shipping: [
+    ['path', { d: 'M3 7h11v10H3z' }],
+    ['path', { d: 'M14 11h4l3 3v3h-7z' }],
+    ['circle', { cx: '7', cy: '18', r: '2' }],
+    ['circle', { cx: '17', cy: '18', r: '2' }],
+  ],
+  medical_services: [
+    ['rect', { x: '4', y: '5', width: '16', height: '15', rx: '2' }],
+    ['path', { d: 'M9 5V3h6v2' }],
+    ['path', { d: 'M12 10v5M9.5 12.5h5' }],
+  ],
+  fitness_center: [
+    ['path', { d: 'M6 7v10M18 7v10' }],
+    ['path', { d: 'M3 10v4M21 10v4' }],
+    ['path', { d: 'M6 12h12' }],
+  ],
+  content_cut: [
+    ['circle', { cx: '6', cy: '7', r: '3' }],
+    ['circle', { cx: '6', cy: '17', r: '3' }],
+    ['path', { d: 'M8.5 8.5 20 20' }],
+    ['path', { d: 'M8.5 15.5 20 4' }],
+  ],
+  build: [
+    ['path', { d: 'M14.7 6.3a4 4 0 0 0-5 5L4 17v3h3l5.7-5.7a4 4 0 0 0 5-5l-2.4 2.4-2.8-2.8 2.2-2.6Z' }],
+  ],
+  apartment: [
+    ['path', { d: 'M5 21V4h10v17' }],
+    ['path', { d: 'M15 9h4v12' }],
+    ['path', { d: 'M8 8h2M8 12h2M8 16h2M13 12h2M13 16h2' }],
+  ],
+  school: [
+    ['path', { d: 'm3 9 9-5 9 5-9 5-9-5Z' }],
+    ['path', { d: 'M7 12v4c2 2 8 2 10 0v-4' }],
+    ['path', { d: 'M21 9v6' }],
+  ],
+  rocket_launch: [
+    ['path', { d: 'M13 4c3 0 5 2 5 5 0 4-4 8-8 11l-4-4c3-4 7-8 7-12Z' }],
+    ['path', { d: 'M9 15l-4 1 1-4' }],
+    ['circle', { cx: '14', cy: '8', r: '1.5' }],
+  ],
+  handyman: [
+    ['path', { d: 'M4 20 14 10' }],
+    ['path', { d: 'm13 5 6 6' }],
+    ['path', { d: 'm15 3 6 6-2 2-6-6 2-2Z' }],
+    ['path', { d: 'M4 16l4 4' }],
+  ],
 }
 
 export function Icon({ name, className = '', size = 20 }) {
