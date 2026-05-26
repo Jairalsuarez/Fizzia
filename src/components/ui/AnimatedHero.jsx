@@ -41,7 +41,7 @@ export function AnimatedHero({
         )
       }
       return isHighlighted ? (
-        <SpecialText key={`${part}-${index}`} speed={45} delay={0.2} inView className="text-fizzia-400">
+        <SpecialText key={`${part}-${index}`} speed={34} delay={0.15} inView className="text-fizzia-400">
           {part}
         </SpecialText>
       ) : (
