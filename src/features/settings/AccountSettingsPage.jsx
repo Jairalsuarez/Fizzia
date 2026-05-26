@@ -89,7 +89,11 @@ export function AccountSettingsPage({
     const { data, error } = await updateProfile(formData)
     setSaving(false)
     if (error) { toast.error(error.message); return }
-    if (data) { setProfile(prev => ({ ...prev, ...data })); updateUser(data) }
+    if (data) {
+      setProfile(prev => ({ ...prev, ...data }))
+      updateUser(data)
+      window.dispatchEvent(new Event('auth-profile-update'))
+    }
     toast.success('Perfil actualizado')
   }
 

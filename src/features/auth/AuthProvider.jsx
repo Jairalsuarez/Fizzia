@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
 
         if (currentSession?.user) {
           try {
-            const u = await loadProfile(currentSession.user.id)
+            const u = await loadProfile(currentSession.user)
             if (mounted) {
               setUser(u)
               userRef.current = u
@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
       if (!mounted) return
       setSession(newSession)
       if (newSession?.user) {
-        loadProfile(newSession.user.id)
+        loadProfile(newSession.user)
           .then(u => { if (mounted) { setUser(u); userRef.current = u } })
           .catch(() => {
             if (mounted) {
@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
 
     window.addEventListener('auth-profile-update', () => {
       if (userRef.current) {
-        loadProfile(userRef.current.id)
+        loadProfile(userRef.current)
           .then(u => { if (mounted) { setUser(u); userRef.current = u } })
       }
     })
@@ -96,8 +96,37 @@ export function AuthProvider({ children }) {
   )
 }
 
-async function loadProfile(userId) {
+function getAuthFallback(authUser) {
+  const metadata = authUser?.user_metadata || {}
+  const firstName = metadata.first_name || metadata.name?.split(' ')[0] || ''
+  const lastName = metadata.last_name || ''
+  const fullName = metadata.full_name || metadata.name || [firstName, lastName].filter(Boolean).join(' ')
+
+  return {
+    id: authUser?.id,
+    role: metadata.role || 'client',
+    full_name: fullName || firstName || authUser?.email || 'Usuario',
+    first_name: firstName || undefined,
+    last_name: lastName || undefined,
+    email: authUser?.email,
+  }
+}
+
+async function loadProfile(authUserOrId) {
+  const authUser = typeof authUserOrId === 'object' ? authUserOrId : { id: authUserOrId }
+  const userId = authUser.id
+  const fallback = getAuthFallback(authUser)
   const profile = await getProfile(userId)
-  if (!profile) return { id: userId, role: 'client', full_name: 'Usuario' }
-  return { ...profile, id: profile.id || userId, role: profile.role || 'client' }
+  if (!profile) return fallback
+
+  return {
+    ...fallback,
+    ...profile,
+    id: profile.id || userId,
+    role: profile.role || fallback.role,
+    full_name: profile.full_name || fallback.full_name,
+    first_name: profile.first_name || fallback.first_name,
+    last_name: profile.last_name || fallback.last_name,
+    email: profile.email || fallback.email,
+  }
 }

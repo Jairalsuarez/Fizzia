@@ -29,6 +29,38 @@
     <meta name="twitter:image" content="/images/og-cover.jpg" />
     <meta name="theme-color" content="#050806" />
     <link rel="canonical" href="https://fizzia.dev" />
+    <style>
+      #root {
+        min-height: 100vh;
+      }
+
+      .initial-loader {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+      }
+
+      .initial-loader__mark {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 999px;
+        border: 3px solid rgba(50, 168, 82, 0.14);
+        border-bottom-color: #32a852;
+        animation: initial-loader-spin 0.72s linear infinite;
+      }
+
+      .initial-loader[data-app-route="true"] {
+        background: #050605;
+      }
+
+      @keyframes initial-loader-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -48,7 +80,21 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="initial-loader" aria-label="Cargando Fizzia">
+        <div class="initial-loader__mark"></div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var appRoutes = ['/admin', '/cliente', '/dev', '/simulador'];
+        var loader = document.querySelector('.initial-loader');
+        var prefersDark = window.localStorage.getItem('fizzia-theme') === 'dark';
+        if (loader && prefersDark && appRoutes.some(function (route) { return window.location.pathname.indexOf(route) === 0; })) {
+          loader.setAttribute('data-app-route', 'true');
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
     <!-- Analytics placeholder: descomenta y reemplaza el ID cuando tengas Google Analytics o Plausible -->
     <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> -->

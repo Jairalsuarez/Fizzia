@@ -124,7 +124,7 @@ export function LoginPage() {
 
   if (redirecting || (session && !user)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-950 p-6">
+      <div className="auth-page min-h-screen flex items-center justify-center bg-dark-950 p-6">
         <div className="text-center space-y-4">
           <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-16 w-auto mx-auto" onError={(e) => { e.target.style.display = 'none' }} />
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-fizzia-500 mx-auto"></div>
@@ -136,7 +136,7 @@ export function LoginPage() {
 
   if (showReset) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-950 p-6 relative overflow-hidden">
+      <div className="auth-page min-h-screen flex items-center justify-center bg-dark-950 p-6 relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-fizzia-500/8 rounded-full blur-3xl" />
           <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-fizzia-600/8 rounded-full blur-3xl" />
@@ -227,7 +227,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark-950 p-6 relative overflow-hidden">
+    <div className="auth-page min-h-screen flex items-center justify-center bg-dark-950 p-6 relative overflow-hidden">
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-fizzia-500/8 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-fizzia-600/8 rounded-full blur-3xl" />

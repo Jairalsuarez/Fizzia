@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMyProjects } from '../../api/projectsApi'
+import { getMyProfile } from '../../api/profilesApi'
 import { useAuth } from '../../features/auth/authContext'
 import { ProjectCard, ProjectCardSkeleton } from '../../components/ProjectCard'
 import { Greeting } from '../../components/Greeting'
@@ -23,6 +24,7 @@ export function DashboardPage() {
   const { session, user } = useAuth()
   const navigate = useNavigate()
   const [projects, setProjects] = useState([])
+  const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
   const handleRealtimeProject = useCallback((payload) => {
@@ -39,19 +41,47 @@ export function DashboardPage() {
   }
   const createdAt = session?.user?.created_at || user?.created_at
   const firstProjectOfferAvailable = projects.length === 0 && createdAt && new Date(createdAt) >= FIRST_PROJECT_PROMO_START
+  const displayName =
+    profile?.full_name?.split(' ')[0] ||
+    profile?.first_name ||
+    user?.full_name?.split(' ')[0] ||
+    user?.first_name ||
+    session?.user?.user_metadata?.full_name?.split(' ')[0] ||
+    session?.user?.user_metadata?.first_name ||
+    session?.user?.email?.split('@')[0] ||
+    'Usuario'
 
   useEffect(() => {
+    let cancelled = false
+
     const loadData = async () => {
       try {
-        const projectsRes = await getMyProjects()
+        const [projectsRes, profileRes] = await Promise.all([
+          getMyProjects(),
+          getMyProfile(),
+        ])
+        if (cancelled) return
         setProjects(projectsRes || [])
+        setProfile(profileRes || null)
       } catch (err) {
         console.error('Error loading dashboard:', err)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
+
+    const refreshProfile = async () => {
+      const profileRes = await getMyProfile()
+      if (!cancelled) setProfile(profileRes || null)
+    }
+
     loadData()
+    window.addEventListener('auth-profile-update', refreshProfile)
+
+    return () => {
+      cancelled = true
+      window.removeEventListener('auth-profile-update', refreshProfile)
+    }
   }, [])
 
   if (loading) {
@@ -75,7 +105,7 @@ export function DashboardPage() {
     <div className="p-4 sm:p-6 space-y-6">
       <div className="flex flex-col items-center sm:items-start gap-6" data-tour="client-welcome">
         <Greeting
-          name={user?.full_name?.split(' ')[0] || 'Usuario'}
+          name={displayName}
           phrases={clientPhrases}
           fallback="un placer tenerte aquí"
         />

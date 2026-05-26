@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider } from './features/auth/AuthProvider'
 import { ToastProvider } from './components/Toast'
 import { ProtectedRoute } from './features/auth/ProtectedRoute'
@@ -43,8 +43,12 @@ const ClientSettingsPage = lazy(() => import('./pages/client/SettingsPage').then
 const ClientTutorialsPage = lazy(() => import('./pages/client/TutorialsPage').then(module => ({ default: module.TutorialsPage })))
 
 function RouteFallback() {
+  const { pathname } = useLocation()
+  const isAppRoute = ['/admin', '/cliente', '/dev', '/simulador'].some((route) => pathname.startsWith(route))
+  const shellClass = isAppRoute ? 'app-shell bg-dark-950' : 'bg-white'
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-dark-950">
+    <div className={`flex min-h-screen items-center justify-center ${shellClass}`}>
       <div className="text-center space-y-4">
         <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-12 w-auto mx-auto" />
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-fizzia-500 mx-auto"></div>

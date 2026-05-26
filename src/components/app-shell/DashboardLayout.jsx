@@ -5,6 +5,7 @@ import { getMyProfile } from '../../api/profilesApi'
 import { AvatarIcon } from '../../data/avatars.jsx'
 import { useAppTheme } from '../../theme/appTheme'
 import { ThemeProvider } from '../../theme/ThemeContext'
+import { AnimatedThemeToggler } from '../ui/AnimatedThemeToggler'
 import { TermsAcceptanceGate } from '../legal/TermsAcceptanceGate'
 import { VersionChecker } from '../VersionChecker'
 
@@ -21,6 +22,7 @@ export function DashboardLayout({
   const navigate = useNavigate()
   const location = useLocation()
   const [profile, setProfile] = useState(user)
+  const [profileLoading, setProfileLoading] = useState(true)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [updateVersion, setUpdateVersion] = useState(null)
   const mobileNavRef = useRef(null)
@@ -40,9 +42,18 @@ export function DashboardLayout({
   useEffect(() => {
     let cancelled = false
     async function loadProfile() {
-      if (!session?.user) return
-      const p = await getMyProfile()
-      if (!cancelled) setProfile(p || user)
+      if (!session?.user) {
+        setProfileLoading(false)
+        return
+      }
+
+      setProfileLoading(true)
+      try {
+        const p = await getMyProfile()
+        if (!cancelled) setProfile(p || user)
+      } finally {
+        if (!cancelled) setProfileLoading(false)
+      }
     }
     loadProfile()
     return () => { cancelled = true }
@@ -86,18 +97,29 @@ export function DashboardLayout({
     }
   }
 
-  const needsTerms = profile && !profile.terms_accepted_at
+  const needsTerms = !profileLoading && profile && !profile.terms_accepted_at
+
+  if (profileLoading) {
+    return (
+      <div className="app-shell flex min-h-dvh items-center justify-center bg-dark-950" data-theme={activeTheme}>
+        <div className="text-center space-y-4">
+          <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-12 w-auto mx-auto" />
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-fizzia-500 mx-auto"></div>
+        </div>
+      </div>
+    )
+  }
 
   if (needsTerms) {
     return (
-      <div className="min-h-dvh bg-dark-950" data-theme={activeTheme}>
+      <div className="app-shell min-h-dvh bg-dark-950" data-theme={activeTheme}>
         <TermsAcceptanceGate profile={profile} onAccepted={handleTermsAccepted} />
       </div>
     )
   }
 
   return (
-    <div className="min-h-[100dvh] bg-dark-950" data-theme={activeTheme}>
+    <div className="app-shell min-h-[100dvh] bg-dark-950" data-theme={activeTheme}>
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className={`absolute -top-24 -left-24 w-[500px] h-[500px] ${palette.glow} rounded-full blur-3xl`} />
         <div className={`absolute top-1/2 -right-24 w-[400px] h-[400px] ${palette.glowSoft} rounded-full blur-3xl`} />
@@ -113,23 +135,27 @@ export function DashboardLayout({
       <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-950/85 backdrop-blur-xl border-b border-dark-800/60">
         <div className="absolute inset-0 bg-gradient-to-b from-dark-950/50 to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
+          <div className="grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-3">
+            <div className="flex items-center justify-start gap-3">
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(true)}
-                className="lg:hidden inline-flex cursor-pointer items-center justify-center rounded-lg p-2 text-dark-400 hover:bg-dark-800 hover:text-white transition-colors"
+                className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-dark-400 hover:bg-dark-800 hover:text-white transition-colors"
                 aria-label="Abrir menu"
               >
                 <span className="material-symbols-rounded text-2xl">menu</span>
               </button>
+              <span className="text-sm font-semibold text-dark-400">Menu</span>
+            </div>
+
+            <div className="flex justify-center">
               <NavLink to={navItems[0]?.to || '/'} className="cursor-pointer flex-shrink-0 flex items-center gap-2" title="Ir al resumen">
                 <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-8 w-auto" onError={(e) => { e.target.style.display = 'none' }} />
                 <span className="text-fizzia-500 font-black text-xl">Fizzia</span>
               </NavLink>
             </div>
 
-            <div className="hidden lg:flex items-center space-x-1">
+            <div className="hidden">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
@@ -152,8 +178,9 @@ export function DashboardLayout({
               ))}
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center justify-end gap-1">
               {topActions}
+              <AnimatedThemeToggler sound={false} />
               <NavLink
                 to={`${settingsPath}/perfil`}
                 className="flex cursor-pointer items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg hover:bg-dark-800 transition-colors"
@@ -172,7 +199,7 @@ export function DashboardLayout({
       <>
         {/* Backdrop */}
         <div
-          className={`fixed inset-0 z-[100] bg-black/60 transition-opacity duration-300 lg:hidden ${
+          className={`fixed inset-0 z-[100] bg-black/35 backdrop-blur-[2px] transition-opacity duration-300 ${
             mobileNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
           }`}
           onClick={() => setMobileNavOpen(false)}
@@ -181,7 +208,7 @@ export function DashboardLayout({
         {/* Drawer */}
         <div
           ref={mobileNavRef}
-          className={`fixed top-0 left-0 z-[110] flex h-full w-72 flex-col bg-dark-950 border-r border-dark-800 shadow-2xl shadow-black/50 transition-transform duration-300 ease-out lg:hidden ${
+          className={`fixed top-0 left-0 z-[110] flex h-full w-72 flex-col bg-dark-950 border-r border-dark-800 shadow-2xl shadow-black/20 transition-transform duration-300 ease-out ${
             mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >

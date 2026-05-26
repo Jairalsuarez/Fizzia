@@ -110,7 +110,7 @@ export function RegisterPage() {
   const inputAttrs = { autoComplete: 'off', spellCheck: 'false' }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark-950 p-6 relative overflow-hidden">
+    <div className="auth-page min-h-screen flex items-center justify-center bg-dark-950 p-6 relative overflow-hidden">
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-fizzia-500/8 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-fizzia-600/8 rounded-full blur-3xl" />
@@ -120,7 +120,7 @@ export function RegisterPage() {
       <div className="relative z-10 w-full max-w-2xl">
         <div className="flex bg-dark-900/50 border border-dark-800 rounded-2xl overflow-hidden backdrop-blur-sm">
           {/* Left panel - decorative */}
-          <div className="hidden md:flex md:w-2/5 bg-gradient-to-b from-fizzia-500 to-fizzia-700 flex-col justify-between p-8 relative overflow-hidden">
+          <div className="auth-accent-panel hidden md:flex md:w-2/5 bg-gradient-to-b from-fizzia-500 to-fizzia-700 flex-col justify-between p-8 relative overflow-hidden">
             <div className="absolute inset-0">
               <div className="absolute top-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-2xl animate-pulse" />
               <div className="absolute bottom-12 -left-8 w-24 h-24 bg-white/10 rounded-full blur-xl" />
