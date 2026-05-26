@@ -1,144 +1,161 @@
-import { LanguageProvider } from '../../contexts/LanguageContext'
+import { useRef } from 'react'
+import { motion } from 'framer-motion'
+import { ArrowRight, Code2, Mail, MessageCircle } from 'lucide-react'
+import { LanguageProvider, useLanguage } from '../../contexts/LanguageContext'
 import { CountryProvider } from '../../contexts/CountryContext'
 import { Header } from '../../components/landing/Header'
 import { Footer } from '../../components/landing/Footer'
-import { useLanguage } from '../../contexts/LanguageContext'
+import { VerticalCutReveal } from '../../components/ui/VerticalCutReveal'
+
+function Reveal({ children, className = '', delay = 0, as: Component = 'div', ...props }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -18, filter: 'blur(10px)' }}
+      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      viewport={{ once: true, margin: '-100px' }}
+      transition={{ delay, duration: 0.5 }}
+      className={className}
+      {...props}
+    >
+      {Component === 'div' ? children : <Component>{children}</Component>}
+    </motion.div>
+  )
+}
 
 function AboutContent() {
-  const { t, language } = useLanguage()
+  const heroRef = useRef(null)
+  const { t, lang } = useLanguage()
   const about = t('about')
+  const isEs = lang === 'es'
+
+  const socials = [
+    { href: 'mailto:fizziadev@outlook.com', label: 'Correo', icon: Mail },
+    { href: 'https://github.com/Jairalsuarez', label: 'GitHub', icon: Code2 },
+    { href: 'https://www.facebook.com/profile.php?id=61589954188509', label: 'Facebook', text: 'f' },
+    { href: 'https://wa.me/593989200977', label: 'WhatsApp', icon: MessageCircle },
+  ]
 
   return (
     <>
       <Header />
 
-      {/* Hero — big, minimal, with a floating element */}
-      <section className="relative min-h-[70dvh] flex items-center bg-dark-950 overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-fizzia-500/4 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-0 w-72 h-72 bg-fizzia-600/5 rounded-full blur-3xl" />
-          <div className="absolute top-10 left-10 w-32 h-32 border border-fizzia-500/10 rounded-full animate-pulse" style={{ animationDuration: '6s' }} />
-        </div>
-        <div className="relative max-w-4xl mx-auto px-6 py-24">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[1.05] mb-6">
-            {about.hero.heading}
-          </h1>
-          <p className="text-xl md:text-2xl text-fizzia-400 font-semibold">
-            {about.hero.subtitle}
-          </p>
-        </div>
-      </section>
+      <main className="landing-page bg-dark-950 text-dark-50 overflow-x-hidden">
+        <section ref={heroRef} className="relative overflow-hidden bg-dark-950 px-4 pb-20 pt-28 md:px-8 md:pb-28">
+          <div className="mx-auto max-w-6xl">
+            <div className="relative">
+              <div className="absolute -top-3 z-10 flex w-[80%] items-center justify-between sm:top-0 sm:w-[82%] lg:top-4 lg:w-[84%]">
+                <Reveal className="flex items-center gap-2 text-xl">
+                  <span className="text-fizzia-500 animate-spin" style={{ animationDuration: '6s' }}>✱</span>
+                  <span className="text-sm font-bold uppercase tracking-[0.18em] text-dark-300">
+                    {isEs ? 'Quiénes somos' : 'Who we are'}
+                  </span>
+                </Reveal>
 
-      {/* Mission — narrative paragraph, no box */}
-      <section className="relative py-24 bg-dark-950 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-dark-700 to-transparent" />
-        <div className="max-w-3xl mx-auto px-6">
-          <span className="text-fizzia-400 text-xs font-bold uppercase tracking-[0.2em]">
-            {about.mission.heading}
-          </span>
-          <p className="text-white/85 text-lg md:text-xl leading-relaxed mt-6">
-            {about.mission.text}
-          </p>
-        </div>
-      </section>
-
-      {/* Origin — with photo placeholder and more narrative */}
-      <section className="relative py-24 bg-dark-950 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-dark-700 to-transparent" />
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid md:grid-cols-5 gap-10 items-center">
-            <div className="md:col-span-3">
-              <span className="text-fizzia-400 text-xs font-bold uppercase tracking-[0.2em]">
-                {about.origin.heading}
-              </span>
-              <p className="text-white/85 text-lg md:text-xl leading-relaxed mt-6">
-                {about.origin.text}
-              </p>
-            </div>
-            <div className="md:col-span-2 relative">
-              <div className="aspect-[3/4] rounded-2xl bg-gradient-to-br from-fizzia-500/20 via-dark-800 to-dark-900 border border-dark-700 flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-dark-950/40 to-transparent" />
-                <div className="text-center p-6 relative">
-                  <span className="text-6xl">🇪🇨</span>
-                  <p className="text-dark-400 text-sm mt-3">
-                    {language === 'es' ? 'Ecuador, nuestro origen' : 'Ecuador, our origin'}
-                  </p>
+                <div className="flex gap-2 sm:gap-3">
+                  {socials.map((item, index) => {
+                    const Icon = item.icon
+                    return (
+                      <Reveal key={item.label} delay={index * 0.08}>
+                        <a
+                          href={item.href}
+                          target={item.href.startsWith('mailto:') ? undefined : '_blank'}
+                          rel={item.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+                          aria-label={item.label}
+                          className="flex size-8 items-center justify-center rounded-lg border border-dark-800 bg-dark-900 text-dark-300 transition-colors hover:text-fizzia-500 sm:size-9"
+                        >
+                          {Icon ? <Icon size={16} /> : <span className="text-base font-black leading-none">{item.text}</span>}
+                        </a>
+                      </Reveal>
+                    )
+                  })}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Approach — conversational bullets, no cards */}
-      <section className="relative py-24 bg-dark-950 overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-1/2 left-0 w-96 h-96 bg-fizzia-500/3 rounded-full blur-3xl" />
-        </div>
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-dark-700 to-transparent" />
-        <div className="max-w-3xl mx-auto px-6 relative">
-          <h2 className="text-3xl md:text-4xl font-black text-white mb-6 text-center">
-            {about.approach.heading}
-          </h2>
-          <p className="text-dark-400 text-center mb-14 max-w-lg mx-auto">
-            {language === 'es'
-              ? 'No trabajamos con fórmulas. Cada proyecto es diferente y eso nos gusta.'
-              : 'We don\'t work with formulas. Every project is different and we like it that way.'}
-          </p>
-          <div className="space-y-10">
-            {about.approach.items.map((item, i) => (
-              <div key={i} className="relative pl-10 border-l-2 border-dark-800 hover:border-fizzia-500/40 transition-colors duration-500">
-                <span className="absolute left-0 top-0 -translate-x-1/2 w-4 h-4 rounded-full bg-dark-800 border-2 border-dark-700 flex items-center justify-center">
-                  <span className="w-1.5 h-1.5 rounded-full bg-fizzia-400" />
-                </span>
-                <h3 className="text-white font-bold text-lg mb-1.5">{item.title}</h3>
-                <p className="text-dark-300 leading-relaxed">{item.text}</p>
+              <Reveal delay={0.25} className="relative overflow-hidden rounded-[2rem]">
+                <svg className="w-full" viewBox="0 0 100 40" role="img" aria-label={isEs ? 'Equipo trabajando en una aplicacion' : 'Team working on an application'}>
+                  <defs>
+                    <clipPath id="about-clip-inverted" clipPathUnits="objectBoundingBox">
+                      <path d="M0.0998072 1H0.422076H0.749756C0.767072 1 0.774207 0.961783 0.77561 0.942675V0.807325C0.777053 0.743631 0.791844 0.731953 0.799059 0.734076H0.969813C0.996268 0.730255 1.00088 0.693206 0.999875 0.675159V0.0700637C0.999875 0.0254777 0.985045 0.00477707 0.977629 0H0.902473C0.854975 0 0.890448 0.138535 0.850165 0.138535H0.0204424C0.00408849 0.142357 0 0.180467 0 0.199045V0.410828C0 0.449045 0.0136283 0.46603 0.0204424 0.469745H0.0523086C0.0696245 0.471019 0.0735527 0.497877 0.0733523 0.511146V0.915605C0.0723903 0.983121 0.090588 1 0.0998072 1Z" />
+                    </clipPath>
+                  </defs>
+                  <image
+                    clipPath="url(#about-clip-inverted)"
+                    preserveAspectRatio="xMidYMid slice"
+                    width="100%"
+                    height="100%"
+                    href="/images/trabajando.png"
+                  />
+                </svg>
+              </Reveal>
+
+              <div className="h-8" />
+            </div>
+
+            <div className="grid gap-10 pt-10 md:grid-cols-3">
+              <div className="md:col-span-2">
+                <h1 className="mb-8 text-3xl font-black leading-[1.05] text-dark-50 sm:text-4xl md:text-6xl">
+                  <VerticalCutReveal
+                    splitBy="words"
+                    staggerDuration={0.08}
+                    reverse
+                    transition={{
+                      type: 'spring',
+                      stiffness: 250,
+                      damping: 30,
+                      delay: 0.3,
+                    }}
+                  >
+                    {about.hero.heading}
+                  </VerticalCutReveal>
+                </h1>
+
+                <Reveal delay={0.2} className="grid gap-8 text-dark-300 md:grid-cols-2">
+                  <p className="text-sm leading-relaxed sm:text-base">
+                    {about.mission.text}
+                  </p>
+                  <p className="text-sm leading-relaxed sm:text-base">
+                    {about.origin.text}
+                  </p>
+                </Reveal>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Vision — full-width gradient moment */}
-      <section className="relative py-32 bg-dark-950 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-dark-700 to-transparent" />
-        <div className="relative max-w-5xl mx-auto px-6">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-fizzia-700/80 via-fizzia-600/60 to-fizzia-500/40 p-10 md:p-16">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full -translate-y-1/3 translate-x-1/3" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/3 -translate-x-1/3" />
-            <div className="relative">
-              <span className="text-white/70 text-xs font-bold uppercase tracking-[0.2em]">
-                {about.vision.heading}
-              </span>
-              <p className="text-white/92 text-lg md:text-xl leading-relaxed mt-6 max-w-3xl">
-                {about.vision.text}
-              </p>
+              <aside className="md:col-span-1 md:text-right">
+                <Reveal className="mb-2 text-3xl font-black text-fizzia-500">
+                  FIZZIA
+                </Reveal>
+                <Reveal delay={0.08} className="mb-8 text-sm text-dark-300">
+                  {about.hero.subtitle}
+                </Reveal>
+
+                <Reveal delay={0.16} className="mb-6">
+                  <p className="font-semibold text-dark-50">
+                    {about.cta.text}
+                  </p>
+                </Reveal>
+
+                <Reveal delay={0.24}>
+                  <a
+                    href="/#contacto"
+                    className="ml-auto inline-flex w-fit items-center gap-2 rounded-lg border border-dark-700 bg-dark-50 px-5 py-3 font-bold text-dark-950 shadow-lg transition-all duration-300 hover:gap-4"
+                  >
+                    {about.cta.button}
+                    <ArrowRight size={18} />
+                  </a>
+                </Reveal>
+              </aside>
+            </div>
+
+            <div className="mt-16 grid gap-6 border-t border-dark-800 pt-10 md:grid-cols-4">
+              {about.approach.items.map((item, index) => (
+                <Reveal key={item.title} delay={index * 0.08} className="border-l border-dark-800 pl-5">
+                  <h2 className="mb-2 font-bold text-dark-50">{item.title}</h2>
+                  <p className="text-sm leading-relaxed text-dark-300">{item.text}</p>
+                </Reveal>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="relative py-24 bg-dark-950 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-dark-700 to-transparent" />
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <p className="text-dark-400 text-sm mb-2">
-            {language === 'es' ? 'Conversemos sin compromiso' : 'Let\'s chat, no strings attached'}
-          </p>
-          <h2 className="text-3xl md:text-4xl font-black text-white mb-8">
-            {about.cta.text}
-          </h2>
-          <a
-            href="/#contacto"
-            className="inline-flex items-center gap-2.5 px-8 py-4 bg-fizzia-500 text-white font-bold rounded-xl hover:bg-fizzia-400 transition-all shadow-lg shadow-fizzia-500/25 text-base hover:shadow-fizzia-500/40 cursor-pointer"
-          >
-            {about.cta.button}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </a>
-        </div>
-      </section>
+        </section>
+      </main>
 
       <Footer />
     </>
@@ -148,11 +165,9 @@ function AboutContent() {
 export function AboutPage() {
   return (
     <LanguageProvider>
-    <CountryProvider>
-      <div className="bg-dark-950 overflow-x-hidden w-full max-w-full">
+      <CountryProvider>
         <AboutContent />
-      </div>
-    </CountryProvider>
+      </CountryProvider>
     </LanguageProvider>
   )
 }

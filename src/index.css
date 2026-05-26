@@ -32,7 +32,7 @@
 
 html {
   scroll-behavior: smooth;
-  background: #050605;
+  background: #f8fbf8;
   overflow-x: hidden;
 }
 
@@ -40,12 +40,17 @@ body {
   font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #050605;
+  background: #f8fbf8;
   background-image:
     radial-gradient(ellipse 80% 60% at 50% -20%, rgba(50, 168, 82, 0.08), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(50, 168, 82, 0.04), transparent);
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(50, 168, 82, 0.05), transparent);
   overflow-x: hidden;
   width: 100%;
+}
+
+html.dark,
+html.dark body {
+  background: #050605;
 }
 
 * {
@@ -94,6 +99,56 @@ a {
   scroll-margin-top: 4.75rem;
 }
 
+.landing-page {
+  --color-dark-50: #0b120d;
+  --color-dark-100: #142018;
+  --color-dark-200: #25332a;
+  --color-dark-300: #526155;
+  --color-dark-400: #718071;
+  --color-dark-500: #667466;
+  --color-dark-600: #dce6dd;
+  --color-dark-700: #cbd8cd;
+  --color-dark-800: #e7eee8;
+  --color-dark-900: #f1f6f2;
+  --color-dark-950: #ffffff;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(50, 168, 82, 0.12), transparent 62%),
+    linear-gradient(180deg, #ffffff 0%, #f7fbf7 48%, #ffffff 100%);
+  color: #0b120d;
+}
+
+.dark .landing-page {
+  --color-dark-50: #fafafa;
+  --color-dark-100: #e5e5e5;
+  --color-dark-200: #cccccc;
+  --color-dark-300: #a3a3a3;
+  --color-dark-400: #737373;
+  --color-dark-500: #525252;
+  --color-dark-600: #404040;
+  --color-dark-700: #2a2a2a;
+  --color-dark-800: #1a1a1a;
+  --color-dark-900: #111111;
+  --color-dark-950: #050605;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(50, 168, 82, 0.08), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(50, 168, 82, 0.04), transparent);
+  color: #fafafa;
+}
+
+.landing-page :where(.text-white) {
+  color: var(--color-dark-50);
+}
+
+.landing-page :where(.bg-fizzia-500.text-white),
+.landing-page :where(.text-white.bg-fizzia-500),
+.landing-page :where(.hover\:bg-fizzia-400.text-white) {
+  color: #ffffff;
+}
+
+.dark .landing-page :where(.text-white) {
+  color: #ffffff;
+}
+
 .landing-page :where(a, button, input, textarea, select) {
   transition-timing-function: var(--landing-ease-out);
 }
@@ -102,6 +157,7 @@ a {
   outline: 2px solid rgba(110, 231, 117, 0.72);
   outline-offset: 3px;
 }
+
 
 @media (hover: hover) and (pointer: fine) {
   .landing-page :where(a, button):not(:disabled):active {
