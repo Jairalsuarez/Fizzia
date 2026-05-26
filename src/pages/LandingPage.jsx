@@ -4,7 +4,6 @@ import { Header } from '../components/landing/Header'
 import { Footer } from '../components/landing/Footer'
 import { HeroSection } from '../components/landing/HeroSection'
 import { ServicesSection } from '../components/landing/ServicesSection'
-import { LocalSeoSection } from '../components/landing/LocalSeoSection'
 import { ProjectsSection } from '../components/landing/ProjectsSection'
 import { TrustSection } from '../components/landing/TrustSection'
 
@@ -22,7 +21,6 @@ function LandingContent() {
       <Header />
       <HeroSection seoContext={seoContext} />
       <ServicesSection />
-      <LocalSeoSection activeCity={seoContext.city} activeIntent={seoContext.intent} />
       <ProjectsSection />
       <TrustSection />
 
