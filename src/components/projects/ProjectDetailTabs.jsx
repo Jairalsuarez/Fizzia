@@ -10,6 +10,7 @@ export function ProjectDetailTabs({ tabs, activeTab, onChange, className = '', d
     const leftCount = Math.floor(restTabs.length / 2)
     return [...restTabs.slice(0, leftCount), primaryTab, ...restTabs.slice(leftCount)]
   }, [tabs])
+  const compactMobileDock = mobileTabs.length <= 2
 
   useEffect(() => {
     document.body.classList.add('has-project-detail-dock')
@@ -24,7 +25,7 @@ export function ProjectDetailTabs({ tabs, activeTab, onChange, className = '', d
     <nav className={className} aria-label="Secciones del proyecto">
       <div className="fixed inset-x-0 bottom-0 z-[800] px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:hidden">
         <div className="w-full rounded-[1.65rem] border border-dark-800 bg-dark-950 px-3 py-2 shadow-[0_18px_36px_-30px_rgba(0,0,0,0.9)]">
-          <div className="flex min-h-16 w-full items-center justify-between gap-1.5">
+          <div className={`flex min-h-16 w-full items-center gap-3 ${compactMobileDock ? 'justify-center' : 'justify-between'}`}>
             {mobileTabs.map(tab => {
               const id = getId(tab)
               const isActive = id === activeTab

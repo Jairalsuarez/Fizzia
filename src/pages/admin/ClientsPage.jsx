@@ -1,19 +1,32 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Modal } from '../../components/ui/'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { deleteClient, createClient } from '../../api/clientsApi'
 import ClientList from '../../features/clients/ClientList'
 import ClientDetail from '../../features/clients/ClientDetail'
 import { useToast } from '../../components/Toast'
+import { readStoredValue, writeStoredValue } from '../../utils/persistedState'
+
+const SELECTED_CLIENT_KEY = 'fizzia-admin-selected-client'
 
 export function ClientsPage() {
   const [selectedClient, setSelectedClient] = useState(null)
+  const [selectedClientId, setSelectedClientId] = useState(() => readStoredValue(SELECTED_CLIENT_KEY, ''))
   const [showForm, setShowForm] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', phone: '', city: '', country: '' })
   const [saving, setSaving] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const toast = useToast()
+
+  useEffect(() => {
+    writeStoredValue(SELECTED_CLIENT_KEY, selectedClientId)
+  }, [selectedClientId])
+
+  const handleSelectClient = useCallback((client) => {
+    setSelectedClient(client)
+    setSelectedClientId(client?.id || '')
+  }, [])
 
   const handleClientSaved = async (e) => {
     e.preventDefault()
@@ -35,7 +48,7 @@ export function ClientsPage() {
       return
     }
     setShowDeleteModal(false)
-    setSelectedClient(null)
+    handleSelectClient(null)
     toast.success('Cliente eliminado')
     setRefreshKey(k => k + 1)
   }
@@ -49,11 +62,11 @@ export function ClientsPage() {
 
       <div className="flex gap-6 h-[calc(100vh-180px)]">
         <div className="w-1/3">
-          <ClientList selectedId={selectedClient?.id} onSelect={setSelectedClient} refreshKey={refreshKey} />
+          <ClientList selectedId={selectedClient?.id || selectedClientId} onSelect={handleSelectClient} refreshKey={refreshKey} />
         </div>
         <div className="flex-1">
           {selectedClient ? (
-            <ClientDetail client={selectedClient} onUpdate={(updated) => { setRefreshKey(k => k + 1); if (updated) setSelectedClient(updated) }} />
+            <ClientDetail client={selectedClient} onUpdate={(updated) => { setRefreshKey(k => k + 1); if (updated) handleSelectClient(updated) }} />
           ) : (
             <div className="rounded-xl border border-dark-800 bg-dark-900/50 h-full flex items-center justify-center">
               <EmptyState message="Selecciona un cliente para ver detalles" />

@@ -4,12 +4,16 @@ import { formatDate, formatMoney } from '../../utils/format'
 import { useToast } from '../../components/Toast'
 import { approvePayment, deletePayment, getAllPayments, rejectPayment } from '../../api/paymentsApi'
 import { Modal } from '../../components/ui'
+import { readStoredJson, writeStoredJson } from '../../utils/persistedState'
+
+const CACHE_KEY = 'fizzia-admin-payments-cache'
 
 export function PaymentsPage() {
   const { session } = useAuth()
   const toast = useToast()
-  const [payments, setPayments] = useState([])
-  const [loading, setLoading] = useState(true)
+  const cached = readStoredJson(CACHE_KEY, null)
+  const [payments, setPayments] = useState(() => cached?.payments || [])
+  const [loading, setLoading] = useState(() => !cached)
   const [filter, setFilter] = useState('pending')
   const [selectedPayment, setSelectedPayment] = useState(null)
   const [proofUrl, setProofUrl] = useState(null)
@@ -18,10 +22,11 @@ export function PaymentsPage() {
   const [showDeleteRejectedModal, setShowDeleteRejectedModal] = useState(false)
 
   const loadPayments = useCallback(async () => {
-    setLoading(true)
+    if (!cached) setLoading(true)
     try {
       const all = await getAllPayments()
       setPayments(all || [])
+      writeStoredJson(CACHE_KEY, { payments: all || [] })
     } catch {
       toast.error('Error cargando pagos')
     } finally {
@@ -112,17 +117,18 @@ export function PaymentsPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="space-y-5 px-3 py-4 sm:p-6">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-white">Pagos de clientes</h1>
           <p className="text-dark-400 text-sm mt-1">Revisa y aprueba los pagos recibidos</p>
         </div>
       </div>
 
       {/* Filter tabs + delete all rejected */}
-      <div className="flex items-center gap-3">
-      <div className="flex gap-1 bg-dark-900/50 border border-dark-800 rounded-xl p-1 w-fit">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="-mx-3 overflow-x-auto px-3 sm:mx-0 sm:px-0">
+      <div className="grid min-w-max grid-cols-4 gap-1 rounded-xl border border-dark-800 bg-dark-900/50 p-1 sm:w-fit">
         {[
           { key: 'pending', label: 'Pendientes', count: payments.filter(p => p.admin_status === 'pending').length },
           { key: 'approved', label: 'Aprobados', count: payments.filter(p => p.admin_status === 'approved').length },
@@ -132,7 +138,7 @@ export function PaymentsPage() {
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`flex items-center gap-1.5 py-2 px-4 rounded-lg text-sm font-medium cursor-pointer transition-all ${
+            className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all sm:px-4 ${
               filter === tab.key
                 ? 'bg-[var(--accent)] text-white'
                 : 'text-dark-400 hover:text-white'
@@ -147,11 +153,12 @@ export function PaymentsPage() {
           </button>
         ))}
       </div>
+      </div>
 
       {filter === 'rejected' && filtered.length > 0 && (
         <button
           onClick={() => setShowDeleteRejectedModal(true)}
-          className="cursor-pointer flex items-center gap-2 py-2 px-4 bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium rounded-xl hover:bg-red-500/20 transition-all shrink-0"
+          className="inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 sm:w-auto"
         >
           <span className="material-symbols-rounded text-base">delete_sweep</span>
           Eliminar todos ({filtered.length})
@@ -177,9 +184,9 @@ export function PaymentsPage() {
             <button
               key={p.id}
               onClick={() => openPaymentDetail(p)}
-              className="cursor-pointer w-full flex items-center justify-between p-4 bg-dark-900/50 border border-dark-800 rounded-xl hover:border-dark-700 transition-all text-left"
+              className="grid w-full cursor-pointer gap-4 rounded-xl border border-dark-800 bg-dark-900/50 p-4 text-left transition-all hover:border-dark-700 sm:grid-cols-[1fr_auto] sm:items-center"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
                   p.method === 'paypal' ? 'bg-blue-600/20' : 'bg-green-600/20'
                 }`}>
@@ -189,25 +196,27 @@ export function PaymentsPage() {
                     {getMethodIcon(p.method)}
                   </span>
                 </div>
-                <div>
-                  <p className="text-white font-medium text-sm">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-white">
                     {p.clients?.name || 'Cliente sin nombre'}
                   </p>
-                  <p className="text-dark-400 text-xs">
+                  <p className="truncate text-xs text-dark-400">
                     {p.projects?.name || 'Proyecto eliminado'}
                   </p>
-                  <p className="text-dark-500 text-xs mt-0.5">
+                  <p className="mt-0.5 text-xs text-dark-500">
                     {getMethodName(p.method)} · {formatDate(p.paid_at || p.created_at)}
                   </p>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="flex items-end justify-between gap-3 sm:block sm:text-right">
+                <div>
                 <p className="text-white font-semibold">{formatMoney(p.amount)}</p>
                 {(p.projects?.final_price || p.projects?.budget) && (
                   <p className="text-dark-500 text-xs">
                     Resta: {formatMoney(Number(p.projects.final_price || p.projects.budget) - (Number(p.amount) || 0))}
                   </p>
                 )}
+                </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium inline-block mt-1 ${
                   p.admin_status === 'approved' ? 'bg-green-500/20 text-green-400' :
                   p.admin_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
@@ -228,59 +237,59 @@ export function PaymentsPage() {
         {selectedPayment && (
             <div className="space-y-4">
               {/* Client & Project */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="min-w-0">
                   <p className="text-xs text-dark-500 mb-1">Cliente</p>
-                  <p className="text-white text-sm font-medium">{selectedPayment.clients?.name || 'N/A'}</p>
+                  <p className="break-words text-sm font-medium text-white">{selectedPayment.clients?.name || 'N/A'}</p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-dark-500 mb-1">Proyecto</p>
-                  <p className="text-white text-sm font-medium">{selectedPayment.projects?.name || 'N/A'}</p>
+                  <p className="break-words text-sm font-medium text-white">{selectedPayment.projects?.name || 'N/A'}</p>
                 </div>
               </div>
 
               {/* Payment info */}
               <div className="bg-dark-950 border border-dark-700 rounded-xl p-4 space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <span className="text-xs text-dark-500">Método</span>
                   <span className="text-white text-sm font-medium">{getMethodName(selectedPayment.method)}</span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <span className="text-xs text-dark-500">Monto</span>
                   <span className="text-white text-sm font-semibold">{formatMoney(selectedPayment.amount)}</span>
                 </div>
                 {selectedPayment.project_id && (selectedPayment.projects?.final_price || selectedPayment.projects?.budget) && (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-4">
                     <span className="text-xs text-dark-500">Precio proyecto</span>
                     <span className="text-white text-sm">{formatMoney(selectedPayment.projects.final_price || selectedPayment.projects.budget)}</span>
                   </div>
                 )}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <span className="text-xs text-dark-500">Fecha</span>
                   <span className="text-white text-sm">{formatDate(selectedPayment.paid_at || selectedPayment.created_at)}</span>
                 </div>
                 {selectedPayment.account_holder_name && (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-4">
                     <span className="text-xs text-dark-500">Titular cuenta</span>
-                    <span className="text-white text-sm">{selectedPayment.account_holder_name}</span>
+                    <span className="break-words text-right text-sm text-white">{selectedPayment.account_holder_name}</span>
                   </div>
                 )}
                 {selectedPayment.account_cedula && (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-4">
                     <span className="text-xs text-dark-500">Cédula</span>
                     <span className="text-white text-sm font-mono">{selectedPayment.account_cedula}</span>
                   </div>
                 )}
                 {selectedPayment.reference && (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-4">
                     <span className="text-xs text-dark-500">Referencia</span>
-                    <span className="text-white text-sm">{selectedPayment.reference}</span>
+                    <span className="break-words text-right text-sm text-white">{selectedPayment.reference}</span>
                   </div>
                 )}
                 {selectedPayment.admin_rejection_reason && (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-4">
                     <span className="text-xs text-dark-500">Motivo rechazo</span>
-                    <span className="text-red-400 text-sm">{selectedPayment.admin_rejection_reason}</span>
+                    <span className="break-words text-right text-sm text-red-400">{selectedPayment.admin_rejection_reason}</span>
                   </div>
                 )}
               </div>
@@ -312,7 +321,7 @@ export function PaymentsPage() {
                       placeholder="Ej: El comprobante no es legible"
                     />
                   </div>
-                  <div className="flex gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <button
                       onClick={handleReject}
                       disabled={processing}

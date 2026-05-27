@@ -61,7 +61,7 @@ export function ProjectDetailPage() {
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState(() => {
-    return readStoredValue(`admin-project-tab-${projectId}`, 'general', value => ['general', 'plan', 'mensajes', 'archivos', 'actividad'].includes(value))
+    return readStoredValue(`admin-project-tab-${projectId}`, 'general', value => ['general', 'actividad'].includes(value))
   })
   const [saving, setSaving] = useState(false)
   const [startDate, setStartDate] = useState('')
@@ -151,16 +151,30 @@ export function ProjectDetailPage() {
   }, [projectId, tab])
 
   useEffect(() => {
+    if (tab === 'mensajes' || tab === 'archivos' || tab === 'plan') setTab('general')
+  }, [tab])
+
+  useEffect(() => {
     const loadProject = async () => {
       try {
         const { data: userData } = await supabase.auth.getUser()
         setMyId(userData?.user?.id)
         const { data } = await supabase
           .from('projects')
-          .select('*, clients(*)')
+          .select('*, clients(*, client_users(profiles(full_name, email, avatar_id)))')
           .eq('id', projectId)
           .single()
         if (data) {
+          const linkedProfile = data.clients?.client_users?.find(link => link?.profiles)?.profiles || null
+          if (linkedProfile) {
+            data.clients = {
+              ...data.clients,
+              name: linkedProfile.full_name || data.clients?.name,
+              email: linkedProfile.email || data.clients?.email,
+              avatar_id: linkedProfile.avatar_id || data.clients?.avatar_id,
+              client_users: undefined,
+            }
+          }
           setProject(data)
           setBudgetValue(String(data.budget || ''))
           setFinalPriceValue(String(data.final_price || ''))
@@ -659,9 +673,6 @@ export function ProjectDetailPage() {
 
   const tabs = [
     { id: 'general', label: 'General', icon: 'dashboard' },
-    { id: 'plan', label: 'Plan', icon: 'route' },
-    { id: 'mensajes', label: 'Mensajes', icon: 'chat' },
-    { id: 'archivos', label: 'Archivos', icon: 'folder' },
     { id: 'actividad', label: 'Actividad', icon: 'commit' },
   ]
 
@@ -672,30 +683,29 @@ export function ProjectDetailPage() {
     <div className="min-h-[calc(100vh-4rem)] flex flex-col">
       {/* Header */}
       <div className="border-b border-dark-800/70 bg-dark-950/45 backdrop-blur-sm shrink-0">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 min-w-0">
-              <button onClick={() => navigate('/admin')} className="cursor-pointer p-2 text-dark-400 hover:text-white transition-colors shrink-0">
-                <span className="material-symbols-rounded">arrow_back</span>
-              </button>
+        <div className="px-3 py-3 sm:px-6 sm:py-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 min-w-0 sm:gap-4">
               <div className="min-w-0">
-                <h1 className="text-xl font-bold text-white truncate">{project.name}</h1>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className="text-sm text-dark-400">{project.clients?.name || ''}</span>
+                <h1 className="truncate text-base font-bold leading-tight text-white sm:text-xl">{project.name}</h1>
+                <div className="mt-1 flex min-w-0 items-center gap-2">
+                  <span className="truncate text-xs text-dark-400 sm:text-sm">{project.clients?.name || ''}</span>
+                  <span className="hidden h-1 w-1 rounded-full bg-dark-600 sm:block" />
+                  <span className="hidden text-xs font-medium text-dark-500 sm:block">{getProjectStatusLabel(project.status)}</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-6 shrink-0 ml-4">
+            <div className="flex items-center justify-between gap-2 sm:ml-4 sm:justify-end sm:gap-6 sm:shrink-0">
               {/* Price in header */}
-              <div className="group/price text-right min-w-[9rem]">
+              <div className="group/price min-w-0 flex-1 text-left sm:min-w-[9rem] sm:flex-none sm:text-right">
                 {showPriceEdit ? (
-                  <div className="flex items-center justify-end gap-1.5 rounded-xl border border-dark-800 bg-dark-950/80 px-2 py-1.5 shadow-lg shadow-black/10">
+                  <div className="flex items-center gap-1.5 rounded-xl border border-dark-800 bg-dark-950/80 px-2 py-1.5 shadow-lg shadow-black/10 sm:justify-end">
                     <input
                       type="text"
                       inputMode="decimal"
                       value={hasFinalPrice ? finalPriceValue : budgetValue}
                       onChange={(e) => hasFinalPrice ? setFinalPriceValue(e.target.value) : setBudgetValue(e.target.value)}
-                      className="h-8 w-24 rounded-lg border border-dark-700 bg-black/60 px-2.5 text-right text-sm font-semibold text-white outline-none transition-colors focus:border-[var(--accent)]"
+                      className="h-8 min-w-0 flex-1 rounded-lg border border-dark-700 bg-black/60 px-2.5 text-right text-sm font-semibold text-white outline-none transition-colors focus:border-[var(--accent)] sm:w-24 sm:flex-none"
                       autoFocus
                     />
                     <button
@@ -715,10 +725,10 @@ export function ProjectDetailPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-end gap-1.5 rounded-xl px-2 py-1 transition-colors hover:bg-dark-900/70">
+                  <div className="flex items-center gap-1.5 rounded-xl px-2 py-1 transition-colors hover:bg-dark-900/70 sm:justify-end">
                     <button
                       onClick={() => setShowPriceEdit(true)}
-                      className="cursor-pointer text-right"
+                      className="cursor-pointer text-left sm:text-right"
                       title="Editar precio"
                     >
                       <p className="text-[10px] text-dark-500 uppercase tracking-wider font-medium">
@@ -741,15 +751,15 @@ export function ProjectDetailPage() {
               {/* Action buttons */}
               {isSolicitado && !isClosed && (
                 <>
-                  <button onClick={() => setActionModal('accept')} className={`cursor-pointer px-4 py-2 bg-[var(--accent)]/20 border border-[var(--accent)]/30 text-[var(--accent)] text-sm font-medium rounded-lg transition-all`}>Empezar a revisar</button>
-                  <button onClick={() => setActionModal('delete')} className="cursor-pointer px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium rounded-lg hover:bg-red-500/30 transition-all">Eliminar proyecto</button>
+                  <button onClick={() => setActionModal('accept')} className={`cursor-pointer rounded-lg border border-[var(--accent)]/30 bg-[var(--accent)]/20 px-3 py-2 text-xs font-semibold text-[var(--accent)] transition-all sm:px-4 sm:text-sm`}>Revisar</button>
+                  <button onClick={() => setActionModal('delete')} className="cursor-pointer rounded-lg border border-red-500/30 bg-red-500/20 px-3 py-2 text-xs font-semibold text-red-400 transition-all hover:bg-red-500/30 sm:px-4 sm:text-sm">Eliminar</button>
                 </>
               )}
               {project.status === PROJECT_STATUS.REVISION && !isClosed && (
-                <button onClick={() => setActionModal('delete')} className="cursor-pointer px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium rounded-lg hover:bg-red-500/30 transition-all">Eliminar proyecto</button>
+                <button onClick={() => setActionModal('delete')} className="cursor-pointer rounded-lg border border-red-500/30 bg-red-500/20 px-3 py-2 text-xs font-semibold text-red-400 transition-all hover:bg-red-500/30 sm:px-4 sm:text-sm">Eliminar</button>
               )}
               {isWorkingStatus && !isClosed && (
-                <button onClick={() => setActionModal('cancel')} className="cursor-pointer px-4 py-2 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-sm font-medium rounded-lg hover:bg-amber-500/30 transition-all">Cancelar proyecto</button>
+                <button onClick={() => setActionModal('cancel')} className="cursor-pointer whitespace-nowrap rounded-lg border border-amber-500/30 bg-amber-500/20 px-3 py-2 text-xs font-semibold text-amber-500 transition-all hover:bg-amber-500/30 sm:px-4 sm:text-sm">Cancelar proyecto</button>
               )}
             </div>
           </div>
@@ -758,13 +768,13 @@ export function ProjectDetailPage() {
 
       {/* Tabs */}
       <div className="border-b border-dark-800/70 bg-dark-950/25 shrink-0">
-        <div className="px-6">
+        <div className="px-3 sm:px-6">
           <ProjectDetailTabs tabs={tabs} activeTab={tab} onChange={setTab} density="compact" />
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-6 py-6 overflow-auto">
+      <div className="flex-1 overflow-auto px-3 py-4 pb-32 sm:px-6 sm:py-6 sm:pb-6">
         {/* General tab */}
         {tab === 'general' && (
           <div className="space-y-6">
@@ -1045,7 +1055,7 @@ export function ProjectDetailPage() {
           </div>
         )}
 
-        {tab === 'plan' && (
+        {false && tab === 'plan' && (
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.05fr_0.95fr]">
             <section className="rounded-2xl border border-dark-800 bg-dark-900/70 p-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -1131,7 +1141,7 @@ export function ProjectDetailPage() {
         )}
 
         {/* Messages tab */}
-        {tab === 'mensajes' && (
+        {false && tab === 'mensajes' && (
           <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 14rem)' }}>
             <div className="flex-1 overflow-y-auto p-4 space-y-3 rounded-xl bg-dark-900/50 border border-dark-800">
               {messages.length === 0 ? (
@@ -1270,7 +1280,7 @@ export function ProjectDetailPage() {
         )}
 
         {/* Files tab */}
-        {tab === 'archivos' && (
+        {false && tab === 'archivos' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Checklist - 2 columns */}
             <div className="lg:col-span-2">

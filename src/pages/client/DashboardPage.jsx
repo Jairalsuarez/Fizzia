@@ -6,8 +6,10 @@ import { useAuth } from '../../features/auth/authContext'
 import { ProjectCard, ProjectCardSkeleton } from '../../components/ProjectCard'
 import { Greeting } from '../../components/Greeting'
 import { mergeRealtimeProject, useRealtimeProjects } from '../../hooks/useRealtimeProjects'
+import { readStoredJson, writeStoredJson } from '../../utils/persistedState'
 
 const FIRST_PROJECT_PROMO_START = new Date('2026-05-23T00:00:00-05:00')
+const CACHE_KEY = 'fizzia-client-dashboard-cache'
 
 const clientPhrases = [
   'un placer tenerte aquí',
@@ -23,9 +25,11 @@ const clientPhrases = [
 export function DashboardPage() {
   const { session, user } = useAuth()
   const navigate = useNavigate()
-  const [projects, setProjects] = useState([])
-  const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const cacheKey = `${CACHE_KEY}:${user?.id || session?.user?.id || 'anon'}`
+  const cached = readStoredJson(cacheKey, null)
+  const [projects, setProjects] = useState(() => cached?.projects || [])
+  const [profile, setProfile] = useState(() => cached?.profile || null)
+  const [loading, setLoading] = useState(() => !cached)
 
   const handleRealtimeProject = useCallback((payload) => {
     if (payload.eventType === 'DELETE') setProjects(prev => prev.filter(project => project.id !== payload.old.id))
@@ -63,6 +67,7 @@ export function DashboardPage() {
         if (cancelled) return
         setProjects(projectsRes || [])
         setProfile(profileRes || null)
+        writeStoredJson(cacheKey, { projects: projectsRes || [], profile: profileRes || null })
       } catch (err) {
         console.error('Error loading dashboard:', err)
       } finally {
@@ -72,7 +77,11 @@ export function DashboardPage() {
 
     const refreshProfile = async () => {
       const profileRes = await getMyProfile()
-      if (!cancelled) setProfile(profileRes || null)
+      if (!cancelled) {
+        setProfile(profileRes || null)
+        const currentCache = readStoredJson(cacheKey, { projects: [] })
+        writeStoredJson(cacheKey, { ...currentCache, profile: profileRes || null })
+      }
     }
 
     loadData()
@@ -82,7 +91,7 @@ export function DashboardPage() {
       cancelled = true
       window.removeEventListener('auth-profile-update', refreshProfile)
     }
-  }, [])
+  }, [cacheKey])
 
   if (loading) {
     return (

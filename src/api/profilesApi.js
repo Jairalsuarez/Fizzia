@@ -1,5 +1,5 @@
 import { supabase } from '../services/supabase'
-import { cleanPayload, sanitizeString } from '../utils/security'
+import { cleanPayload, sanitizeEmail } from '../utils/security'
 
 export async function getCurrentUserId() {
   const { data } = await supabase.auth.getUser()
@@ -16,14 +16,40 @@ export async function getProfile(userId) {
 }
 
 export async function getMyProfile() {
-  const userId = await getCurrentUserId()
+  const { data: authData } = await supabase.auth.getUser()
+  const userId = authData?.user?.id
   if (!userId) return null
   const { data } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
     .maybeSingle()
-  return data
+  return ensureProfileEmail(userId, authData?.user?.email, data)
+}
+
+export async function ensureProfileEmail(userId, email, profile, defaults = {}) {
+  const safeEmail = sanitizeEmail(email || '')
+  if (!userId || !safeEmail) return profile
+
+  if (!profile) {
+    const { data } = await supabase
+      .from('profiles')
+      .upsert(cleanPayload({ id: userId, ...defaults, email: safeEmail }), { onConflict: 'id' })
+      .select('*')
+      .maybeSingle()
+    return data || profile
+  }
+
+  if (profile.email) return profile
+
+  const { data } = await supabase
+    .from('profiles')
+    .update({ email: safeEmail })
+    .eq('id', userId)
+    .select('*')
+    .maybeSingle()
+
+  return data || { ...profile, email: safeEmail }
 }
 
 export async function updateProfile(payload) {

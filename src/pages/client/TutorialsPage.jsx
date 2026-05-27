@@ -4,7 +4,6 @@ const tutorialSections = [
   { path: '/cliente', icon: 'dashboard', title: 'Tu inicio' },
   { path: '/cliente/nuevo-proyecto', icon: 'add_circle', title: 'Pedir un proyecto' },
   { path: '/cliente/finanzas', icon: 'payments', title: 'Pagos y comprobantes' },
-  { path: '/cliente/archivos', icon: 'folder_open', title: 'Archivos del proyecto' },
   { path: '/cliente/configuracion', icon: 'tune', title: 'Opciones avanzadas' },
 ]
 

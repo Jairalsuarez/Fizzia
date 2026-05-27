@@ -5,20 +5,25 @@ import { supabase } from '../../services/supabase'
 import { formatMoney, formatDate } from '../../utils/format'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/Toast'
+import { readStoredJson, writeStoredJson } from '../../utils/persistedState'
+
+const CACHE_KEY = 'fizzia-developer-finance-cache'
 
 export function FinancePage() {
   const { user } = useAuth()
   const toast = useToast()
-  const [incomes, setIncomes] = useState([])
-  const [expenses, setExpenses] = useState([])
-  const [loading, setLoading] = useState(true)
+  const cacheKey = `${CACHE_KEY}:${user?.id || 'anon'}`
+  const cached = readStoredJson(cacheKey, null)
+  const [incomes, setIncomes] = useState(() => cached?.incomes || [])
+  const [expenses, setExpenses] = useState(() => cached?.expenses || [])
+  const [loading, setLoading] = useState(() => !cached)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [expenseAmount, setExpenseAmount] = useState('')
   const [savingExpense, setSavingExpense] = useState(false)
 
   const load = async () => {
     if (!user?.id) return
-    setLoading(true)
+    if (!cached) setLoading(true)
     const [{ data: received }, { data: outgoing }] = await Promise.all([
       supabase
         .from('expenses')
@@ -36,6 +41,7 @@ export function FinancePage() {
     ])
     setIncomes(received || [])
     setExpenses(outgoing || [])
+    writeStoredJson(cacheKey, { incomes: received || [], expenses: outgoing || [] })
     setLoading(false)
   }
 

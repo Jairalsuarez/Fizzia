@@ -5,6 +5,10 @@ import { getMyInvoices, getMyPayments } from '../../api/paymentsApi'
 import { getMyProjects } from '../../api/projectsApi'
 import { formatDate, formatMoney } from '../../utils/format'
 import { getAcceptedInvoiceTotal } from '../../utils/paymentStatus'
+import { useAuth } from '../../features/auth/authContext'
+import { readStoredJson, writeStoredJson } from '../../utils/persistedState'
+
+const CACHE_KEY = 'fizzia-client-finances-cache'
 
 const methodLabels = {
   paypal: 'PayPal',
@@ -32,24 +36,32 @@ function getInvoicePending(invoice) {
 }
 
 export function FinancesPage() {
-  const [invoices, setInvoices] = useState([])
-  const [payments, setPayments] = useState([])
-  const [projects, setProjects] = useState([])
+  const { user, session } = useAuth()
+  const cacheKey = `${CACHE_KEY}:${user?.id || session?.user?.id || 'anon'}`
+  const cached = readStoredJson(cacheKey, null)
+  const [invoices, setInvoices] = useState(() => cached?.invoices || [])
+  const [payments, setPayments] = useState(() => cached?.payments || [])
+  const [projects, setProjects] = useState(() => cached?.projects || [])
   const [selectedPayment, setSelectedPayment] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => !cached)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     let cancelled = false
     async function loadData() {
       try {
-        setLoading(true)
+        if (!cached) setLoading(true)
         setError(null)
         const [invoiceData, paymentData, projectData] = await Promise.all([getMyInvoices(), getMyPayments(), getMyProjects()])
         if (cancelled) return
         setInvoices(invoiceData || [])
         setPayments(paymentData || [])
         setProjects(projectData || [])
+        writeStoredJson(cacheKey, {
+          invoices: invoiceData || [],
+          payments: paymentData || [],
+          projects: projectData || [],
+        })
       } catch (err) {
         if (!cancelled) setError(err.message || 'No se pudieron cargar tus finanzas')
       } finally {
@@ -58,7 +70,7 @@ export function FinancesPage() {
     }
     loadData()
     return () => { cancelled = true }
-  }, [])
+  }, [cacheKey])
 
   const projectPendingItems = useMemo(() => projects
     .map(project => {

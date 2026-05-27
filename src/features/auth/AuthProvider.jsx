@@ -1,16 +1,19 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { AuthContext } from './authContext'
 import { getSession, onAuthChange, signOut as signOutSession } from '../../api/authApi'
-import { getProfile } from '../../api/profilesApi'
+import { ensureProfileEmail, getProfile } from '../../api/profilesApi'
+import { removeCookieValue } from '../../utils/cookieStorage'
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const userRef = useRef(null)
+  const sessionRef = useRef(null)
 
   useEffect(() => {
     let mounted = true
+    removeCookieValue('fizzia-auth-snapshot')
 
     const init = async () => {
       try {
@@ -19,6 +22,7 @@ export function AuthProvider({ children }) {
 
         const currentSession = data.session
         setSession(currentSession)
+        sessionRef.current = currentSession
 
         if (currentSession?.user) {
           try {
@@ -34,6 +38,10 @@ export function AuthProvider({ children }) {
               userRef.current = fallback
             }
           }
+        } else {
+          setUser(null)
+          userRef.current = null
+          sessionRef.current = null
         }
       } finally {
         if (mounted) setLoading(false)
@@ -45,6 +53,7 @@ export function AuthProvider({ children }) {
     const { data: listener } = onAuthChange((_event, newSession) => {
       if (!mounted) return
       setSession(newSession)
+      sessionRef.current = newSession
       if (newSession?.user) {
         loadProfile(newSession.user)
           .then(u => { if (mounted) { setUser(u); userRef.current = u } })
@@ -58,19 +67,27 @@ export function AuthProvider({ children }) {
       } else {
         setUser(null)
         userRef.current = null
+        sessionRef.current = null
       }
     })
 
-    window.addEventListener('auth-profile-update', () => {
+    const handleProfileUpdate = () => {
       if (userRef.current) {
         loadProfile(userRef.current)
-          .then(u => { if (mounted) { setUser(u); userRef.current = u } })
+          .then(u => {
+            if (mounted) {
+              setUser(u)
+              userRef.current = u
+            }
+          })
       }
-    })
+    }
+    window.addEventListener('auth-profile-update', handleProfileUpdate)
 
     return () => {
       mounted = false
       listener?.subscription?.unsubscribe()
+      window.removeEventListener('auth-profile-update', handleProfileUpdate)
     }
   }, [])
 
@@ -87,6 +104,7 @@ export function AuthProvider({ children }) {
     setSession(null)
     setUser(null)
     userRef.current = null
+    sessionRef.current = null
   }, [])
 
   return (
@@ -116,7 +134,12 @@ async function loadProfile(authUserOrId) {
   const authUser = typeof authUserOrId === 'object' ? authUserOrId : { id: authUserOrId }
   const userId = authUser.id
   const fallback = getAuthFallback(authUser)
-  const profile = await getProfile(userId)
+  const profile = await ensureProfileEmail(userId, fallback.email, await getProfile(userId), {
+    role: fallback.role,
+    full_name: fallback.full_name,
+    first_name: fallback.first_name,
+    last_name: fallback.last_name,
+  })
   if (!profile) return fallback
 
   return {

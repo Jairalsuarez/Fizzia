@@ -125,33 +125,33 @@ export default function DeveloperDetail({ developer, onUpdate }) {
   if (!developer) return null
 
   return (
-    <div className="rounded-lg border border-dark-700 bg-dark-900 h-full overflow-y-auto">
+    <div className="h-full min-w-0 overflow-y-auto rounded-lg border border-dark-700 bg-dark-900">
       {/* Header */}
-      <div className="p-5 border-b border-dark-700">
-        <div className="flex items-center gap-4 mb-4">
+      <div className="border-b border-dark-700 p-4 sm:p-5">
+        <div className="mb-4 flex min-w-0 items-center gap-4">
           <AvatarIcon id={developer.avatar_id} name={developer.full_name || developer.first_name} size={52} zoom={1.5} className="shrink-0" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold text-white truncate">{developer.full_name || developer.first_name || 'Sin nombre'}</h2>
               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOnline ? 'bg-green-500' : 'bg-dark-500'}`} />
             </div>
-            <p className="text-dark-400 text-sm">{developer.email || 'Sin email'}</p>
+            <p className="truncate text-sm text-dark-400">{developer.email || 'Sin email'}</p>
             <p className="text-xs mt-0.5 font-medium" style={{ color: isOnline ? '#4ade80' : '#9ca3af' }}>
               {isOnline ? 'En línea' : `Última conexión fue ${formatLastSeen(lastSeenAt)}`}
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           <button
             onClick={() => openChatWith(developer.id)}
-            className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 bg-[var(--accent)]/10 text-[var(--accent)] rounded-lg hover:bg-[var(--accent)]/20 transition-all text-sm"
+            className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-[var(--accent)]/10 px-3 py-2 text-sm text-[var(--accent)] transition-all hover:bg-[var(--accent)]/20"
           >
             <span className="material-symbols-rounded text-lg">chat</span>
             Chatear
           </button>
           <button
             onClick={() => setShowEditModal(true)}
-            className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 bg-dark-800 text-dark-300 rounded-lg hover:text-white hover:bg-dark-700 transition-all text-sm"
+            className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-dark-800 px-3 py-2 text-sm text-dark-300 transition-all hover:bg-dark-700 hover:text-white"
           >
             <span className="material-symbols-rounded text-lg">edit</span>
             Editar
@@ -159,7 +159,7 @@ export default function DeveloperDetail({ developer, onUpdate }) {
           {developer.role === 'developer' ? (
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-all text-sm"
+              className="col-span-2 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400 transition-all hover:bg-red-500/20 sm:col-span-1"
             >
               <span className="material-symbols-rounded text-lg">person_remove</span>
               Despedir
@@ -167,7 +167,7 @@ export default function DeveloperDetail({ developer, onUpdate }) {
           ) : (
             <button
               onClick={() => setShowHireModal(true)}
-              className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-400 rounded-lg hover:bg-green-500/20 transition-all text-sm"
+              className="col-span-2 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-green-500/10 px-3 py-2 text-sm text-green-400 transition-all hover:bg-green-500/20 sm:col-span-1"
             >
               <span className="material-symbols-rounded text-lg">person_add</span>
               Contratar
@@ -177,20 +177,20 @@ export default function DeveloperDetail({ developer, onUpdate }) {
       </div>
 
       {/* Info */}
-      <div className="p-5">
+      <div className="p-4 sm:p-5">
         <h3 className="text-sm font-semibold text-white mb-3">Información</h3>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <p className="text-xs text-dark-400">Nombre</p>
-            <p className="text-white text-sm">{developer.full_name || developer.first_name || '-'}</p>
+            <p className="break-words text-sm text-white">{developer.full_name || developer.first_name || '-'}</p>
           </div>
           <div>
             <p className="text-xs text-dark-400">Email</p>
-            <p className="text-white text-sm">{developer.email || '-'}</p>
+            <p className="break-words text-sm text-white">{developer.email || '-'}</p>
           </div>
           <div>
             <p className="text-xs text-dark-400">Teléfono</p>
-            <p className="text-white text-sm">{developer.phone || '-'}</p>
+            <p className="break-words text-sm text-white">{developer.phone || '-'}</p>
           </div>
           <div>
             <p className="text-xs text-dark-400">Rol</p>

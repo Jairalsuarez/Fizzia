@@ -5,6 +5,7 @@ import { supabase } from '../../services/supabase'
 import { useAuth } from './authContext'
 import { getRoleHome } from './roles'
 import { getAuthRedirectUrl } from '../../utils/authRedirect'
+import { readStoredJson, writeStoredJson } from '../../utils/persistedState'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -41,17 +42,16 @@ export function LoginPage() {
 
   const getRateLimit = () => {
     try {
-      const stored = localStorage.getItem(`login_attempts:${email}`)
-      return stored ? JSON.parse(stored) : null
+      return readStoredJson(`login_attempts:${email}`, null)
     } catch { return null }
   }
 
   const setRateLimit = (data) => {
-    localStorage.setItem(`login_attempts:${email}`, JSON.stringify(data))
+    writeStoredJson(`login_attempts:${email}`, data)
   }
 
   const clearRateLimit = () => {
-    localStorage.removeItem(`login_attempts:${email}`)
+    writeStoredJson(`login_attempts:${email}`, null)
   }
 
   const handleSubmit = async (e) => {

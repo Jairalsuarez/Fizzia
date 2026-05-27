@@ -15,15 +15,32 @@ export function signIn(email, password) {
   return supabase.auth.signInWithPassword({ email: sanitizeEmail(email), password })
 }
 
-export function signUp(email, password, fullName, metadata) {
-  return supabase.auth.signUp({
-    email: sanitizeEmail(email),
+export async function signUp(email, password, fullName, metadata = {}) {
+  const safeEmail = sanitizeEmail(email)
+  const safeFullName = sanitizeString(fullName, 160)
+  const result = await supabase.auth.signUp({
+    email: safeEmail,
     password,
     options: {
-      data: { full_name: sanitizeString(fullName, 160), role: 'client', ...metadata },
+      data: { full_name: safeFullName, role: 'client', ...metadata },
       emailRedirectTo: getAuthRedirectUrl('/login'),
     }
   })
+  if (!result.error && result.data?.user?.id && result.data?.session) {
+    await supabase
+      .from('profiles')
+      .upsert(cleanPayload({
+        id: result.data.user.id,
+        email: safeEmail,
+        full_name: safeFullName,
+        first_name: metadata.first_name,
+        last_name: metadata.last_name,
+        phone: metadata.phone,
+        age: metadata.age,
+        role: metadata.role || 'client',
+      }), { onConflict: 'id' })
+  }
+  return result
 }
 
 export async function checkEmailExists(email) {
@@ -49,7 +66,7 @@ export async function loadDashboardData() {
   const [clients, projects, invoices, payments, expenses, leads, appointments] =
     await Promise.all([
       supabase.from('clients').select('*').order('created_at', { ascending: false }).limit(80),
-      supabase.from('projects').select('*, clients(name)').order('created_at', { ascending: false }).limit(80),
+      supabase.from('projects').select('*, clients(name, email, client_users(profiles(full_name, email, avatar_id)))').order('created_at', { ascending: false }).limit(80),
       supabase.from('invoices').select('*').order('created_at', { ascending: false }).limit(80),
       supabase.from('payments').select('*').order('created_at', { ascending: false }).limit(80),
       supabase.from('expenses').select('*').order('created_at', { ascending: false }).limit(80),
@@ -59,12 +76,31 @@ export async function loadDashboardData() {
 
   return {
     clients: clients.data || [],
-    projects: projects.data || [],
+    projects: normalizeProjectClients(projects.data || []),
     invoices: invoices.data || [],
     payments: payments.data || [],
     expenses: expenses.data || [],
     leads: leads.data || [],
     appointments: appointments.data || []
+  }
+}
+
+function normalizeProjectClients(projects) {
+  return (projects || []).map(project => ({
+    ...project,
+    clients: normalizeProjectClient(project.clients),
+  }))
+}
+
+function normalizeProjectClient(client) {
+  if (!client) return client
+  const profile = client.client_users?.find(link => link?.profiles)?.profiles || null
+  return {
+    ...client,
+    name: profile?.full_name || client.name,
+    email: profile?.email || client.email,
+    avatar_id: profile?.avatar_id || client.avatar_id,
+    client_users: undefined,
   }
 }
 
@@ -226,31 +262,38 @@ export async function createExpense(payload) {
 }
 
 export async function getAllClients() {
+  await syncMissingProfileEmails()
   const { data } = await supabase
     .from('clients')
     .select(`
       *,
       projects:projects(count),
       client_users(
-        profiles(avatar_id)
+        profiles(avatar_id, full_name, email, phone)
       )
     `)
     .order('created_at', { ascending: false })
-  return (data || []).map(c => ({
-    ...c,
-    project_count: c.projects?.[0]?.count || 0,
-    projects: undefined,
-    avatar_id: c.client_users?.[0]?.profiles?.avatar_id || null,
-    client_users: undefined,
-  }))
+  return (data || []).map(c => {
+    const profile = c.client_users?.[0]?.profiles || null
+    return {
+      ...c,
+      name: profile?.full_name || c.name,
+      email: profile?.email || c.email,
+      phone: profile?.phone || c.phone,
+      project_count: c.projects?.[0]?.count || 0,
+      projects: undefined,
+      avatar_id: profile?.avatar_id || null,
+      client_users: undefined,
+    }
+  })
 }
 
 export async function getAllProjects() {
   const { data } = await supabase
     .from('projects')
-    .select('*')
+    .select('*, clients(name, email, client_users(profiles(full_name, email, avatar_id)))')
     .order('created_at', { ascending: false })
-  return data || []
+  return normalizeProjectClients(data || [])
 }
 
 export async function getProjectsWithMessages() {
@@ -645,10 +688,10 @@ export async function markAllProjectMessagesRead(projectId) {
 export async function getPendingProjectRequests() {
   const { data } = await supabase
     .from('projects')
-    .select('*, clients(name)')
+    .select('*, clients(name, email, client_users(profiles(full_name, email, avatar_id)))')
     .eq('status', 'solicitado')
     .order('created_at', { ascending: false })
-  return data || []
+  return normalizeProjectClients(data || [])
 }
 
 export async function getOpenCharges() {
@@ -1112,6 +1155,7 @@ export async function getAllClientProjects(clientId) {
 }
 
 export async function getAllDevelopers() {
+  await syncMissingProfileEmails()
   const { data } = await supabase
     .from('profiles')
     .select(`
@@ -1125,6 +1169,18 @@ export async function getAllDevelopers() {
     project_count: d.project_developers?.[0]?.count || 0,
     project_developers: undefined,
   }))
+}
+
+let profileEmailSyncPromise = null
+
+async function syncMissingProfileEmails() {
+  if (!profileEmailSyncPromise) {
+    profileEmailSyncPromise = supabase
+      .rpc('sync_missing_profile_emails')
+      .then(() => null)
+      .catch(() => null)
+  }
+  return profileEmailSyncPromise
 }
 
 export async function updateDeveloper(id, payload) {

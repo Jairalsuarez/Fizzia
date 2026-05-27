@@ -92,7 +92,7 @@ export function AccountSettingsPage({
     if (data) {
       setProfile(prev => ({ ...prev, ...data }))
       updateUser(data)
-      window.dispatchEvent(new Event('auth-profile-update'))
+      window.dispatchEvent(new CustomEvent('auth-profile-update', { detail: data }))
     }
     toast.success('Perfil actualizado')
   }

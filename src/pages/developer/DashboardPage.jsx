@@ -4,6 +4,9 @@ import { supabase } from '../../services/supabase'
 import { ProjectCard, ProjectCardSkeleton } from '../../components/ProjectCard'
 import { Greeting } from '../../components/Greeting'
 import { mergeRealtimeProject, useRealtimeProjects } from '../../hooks/useRealtimeProjects'
+import { readStoredJson, writeStoredJson } from '../../utils/persistedState'
+
+const CACHE_KEY = 'fizzia-developer-dashboard-cache'
 
 const devPhrases = [
   'a darle al código',
@@ -18,8 +21,10 @@ const devPhrases = [
 
 export function DashboardPage() {
   const { user } = useAuth()
-  const [projects, setProjects] = useState([])
-  const [loading, setLoading] = useState(true)
+  const cacheKey = `${CACHE_KEY}:${user?.id || 'anon'}`
+  const cached = readStoredJson(cacheKey, null)
+  const [projects, setProjects] = useState(() => cached?.projects || [])
+  const [loading, setLoading] = useState(() => !cached)
 
   const handleRealtimeProject = useCallback((payload) => {
     if (payload.eventType === 'DELETE') setProjects(prev => prev.filter(project => project.id !== payload.old.id))
@@ -44,11 +49,15 @@ export function DashboardPage() {
           .in('id', ids)
           .order('created_at', { ascending: false })
         setProjects(projs || [])
+        writeStoredJson(cacheKey, { projects: projs || [] })
+      } else {
+        setProjects([])
+        writeStoredJson(cacheKey, { projects: [] })
       }
       setLoading(false)
     }
     load()
-  }, [user?.id])
+  }, [cacheKey, user?.id])
 
   if (loading) return (
     <div className="p-4 sm:p-6">

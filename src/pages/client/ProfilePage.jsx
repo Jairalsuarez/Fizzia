@@ -50,8 +50,17 @@ export function ProfilePage() {
       setSaving(true)
       setError(null)
       setSuccess(null)
-      await updateProfile(formData)
-      setSuccess('Profile updated successfully')
+      const { data, error } = await updateProfile(formData)
+      if (error) throw error
+      const updatedProfile = data || { ...profile, ...formData }
+      setProfile(updatedProfile)
+      setFormData({
+        full_name: updatedProfile?.full_name || '',
+        email: updatedProfile?.email || '',
+        phone: updatedProfile?.phone || ''
+      })
+      window.dispatchEvent(new CustomEvent('auth-profile-update', { detail: updatedProfile }))
+      setSuccess('Perfil actualizado correctamente')
       setTimeout(() => setSuccess(null), 3000)
     } catch (err) {
       setError(err.message || 'Failed to update profile')

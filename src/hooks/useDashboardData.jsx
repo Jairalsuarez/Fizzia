@@ -1,59 +1,51 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { DashboardDataContext } from './dashboardDataContext'
 import { loadDashboardData } from '../api/dashboardApi'
 import { buildMetrics } from '../utils/business'
 import { supabase } from '../services/supabase'
-import { useLocation } from 'react-router-dom'
+import { readStoredJson, writeStoredJson } from '../utils/persistedState'
+
+const DASHBOARD_CACHE_KEY = 'fizzia-admin-dashboard-cache'
+const EMPTY_DASHBOARD_DATA = {
+  clients: [],
+  projects: [],
+  invoices: [],
+  payments: [],
+  expenses: [],
+  leads: [],
+  appointments: []
+}
 
 export function DashboardDataProvider({ children }) {
-  const location = useLocation()
-  const [data, setData] = useState({
-    clients: [],
-    projects: [],
-    invoices: [],
-    payments: [],
-    expenses: [],
-    leads: [],
-    appointments: []
-  })
-  const [loading, setLoading] = useState(true)
+  const cachedData = readStoredJson(DASHBOARD_CACHE_KEY, null)
+  const [data, setData] = useState(() => cachedData || EMPTY_DASHBOARD_DATA)
+  const [loading, setLoading] = useState(() => !cachedData)
   const [error, setError] = useState(null)
-  const prevPathRef = useRef(location.pathname)
-  const navTimerRef = useRef(null)
 
-  const refreshData = useCallback(async () => {
-    setLoading(true)
+  const refreshData = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true)
     setError(null)
     try {
       const result = await loadDashboardData()
       setData(result)
+      writeStoredJson(DASHBOARD_CACHE_KEY, result)
     } catch (err) {
       setError(err.message)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    if (prevPathRef.current !== location.pathname) {
-      prevPathRef.current = location.pathname
-      clearTimeout(navTimerRef.current)
-      setLoading(true)
-      navTimerRef.current = setTimeout(() => setLoading(false), 350)
-    }
-    return () => clearTimeout(navTimerRef.current)
-  }, [location.pathname])
-
-  useEffect(() => {
      
-    refreshData()
+    refreshData({ silent: Boolean(cachedData) })
   }, [refreshData])
 
   useEffect(() => {
     let timer = null
     const scheduleRefresh = () => {
       clearTimeout(timer)
-      timer = setTimeout(() => refreshData(), 250)
+      timer = setTimeout(() => refreshData({ silent: true }), 250)
     }
     const channel = supabase
       .channel('dashboard:data:realtime')
@@ -62,6 +54,10 @@ export function DashboardDataProvider({ children }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'client_users' }, scheduleRefresh)
       .subscribe()
     return () => {
       clearTimeout(timer)

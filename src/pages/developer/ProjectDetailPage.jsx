@@ -40,7 +40,7 @@ export function ProjectDetailPage() {
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState(() => {
-    return readStoredValue(`dev-project-tab-${projectId}`, 'general', value => ['general', 'archivos', 'commits'].includes(value))
+    return readStoredValue(`dev-project-tab-${projectId}`, 'general', value => ['general', 'commits'].includes(value))
   })
   const [files, setFiles] = useState([])
   const [commits, setCommits] = useState([])
@@ -62,6 +62,10 @@ export function ProjectDetailPage() {
   useEffect(() => {
     writeStoredValue(`dev-project-tab-${projectId}`, tab)
   }, [tab, projectId])
+
+  useEffect(() => {
+    if (tab === 'archivos') setTab('general')
+  }, [tab])
 
   useEffect(() => {
     const load = async () => {
@@ -154,7 +158,6 @@ export function ProjectDetailPage() {
 
   const tabs = [
     { id: 'general', label: 'General', icon: 'dashboard' },
-    { id: 'archivos', label: 'Archivos', icon: 'folder' },
     { id: 'commits', label: 'Commits', icon: 'code' },
   ]
 
@@ -165,9 +168,6 @@ export function ProjectDetailPage() {
         <div className="px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 min-w-0">
-              <button onClick={() => navigate('/dev')} className="cursor-pointer p-2 text-dark-400 hover:text-white transition-colors shrink-0">
-                <span className="material-symbols-rounded">arrow_back</span>
-              </button>
               <div className="min-w-0">
                 <h1 className="text-xl font-bold text-white truncate">{project.name}</h1>
                 <div className="flex items-center gap-3 mt-1">
@@ -277,7 +277,7 @@ export function ProjectDetailPage() {
         )}
 
         {/* Archivos tab */}
-        {tab === 'archivos' && (
+        {false && tab === 'archivos' && (
           <div>
             {files.length > 0 ? (
               <div className="bg-dark-900/80 border border-dark-800 rounded-xl p-5">

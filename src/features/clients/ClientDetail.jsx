@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Button, StatusBadge, Modal } from '../../components/ui/'
+import { StatusBadge, Modal } from '../../components/ui/'
 import { formatMoney } from '../../utils/format'
 import { deleteClient, updateClient, getAllClientProjects } from '../../api/clientsApi'
 import ProjectForm from './ProjectForm'
@@ -75,33 +75,38 @@ export default function ClientDetail({ client, onUpdate }) {
   }
 
   return (
-    <div className="rounded-lg border border-dark-700 bg-dark-900 p-6 h-full overflow-y-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
+    <div className="h-full min-w-0 overflow-y-auto rounded-lg border border-dark-700 bg-dark-900 p-4 sm:p-6">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
           <AvatarIcon id={client.avatar_id} name={client.name} size={44} zoom={1.5} className="shrink-0" />
-          <div>
-            <h2 className="text-xl font-bold text-white">{client.name}</h2>
-            <p className="text-dark-400 text-sm">{client.email}</p>
+          <div className="min-w-0">
+            <h2 className="truncate text-xl font-bold text-white">{client.name}</h2>
+            <p className="truncate text-sm text-dark-400">{client.email}</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setShowProjectForm(true)} size="sm">Nuevo Proyecto</Button>
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:justify-end">
+          <button
+            onClick={() => setShowProjectForm(true)}
+            className="col-span-2 inline-flex cursor-pointer items-center justify-center rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-fizzia-500/15 transition-all hover:bg-fizzia-600 sm:col-span-1"
+          >
+            Nuevo proyecto
+          </button>
           <button
             onClick={() => setShowEditModal(true)}
-            className="cursor-pointer px-3 py-1.5 rounded border border-dark-600 text-dark-300 text-sm hover:text-white hover:border-dark-500 transition-all flex items-center gap-1"
+            className="inline-flex cursor-pointer items-center justify-center gap-1 rounded border border-dark-600 px-3 py-2 text-sm text-dark-300 transition-all hover:border-dark-500 hover:text-white"
           >
             <span className="material-symbols-rounded text-sm">edit</span>
             Editar
           </button>
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="px-3 py-1.5 rounded border border-red-500/20 text-red-400 text-sm hover:bg-red-500/10 transition-all"
+            className="cursor-pointer rounded border border-red-500/20 px-3 py-2 text-sm text-red-400 transition-all hover:bg-red-500/10"
           >
             Eliminar
           </button>
           <button
             onClick={sendWhatsApp}
-            className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm hover:bg-green-500 flex items-center gap-1 transition-all"
+            className="col-span-2 inline-flex cursor-pointer items-center justify-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-sm text-white transition-all hover:bg-green-500 sm:col-span-1"
           >
             <span className="material-symbols-rounded text-base">chat</span>
             WhatsApp
@@ -109,22 +114,22 @@ export default function ClientDetail({ client, onUpdate }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <p className="text-sm text-dark-400">Email</p>
-          <p className="text-white">{client.email || '-'}</p>
+          <p className="break-words text-white">{client.email || '-'}</p>
         </div>
         <div>
           <p className="text-sm text-dark-400">Teléfono</p>
-          <p className="text-white">{client.phone || '-'}</p>
+          <p className="break-words text-white">{client.phone || '-'}</p>
         </div>
         <div>
           <p className="text-sm text-dark-400">Ciudad</p>
-          <p className="text-white">{client.city || '-'}</p>
+          <p className="break-words text-white">{client.city || '-'}</p>
         </div>
         <div>
           <p className="text-sm text-dark-400">País</p>
-          <p className="text-white">{client.country || '-'}</p>
+          <p className="break-words text-white">{client.country || '-'}</p>
         </div>
       </div>
 
@@ -136,11 +141,11 @@ export default function ClientDetail({ client, onUpdate }) {
               <button
                 key={project.id}
                 onClick={() => { setSelectedProject(project); setShowProjectDetail(true) }}
-                className="cursor-pointer w-full flex items-center gap-3 p-3 rounded-lg bg-dark-800/50 border border-dark-700 hover:border-dark-500 hover:bg-dark-800 transition-all text-left"
+                className="grid w-full cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-dark-700 bg-dark-800/50 p-3 text-left transition-all hover:border-dark-500 hover:bg-dark-800 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto]"
               >
                 <StatusBadge status={project.status} size="sm" />
-                <span className="flex-1 text-white text-sm font-medium truncate">{project.name}</span>
-                <span className="text-xs text-dark-400 shrink-0">{formatMoney(project.final_price || project.budget || 0)}</span>
+                <span className="truncate text-sm font-medium text-white">{project.name}</span>
+                <span className="hidden shrink-0 text-xs text-dark-400 sm:inline">{formatMoney(project.final_price || project.budget || 0)}</span>
                 <span className="material-symbols-rounded text-base text-dark-500">chevron_right</span>
               </button>
             ))}
@@ -154,7 +159,7 @@ export default function ClientDetail({ client, onUpdate }) {
       <Modal open={showProjectDetail} onClose={() => { setShowProjectDetail(false); setSelectedProject(null) }} title={selectedProject?.name || 'Proyecto'} size="sm">
         {selectedProject && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <p className="text-xs text-dark-400">Estado</p>
                 <StatusBadge status={selectedProject.status} size="sm" />
@@ -208,7 +213,7 @@ export default function ClientDetail({ client, onUpdate }) {
               className="w-full px-3 py-2 bg-dark-950 border border-dark-700 rounded-lg text-white text-sm focus:outline-none focus:border-fizzia-500"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="text-sm text-dark-400 mb-1 block">Email</label>
               <input
@@ -228,7 +233,7 @@ export default function ClientDetail({ client, onUpdate }) {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="text-sm text-dark-400 mb-1 block">Ciudad</label>
               <input

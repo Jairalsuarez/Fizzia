@@ -22,7 +22,7 @@ export function DashboardLayout({
   const navigate = useNavigate()
   const location = useLocation()
   const [profile, setProfile] = useState(user)
-  const [profileLoading, setProfileLoading] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [updateVersion, setUpdateVersion] = useState(null)
   const mobileNavRef = useRef(null)
@@ -97,18 +97,7 @@ export function DashboardLayout({
     }
   }
 
-  const needsTerms = !profileLoading && profile && !profile.terms_accepted_at
-
-  if (profileLoading) {
-    return (
-      <div className="app-shell flex min-h-dvh items-center justify-center bg-dark-950" data-theme={activeTheme}>
-        <div className="text-center space-y-4">
-          <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-12 w-auto mx-auto" />
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-fizzia-500 mx-auto"></div>
-        </div>
-      </div>
-    )
-  }
+  const needsTerms = Boolean(termsPath) && !profileLoading && profile && !profile.terms_accepted_at
 
   if (needsTerms) {
     return (
@@ -149,7 +138,7 @@ export function DashboardLayout({
             </div>
 
             <div className="flex justify-center">
-              <NavLink to={navItems[0]?.to || '/'} className="cursor-pointer flex-shrink-0 flex items-center gap-2" title="Ir al resumen">
+              <NavLink to={navItems[0]?.to || '/'} className="app-logo-link cursor-pointer flex-shrink-0 flex items-center gap-2 rounded-lg px-1 py-1" title="Ir al resumen">
                 <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-8 w-auto" onError={(e) => { e.target.style.display = 'none' }} />
                 <span className="text-fizzia-500 font-black text-xl">Fizzia</span>
               </NavLink>
@@ -181,6 +170,15 @@ export function DashboardLayout({
             <div className="flex items-center justify-end gap-1">
               {topActions}
               <AnimatedThemeToggler sound={false} />
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-dark-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                aria-label="Cerrar sesion"
+                title="Cerrar sesion"
+              >
+                <span className="material-symbols-rounded text-xl">logout</span>
+              </button>
               <NavLink
                 to={`${settingsPath}/perfil`}
                 className="flex cursor-pointer items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg hover:bg-dark-800 transition-colors"
@@ -297,7 +295,7 @@ export function DashboardLayout({
             </button>
           )}
           <ThemeProvider value={{ theme: activeTheme, palette }}>
-            {children || <Outlet key={location.key} />}
+            {children || <Outlet />}
           </ThemeProvider>
         </div>
       </main>

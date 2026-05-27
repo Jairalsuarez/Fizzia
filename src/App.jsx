@@ -1,9 +1,10 @@
 import { Suspense, lazy } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Navigate, Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider } from './features/auth/AuthProvider'
 import { ToastProvider } from './components/Toast'
 import { ProtectedRoute } from './features/auth/ProtectedRoute'
 import { CountryProvider } from './contexts/CountryContext'
+import { CookieConsent } from './components/CookieConsent'
 
 const LandingLayout = lazy(() => import('./layouts/LandingLayout').then(module => ({ default: module.LandingLayout })))
 const AdminLayout = lazy(() => import('./layouts/AdminLayout').then(module => ({ default: module.AdminLayout })))
@@ -18,10 +19,8 @@ const SimulatorPage = lazy(() => import('./pages/shared/SimulatorPage').then(mod
 
 const AdminDashboardPage = lazy(() => import('./pages/admin/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const AdminProjectDetailPage = lazy(() => import('./pages/admin/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
-const AdminLeadsPage = lazy(() => import('./pages/admin/LeadsPage').then(module => ({ default: module.LeadsPage })))
-const AdminClientsPage = lazy(() => import('./pages/admin/ClientsPage').then(module => ({ default: module.ClientsPage })))
+const AdminUsersPage = lazy(() => import('./pages/admin/UsersPage').then(module => ({ default: module.UsersPage })))
 const AdminFinancePage = lazy(() => import('./pages/admin/FinancePage').then(module => ({ default: module.FinancePage })))
-const AdminDevelopersPage = lazy(() => import('./pages/admin/DevelopersPage').then(module => ({ default: module.DevelopersPage })))
 const AdminPaymentsPage = lazy(() => import('./pages/admin/PaymentsPage').then(module => ({ default: module.PaymentsPage })))
 const AdminSettingsPage = lazy(() => import('./pages/admin/SettingsPage').then(module => ({ default: module.SettingsPage })))
 const AdminPriceCalculatorPage = lazy(() => import('./pages/admin/PriceCalculatorPage').then(module => ({ default: module.PriceCalculatorPage })))
@@ -37,7 +36,6 @@ const ClientProjectCreatedPage = lazy(() => import('./pages/client/ProjectCreate
 const ClientProjectDetailPage = lazy(() => import('./pages/client/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
 const ClientProjectPage = lazy(() => import('./pages/client/ProjectPage').then(module => ({ default: module.ProjectPage })))
 const ClientFinancesPage = lazy(() => import('./pages/client/FinancesPage').then(module => ({ default: module.FinancesPage })))
-const ClientFilesPage = lazy(() => import('./pages/client/FilesPage').then(module => ({ default: module.FilesPage })))
 const ClientProfilePage = lazy(() => import('./pages/client/ProfilePage').then(module => ({ default: module.ProfilePage })))
 const ClientSettingsPage = lazy(() => import('./pages/client/SettingsPage').then(module => ({ default: module.SettingsPage })))
 const ClientTutorialsPage = lazy(() => import('./pages/client/TutorialsPage').then(module => ({ default: module.TutorialsPage })))
@@ -76,9 +74,10 @@ function App() {
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<AdminDashboardPage />} />
               <Route path="/admin/proyecto/:projectId" element={<AdminProjectDetailPage />} />
-              <Route path="/admin/potenciales" element={<AdminLeadsPage />} />
-              <Route path="/admin/clientes" element={<AdminClientsPage />} />
-              <Route path="/admin/desarrolladores" element={<AdminDevelopersPage />} />
+              <Route path="/admin/usuarios" element={<AdminUsersPage />} />
+              <Route path="/admin/potenciales" element={<Navigate to="/admin/usuarios" replace />} />
+              <Route path="/admin/clientes" element={<Navigate to="/admin/usuarios" replace />} />
+              <Route path="/admin/desarrolladores" element={<Navigate to="/admin/usuarios" replace />} />
               <Route path="/admin/pagos" element={<AdminPaymentsPage />} />
               <Route path="/admin/finanzas" element={<AdminFinancePage />} />
               <Route path="/admin/calculadora" element={<AdminPriceCalculatorPage />} />
@@ -95,7 +94,7 @@ function App() {
               <Route path="/cliente/proyecto/:projectId" element={<ClientProjectDetailPage />} />
               <Route path="/cliente/mi-proyecto" element={<ClientProjectPage />} />
               <Route path="/cliente/finanzas" element={<ClientFinancesPage />} />
-              <Route path="/cliente/archivos" element={<ClientFilesPage />} />
+              <Route path="/cliente/archivos" element={<Navigate to="/cliente" replace />} />
               <Route path="/cliente/perfil" element={<ClientProfilePage />} />
               <Route path="/cliente/tutoriales" element={<ClientTutorialsPage />} />
               <Route path="/cliente/configuracion" element={<ClientSettingsPage />} />
@@ -120,6 +119,7 @@ function App() {
           </Route>
           </Routes>
         </Suspense>
+        <CookieConsent />
       </AuthProvider>
     </ToastProvider>
   )

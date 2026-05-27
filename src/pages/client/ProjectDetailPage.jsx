@@ -54,7 +54,7 @@ export function ProjectDetailPage() {
   const [invoices, setInvoices] = useState([])
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState(() => readStoredValue(`client-project-tab-${projectId}`, 'info', value => ['info', 'plan', 'actividad', 'pagos', 'files'].includes(value)))
+  const [activeTab, setActiveTab] = useState(() => readStoredValue(`client-project-tab-${projectId}`, 'info', value => ['info', 'actividad', 'pagos'].includes(value)))
   const [milestones, setMilestones] = useState([])
   const [appointments, setAppointments] = useState([])
   const [showMeetingLink, setShowMeetingLink] = useState(false)
@@ -773,17 +773,15 @@ export function ProjectDetailPage() {
       <ProjectDetailTabs
         tabs={[
           { id: 'info', label: 'Detalles', icon: 'dashboard' },
-          { id: 'plan', label: 'Plan', icon: 'route' },
           { id: 'pagos', label: 'Pagos', icon: 'payments' },
           { id: 'actividad', label: 'Cambios', icon: 'commit' },
-          { id: 'files', label: 'Archivos', icon: 'folder' },
         ]}
         activeTab={activeTab}
         onChange={(nextTab) => { setActiveTab(nextTab); if (nextTab !== 'pagos') resetPaymentForm() }}
       />
 
       {/* Tab content */}
-      {project.status === 'solicitado' && ['plan', 'pagos', 'actividad', 'files'].includes(activeTab) ? (
+      {project.status === 'solicitado' && ['pagos', 'actividad'].includes(activeTab) ? (
         <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-12 text-center flex flex-col items-center justify-center animate-in fade-in duration-500">
           <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mb-4">
             <span className="material-symbols-rounded text-4xl text-dark-500">lock</span>
@@ -955,7 +953,7 @@ export function ProjectDetailPage() {
         </div>
       )}
 
-      {activeTab === 'plan' && (
+      {false && activeTab === 'plan' && (
         <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <section className="rounded-2xl border border-dark-800 bg-dark-900/70 p-5">
             <h3 className="text-xl font-bold text-white">Instrucciones</h3>
@@ -1524,7 +1522,7 @@ export function ProjectDetailPage() {
         </div>
       </Modal>
 
-      {activeTab === 'files' && (
+      {false && activeTab === 'files' && (
         <div className="space-y-4">
           {/* File requests from admin */}
           {fileRequests.length > 0 && (

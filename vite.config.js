@@ -6,6 +6,12 @@ import pkg from './package.json'
 const APP_VERSION = pkg.version
 
 export default defineConfig({
+  server: {
+    hmr: false,
+    watch: {
+      ignored: ['**/dist/**'],
+    },
+  },
   define: {
     __APP_VERSION__: JSON.stringify(APP_VERSION),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),

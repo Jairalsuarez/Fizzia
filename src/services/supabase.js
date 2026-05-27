@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { cookieStorage } from '../utils/cookieStorage'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -15,6 +16,7 @@ export const supabase = createClient(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
+      storage: cookieStorage,
     },
   }
 )
