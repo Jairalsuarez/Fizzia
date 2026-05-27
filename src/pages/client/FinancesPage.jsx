@@ -14,6 +14,7 @@ const methodLabels = {
   paypal: 'PayPal',
   transfer: 'Transferencia',
   deposit: 'Deposito',
+  google_pay: 'Google Pay',
 }
 
 function getPaymentStatus(payment) {
@@ -24,6 +25,10 @@ function getPaymentStatus(payment) {
 
 function getProjectTotal(project) {
   return Number(project?.final_price || project?.budget || 0)
+}
+
+function canPayProject(project) {
+  return project?.status !== 'solicitado' && getProjectTotal(project) > 0
 }
 
 function getPaymentPublicId(payment) {
@@ -73,6 +78,7 @@ export function FinancesPage() {
   }, [cacheKey])
 
   const projectPendingItems = useMemo(() => projects
+    .filter(canPayProject)
     .map(project => {
       const total = getProjectTotal(project)
       const paid = payments
@@ -213,8 +219,8 @@ export function FinancesPage() {
                       <p className="text-lg font-bold text-amber-300">{formatMoney(item.pending)}</p>
                     </div>
                     {item.project.id && (
-                      <Link to={`/cliente/proyecto/${item.project.id}`} className="cursor-pointer rounded-xl bg-fizzia-500 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-fizzia-400 active:scale-[0.98]">
-                        Pagar
+                      <Link to={`/cliente/pagar?projectId=${item.project.id}`} className="cursor-pointer rounded-xl bg-fizzia-500 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-fizzia-400 active:scale-[0.98]">
+                        Realizar pago
                       </Link>
                     )}
                   </div>

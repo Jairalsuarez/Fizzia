@@ -1,7 +1,6 @@
 export const adminNav = [
   { to: '/admin', label: 'Inicio', icon: 'dashboard', end: true, preload: () => import('../pages/admin/DashboardPage') },
   { to: '/admin/usuarios', label: 'Usuarios', icon: 'groups', preload: () => import('../pages/admin/UsersPage') },
-  { to: '/admin/pagos', label: 'Pagos', icon: 'payments', preload: () => import('../pages/admin/PaymentsPage') },
   { to: '/admin/finanzas', label: 'Finanzas', icon: 'account_balance_wallet', preload: () => import('../pages/admin/FinancePage') },
   { to: '/admin/calculadora', label: 'Calculadora', icon: 'calculate', preload: () => import('../pages/admin/PriceCalculatorPage') },
 ]

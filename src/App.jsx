@@ -21,7 +21,6 @@ const AdminDashboardPage = lazy(() => import('./pages/admin/DashboardPage').then
 const AdminProjectDetailPage = lazy(() => import('./pages/admin/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
 const AdminUsersPage = lazy(() => import('./pages/admin/UsersPage').then(module => ({ default: module.UsersPage })))
 const AdminFinancePage = lazy(() => import('./pages/admin/FinancePage').then(module => ({ default: module.FinancePage })))
-const AdminPaymentsPage = lazy(() => import('./pages/admin/PaymentsPage').then(module => ({ default: module.PaymentsPage })))
 const AdminSettingsPage = lazy(() => import('./pages/admin/SettingsPage').then(module => ({ default: module.SettingsPage })))
 const AdminPriceCalculatorPage = lazy(() => import('./pages/admin/PriceCalculatorPage').then(module => ({ default: module.PriceCalculatorPage })))
 
@@ -36,6 +35,8 @@ const ClientProjectCreatedPage = lazy(() => import('./pages/client/ProjectCreate
 const ClientProjectDetailPage = lazy(() => import('./pages/client/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
 const ClientProjectPage = lazy(() => import('./pages/client/ProjectPage').then(module => ({ default: module.ProjectPage })))
 const ClientFinancesPage = lazy(() => import('./pages/client/FinancesPage').then(module => ({ default: module.FinancesPage })))
+const ClientPaymentPage = lazy(() => import('./pages/client/PaymentPage').then(module => ({ default: module.PaymentPage })))
+const ClientPaymentThanksPage = lazy(() => import('./pages/client/PaymentThanksPage').then(module => ({ default: module.PaymentThanksPage })))
 const ClientProfilePage = lazy(() => import('./pages/client/ProfilePage').then(module => ({ default: module.ProfilePage })))
 const ClientSettingsPage = lazy(() => import('./pages/client/SettingsPage').then(module => ({ default: module.SettingsPage })))
 const ClientTutorialsPage = lazy(() => import('./pages/client/TutorialsPage').then(module => ({ default: module.TutorialsPage })))
@@ -78,7 +79,7 @@ function App() {
               <Route path="/admin/potenciales" element={<Navigate to="/admin/usuarios" replace />} />
               <Route path="/admin/clientes" element={<Navigate to="/admin/usuarios" replace />} />
               <Route path="/admin/desarrolladores" element={<Navigate to="/admin/usuarios" replace />} />
-              <Route path="/admin/pagos" element={<AdminPaymentsPage />} />
+              <Route path="/admin/pagos" element={<Navigate to="/admin/finanzas" replace />} />
               <Route path="/admin/finanzas" element={<AdminFinancePage />} />
               <Route path="/admin/calculadora" element={<AdminPriceCalculatorPage />} />
               <Route path="/admin/configuracion" element={<AdminSettingsPage />} />
@@ -94,6 +95,8 @@ function App() {
               <Route path="/cliente/proyecto/:projectId" element={<ClientProjectDetailPage />} />
               <Route path="/cliente/mi-proyecto" element={<ClientProjectPage />} />
               <Route path="/cliente/finanzas" element={<ClientFinancesPage />} />
+              <Route path="/cliente/pagar" element={<ClientPaymentPage />} />
+              <Route path="/cliente/pago-gracias" element={<ClientPaymentThanksPage />} />
               <Route path="/cliente/archivos" element={<Navigate to="/cliente" replace />} />
               <Route path="/cliente/perfil" element={<ClientProfilePage />} />
               <Route path="/cliente/tutoriales" element={<ClientTutorialsPage />} />

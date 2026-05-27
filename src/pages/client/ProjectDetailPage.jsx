@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getProjectMessages, markProjectMessagesRead, sendProjectMessage, subscribeToMessages } from '../../api/messagesApi'
-import { createClientPayment, deleteClientPayment, getProjectDirectPayments, getProjectInvoices, uploadPaymentProof } from '../../api/paymentsApi'
-import { Modal } from '../../components/ui'
+import { createClientPayment, deleteClientPayment, getPaymentProofUrl, getProjectDirectPayments, getProjectInvoices, uploadPaymentProof } from '../../api/paymentsApi'
+import { Modal, PaymentSummary } from '../../components/ui'
 import { fulfillFileRequest, getClientProjectFileRequests, getMyProjectAppointments, getMyProjectMilestones, getMyProjects } from '../../api/projectsApi'
 import { getProjectFiles, uploadProjectFile } from '../../api/filesApi'
 import { formatDate, formatMoney } from '../../utils/format'
@@ -10,6 +10,7 @@ import { useToast } from '../../components/Toast'
 import { supabase } from '../../services/supabase'
 import { useAuth } from '../../features/auth/authContext'
 import { loadScript } from '@paypal/paypal-js'
+import { CreditCard, ExternalLink } from 'lucide-react'
 import { AvatarIcon } from '../../data/avatars.jsx'
 import { fetchGitHubCommits, formatCommitTime, getCommitAuthorName, getCommitDate, parseGitHubUrl } from '../../utils/github'
 import { getMessageAuthor, getMessageAuthorName, getMessageAvatarId } from '../../utils/messageIdentity'
@@ -30,6 +31,22 @@ const phases = [
   { key: 'entregado', label: 'Entregado', textColor: 'text-green-400' },
   { key: 'cancelado', label: 'Cancelado', textColor: 'text-red-400' },
 ]
+
+function GithubMark({ className = 'h-6 w-6' }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" fill="currentColor">
+      <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.41 7.86 10.94.58.1.79-.25.79-.56v-2.14c-3.2.7-3.87-1.36-3.87-1.36-.53-1.33-1.29-1.68-1.29-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18A11 11 0 0 1 12 6.1c.98 0 1.96.13 2.88.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.82 1.19 3.08 0 4.41-2.69 5.38-5.25 5.67.42.36.78 1.06.78 2.15v3.13c0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+    </svg>
+  )
+}
+
+function VercelMark({ className = 'h-6 w-6' }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" fill="currentColor">
+      <path d="M12 3 24 21H0L12 3Z" />
+    </svg>
+  )
+}
 
 function getPayPalClientId() {
   const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID?.trim()
@@ -54,7 +71,7 @@ export function ProjectDetailPage() {
   const [invoices, setInvoices] = useState([])
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState(() => readStoredValue(`client-project-tab-${projectId}`, 'info', value => ['info', 'actividad', 'pagos'].includes(value)))
+  const [activeTab, setActiveTab] = useState(() => readStoredValue(`client-project-tab-${projectId}`, 'info', value => ['info', 'actividad'].includes(value)))
   const [milestones, setMilestones] = useState([])
   const [appointments, setAppointments] = useState([])
   const [showMeetingLink, setShowMeetingLink] = useState(false)
@@ -101,6 +118,7 @@ export function ProjectDetailPage() {
   const [paypalReady, setPaypalReady] = useState(false)
   const [paymentSubmitting, setPaymentSubmitting] = useState(false)
   const [paymentSuccess, setPaymentSuccess] = useState(false)
+  const [selectedPayment, setSelectedPayment] = useState(null)
   const [commits, setCommits] = useState([])
   const [commitsLoading, setCommitsLoading] = useState(false)
   const proofInputRef = useRef(null)
@@ -112,6 +130,8 @@ export function ProjectDetailPage() {
   const projectTotal = project?.final_price || project?.budget || 0
   const approvedPaid = sumApprovedPayments(payments)
   const pending = Math.max(projectTotal - approvedPaid, 0)
+  const paymentProgress = projectTotal > 0 ? Math.min((approvedPaid / projectTotal) * 100, 100) : 0
+  const canPayProject = project?.status !== 'solicitado' && pending > 0
   const selectedAmount = Number(paymentAmount || 0)
   const paymentAmountIsValid = selectedAmount > 0 && selectedAmount <= pending
 
@@ -209,7 +229,14 @@ export function ProjectDetailPage() {
         setAppointments(appointmentsRes || [])
         const invoicePayments = (invoicesRes || []).flatMap(inv => (inv.payments || []).map(p => ({ ...p, invoice_number: inv.invoice_number })))
         const directPayments = (directPaymentsRes || []).map(p => ({ ...p, invoice_number: '' }))
-        const allPayments = [...invoicePayments, ...directPayments].sort((a, b) => new Date(b.paid_at || b.created_at) - new Date(a.paid_at || a.created_at))
+        const allPayments = await Promise.all(
+          [...invoicePayments, ...directPayments]
+            .sort((a, b) => new Date(b.paid_at || b.created_at) - new Date(a.paid_at || a.created_at))
+            .map(async (payment) => ({
+              ...payment,
+              proofUrl: payment.proof_url ? await getPaymentProofUrl(payment.proof_url) : null,
+            }))
+        )
         setPayments(allPayments)
         paypalReferencesRef.current = new Set(allPayments.map(p => p.reference).filter(Boolean))
       } catch (err) {
@@ -451,7 +478,8 @@ export function ProjectDetailPage() {
         admin_status: 'pending',
       })
       if (error) throw error
-      setPayments(prev => [{ ...data, invoice_number: invoices[0]?.invoice_number || '' }, ...prev])
+      const signedProofUrl = proofUrl ? await getPaymentProofUrl(proofUrl) : null
+      setPayments(prev => [{ ...data, invoice_number: invoices[0]?.invoice_number || '', proofUrl: signedProofUrl }, ...prev])
       toast.success('Comprobante enviado, pendiente de verificación')
       setPaymentStep(4)
       setPaymentSuccess(true)
@@ -638,7 +666,7 @@ export function ProjectDetailPage() {
   const meetingLink = appointments.find(item => item.meeting_url)?.meeting_url || ''
 
   return (
-    <div className="space-y-5 p-4 sm:p-6">
+    <div className="space-y-5 p-4 pb-32 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center">
           <div>
@@ -773,15 +801,14 @@ export function ProjectDetailPage() {
       <ProjectDetailTabs
         tabs={[
           { id: 'info', label: 'Detalles', icon: 'dashboard' },
-          { id: 'pagos', label: 'Pagos', icon: 'payments' },
           { id: 'actividad', label: 'Cambios', icon: 'commit' },
         ]}
         activeTab={activeTab}
-        onChange={(nextTab) => { setActiveTab(nextTab); if (nextTab !== 'pagos') resetPaymentForm() }}
+        onChange={(nextTab) => { setActiveTab(nextTab); resetPaymentForm() }}
       />
 
       {/* Tab content */}
-      {project.status === 'solicitado' && ['pagos', 'actividad'].includes(activeTab) ? (
+      {project.status === 'solicitado' && activeTab === 'actividad' ? (
         <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-12 text-center flex flex-col items-center justify-center animate-in fade-in duration-500">
           <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mb-4">
             <span className="material-symbols-rounded text-4xl text-dark-500">lock</span>
@@ -794,6 +821,106 @@ export function ProjectDetailPage() {
       ) : (
         <>
       {activeTab === 'info' && (
+        <div className="space-y-5">
+          <section className="overflow-hidden rounded-[1.75rem] border border-[#cbd8cd] bg-white shadow-[0_26px_70px_-54px_rgba(15,23,42,0.45)]">
+            <div className="border-b border-[#d7e4da] bg-[#f7fbf7] px-5 py-5 sm:px-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-[#16843a]">Proyecto</p>
+                  <h2 className="mt-1 break-words text-3xl font-black leading-tight text-[#0b120d] sm:text-4xl">{project.name}</h2>
+                </div>
+                {canPayProject && (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/cliente/pagar?projectId=${projectId}`)}
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#2fb65d] px-5 py-3 text-sm font-bold text-white transition-all hover:bg-[#27a650] active:scale-[0.98]"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    Pagar
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="p-5 sm:p-6">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div>
+                  <p className="text-xs font-semibold text-[#617064]">Precio</p>
+                  <p className="mt-1 text-2xl font-black text-[#0b120d]">{formatMoney(projectTotal)}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#617064]">Pagado</p>
+                  <p className="mt-1 text-2xl font-black text-[#16843a]">{formatMoney(approvedPaid)}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#617064]">Pendiente</p>
+                  <p className="mt-1 text-2xl font-black text-[#b45309]">{formatMoney(pending)}</p>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <div className="mb-2 flex items-center justify-between text-xs font-bold text-[#526154]">
+                  <span>Progreso de pago</span>
+                  <span>{Math.round(paymentProgress)}%</span>
+                </div>
+                <div className="h-3 overflow-hidden rounded-full bg-[#e7eee8]">
+                  <div className="h-full rounded-full bg-[#2fb65d] transition-all" style={{ width: `${paymentProgress}%` }} />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="grid gap-3 sm:grid-cols-2">
+            {(project.repo_url || project.repository_url) && (
+              <a
+                href={project.repo_url || project.repository_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-[#cbd8cd] bg-white p-4 text-[#0b120d] shadow-[0_18px_38px_-32px_rgba(15,23,42,0.35)] transition-all hover:-translate-y-0.5 hover:border-[#8eb59a]"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0b120d] text-white">
+                  <GithubMark />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold">Repositorio</p>
+                  <p className="mt-0.5 truncate text-xs font-medium text-[#526154]">{project.repo_url || project.repository_url}</p>
+                </div>
+                <ExternalLink className="h-4 w-4 text-[#617064] transition-all group-hover:text-[#16843a]" />
+              </a>
+            )}
+
+            {project.live_url ? (
+              <a
+                href={project.live_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-[#b9ddc1] bg-[#edf8f0] p-4 text-[#0b120d] shadow-[0_18px_38px_-32px_rgba(29,185,84,0.55)] transition-all hover:-translate-y-0.5 hover:bg-[#e0f3e5]"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0b120d] text-white">
+                  <VercelMark />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold">Sitio desplegado</p>
+                  <p className="mt-0.5 truncate text-xs text-[#526154]">{project.live_url}</p>
+                </div>
+                <ExternalLink className="h-4 w-4 text-[#617064] transition-all group-hover:text-[#16843a]" />
+              </a>
+            ) : (
+              <div className="flex items-center gap-3 rounded-2xl border border-dashed border-[#cbd8cd] bg-[#f7fbf7] p-4 text-[#0b120d]">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#e7eee8] text-[#526154]">
+                  <VercelMark />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold">Página no desplegada aún</p>
+                  <p className="mt-0.5 text-xs font-medium text-[#617064]">Aparecerá aquí cuando esté lista</p>
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {false && activeTab === 'info' && (
         <div className="bg-dark-900/50 border border-dark-800 rounded-xl p-6 space-y-4">
           {project.description && (
             <div>
@@ -1070,8 +1197,29 @@ export function ProjectDetailPage() {
 
       {activeTab === 'pagos' && (
         <div className="space-y-5">
+          {pending > 0 && project?.status !== 'solicitado' && (
+            <div className="rounded-2xl border border-fizzia-500/20 bg-white p-4 shadow-[0_22px_55px_-45px_rgba(29,185,84,0.65)] sm:p-5">
+              <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-fizzia-600">Pago protegido</p>
+                  <h3 className="mt-1 text-xl font-black text-dark-950">Realiza tu pago en una ruta segura</h3>
+                  <p className="mt-2 max-w-xl text-sm leading-relaxed text-dark-600">
+                    Te llevaremos a una pagina dedicada para elegir PayPal, transferencia o Google Pay. El monto no puede superar el saldo pendiente del proyecto.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/cliente/pagar?projectId=${projectId}`)}
+                  className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-fizzia-500 px-5 py-3 text-sm font-bold text-white transition-all hover:bg-fizzia-400 active:scale-[0.98]"
+                >
+                  <span className="material-symbols-rounded text-lg">lock</span>
+                  Realizar pago
+                </button>
+              </div>
+            </div>
+          )}
           {/* Payment flow */}
-          {pending > 0 && !paymentSuccess && (
+          {false && pending > 0 && !paymentSuccess && (
             <div>
               {/* Step 0: Method selection */}
               {paymentStep === 0 && (
@@ -1438,7 +1586,19 @@ export function ProjectDetailPage() {
             ) : (
               <div className="space-y-2">
                 {payments.map(p => (
-                  <div key={p.id} className="grid gap-3 rounded-xl border border-dark-800 bg-dark-950/70 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                  <div
+                    key={p.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedPayment(p)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        setSelectedPayment(p)
+                      }
+                    }}
+                    className="grid cursor-pointer gap-3 rounded-xl border border-dark-800 bg-dark-950/70 p-3 transition-all hover:border-dark-600 hover:bg-dark-900/80 focus:outline-none focus:ring-2 focus:ring-fizzia-500/40 sm:grid-cols-[1fr_auto] sm:items-center"
+                  >
                     <div className="flex min-w-0 items-center gap-3">
                       <div className={`flex h-10 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl ${p.method === 'paypal' ? 'bg-white px-1' : 'bg-fizzia-500/15'}`}>
                         {p.method === 'paypal' ? (
@@ -1448,7 +1608,7 @@ export function ProjectDetailPage() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-white text-sm font-medium">{p.method === 'paypal' ? 'PayPal' : p.method === 'deposit' ? 'Depósito' : 'Transferencia'}</p>
+                        <p className="text-white text-sm font-medium">{p.method === 'paypal' ? 'PayPal' : p.method === 'google_pay' ? 'Google Pay' : p.method === 'deposit' ? 'Depósito' : 'Transferencia'}</p>
                         <p className="truncate text-dark-500 text-xs">{formatDate(p.paid_at)}{p.invoice_number ? ` · ${p.invoice_number}` : ''}</p>
                         {p.reference && <p className="truncate text-dark-600 text-xs">Ref: {p.reference}</p>}
                       </div>
@@ -1468,7 +1628,8 @@ export function ProjectDetailPage() {
                       </div>
                       {p.admin_status === 'rejected' && (
                         <button
-                          onClick={async () => {
+                          onClick={async (event) => {
+                            event.stopPropagation()
                             if (!confirm('¿Eliminar este pago rechazado?')) return
                             try {
                               await deleteClientPayment(p.id)
@@ -1492,6 +1653,49 @@ export function ProjectDetailPage() {
           </div>
         </div>
       )}
+
+      <Modal open={Boolean(selectedPayment)} onClose={() => setSelectedPayment(null)} title="Detalle del pago" size="sm">
+        {selectedPayment && (
+          <PaymentSummary
+            title={project?.name || 'Detalle del pago'}
+            paymentMethod={{
+              icon: <span className="material-symbols-rounded text-lg text-fizzia-300">{selectedPayment.method === 'paypal' ? 'payments' : selectedPayment.method === 'google_pay' ? 'play_arrow' : 'account_balance'}</span>,
+              name: selectedPayment.method === 'paypal' ? 'PayPal' : selectedPayment.method === 'google_pay' ? 'Google Pay' : selectedPayment.method === 'deposit' ? 'Deposito' : 'Transferencia',
+            }}
+            items={[
+              {
+                label: 'Estado',
+                value: selectedPayment.admin_status === 'approved' ? 'Verificado' : selectedPayment.admin_status === 'rejected' ? 'Rechazado' : 'Pendiente',
+              },
+              { label: 'Fecha', value: formatDate(selectedPayment.paid_at || selectedPayment.created_at) },
+              ...(selectedPayment.invoice_number ? [{ label: 'Factura', value: selectedPayment.invoice_number }] : []),
+              ...(selectedPayment.reference ? [{ label: 'Referencia', value: selectedPayment.reference, valueClassName: 'break-words' }] : []),
+              ...(selectedPayment.account_holder_name ? [{ label: 'Titular', value: selectedPayment.account_holder_name, valueClassName: 'break-words' }] : []),
+              ...(selectedPayment.account_cedula ? [{ label: 'Cedula', value: selectedPayment.account_cedula }] : []),
+            ]}
+            total={{ label: 'Total pagado', value: formatMoney(selectedPayment.amount) }}
+          >
+              {selectedPayment.admin_rejection_reason && (
+                <div className="mb-3 rounded-xl border border-red-500/20 bg-red-500/10 p-3">
+                  <p className="text-xs font-semibold text-red-300">Motivo de rechazo</p>
+                  <p className="mt-1 text-sm text-red-100">{selectedPayment.admin_rejection_reason}</p>
+                </div>
+              )}
+
+              {(selectedPayment.proofUrl || (selectedPayment.proof_url?.startsWith('http') ? selectedPayment.proof_url : null)) && (
+                <a
+                  href={selectedPayment.proofUrl || selectedPayment.proof_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dark-700 bg-dark-900 px-4 py-3 text-sm font-semibold text-white transition-all hover:border-dark-500"
+                >
+                  <span className="material-symbols-rounded text-lg">receipt_long</span>
+                  Abrir comprobante
+                </a>
+              )}
+          </PaymentSummary>
+        )}
+      </Modal>
 
       {/* Delete all rejected modal */}
       <Modal open={showDeleteRejectedModal} onClose={() => !deletingRejected && setShowDeleteRejectedModal(false)}>

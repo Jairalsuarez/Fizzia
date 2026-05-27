@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Modal } from '../../components/ui/Modal'
+import { PaymentSummary } from '../../components/ui/PaymentSummary'
 import { useToast } from '../../components/Toast'
 import { formatDate, formatMoney } from '../../utils/format'
 import { useAuth } from '../../features/auth/authContext'
 import { supabase } from '../../services/supabase'
-import { approvePayment, createExpense, rejectPayment } from '../../api/paymentsApi'
+import { approvePayment, createExpense, getPaymentProofUrl, rejectPayment } from '../../api/paymentsApi'
 import { readStoredJson, writeStoredJson } from '../../utils/persistedState'
 
 const CACHE_KEY = 'fizzia-admin-finance-cache'
@@ -19,6 +20,7 @@ export function FinancePage() {
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [showIncomeForm, setShowIncomeForm] = useState(false)
   const [reviewingPaymentId, setReviewingPaymentId] = useState('')
+  const [selectedMovement, setSelectedMovement] = useState(null)
   const currentUserId = session?.user?.id
 
   // Income form state
@@ -40,7 +42,11 @@ export function FinancePage() {
         .in('category', ['gasto_negocio', 'pago_personal'])
         .order('created_at', { ascending: false }),
     ])
-    setPayments(payRes.data || [])
+    const nextPayments = await Promise.all((payRes.data || []).map(async (payment) => {
+      if (!payment.proof_url) return { ...payment, proofUrl: null }
+      return { ...payment, proofUrl: await getPaymentProofUrl(payment.proof_url) }
+    }))
+    setPayments(nextPayments)
     let nextExpenses = []
     if (expRes.error) {
       const fallback = await supabase
@@ -55,7 +61,7 @@ export function FinancePage() {
       setExpenses(nextExpenses)
     }
     writeStoredJson(CACHE_KEY, {
-      payments: payRes.data || [],
+      payments: nextPayments,
       expenses: nextExpenses,
     })
     setLoading(false)
@@ -85,7 +91,15 @@ export function FinancePage() {
   ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 50)
 
   const expenseCategoryLabels = { gasto_negocio: 'Gasto de negocio', pago_personal: 'Pago de personal' }
-  const methodLabels = { transfer: 'Transferencia', deposit: 'Depósito', paypal: 'PayPal', cash: 'Efectivo' }
+  const methodLabels = { transfer: 'Transferencia', deposit: 'Depósito', paypal: 'PayPal', google_pay: 'Google Pay', cash: 'Efectivo' }
+
+  const getPaymentStatusLabel = (status) => {
+    if (status === 'approved') return 'Aprobado'
+    if (status === 'rejected') return 'Rechazado'
+    return 'Pendiente'
+  }
+
+  const isPaymentMovement = (movement) => movement?.movement_type === 'income' || Boolean(movement?.admin_status)
 
   const handleApprovePayment = async (paymentId) => {
     if (reviewingPaymentId) return
@@ -219,7 +233,19 @@ export function FinancePage() {
             {pendingPayments.map(payment => {
               const isBusy = reviewingPaymentId === payment.id
               return (
-                <div key={payment.id} className="grid gap-3 rounded-lg border border-dark-800 bg-dark-950/50 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div
+                  key={payment.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedMovement({ ...payment, movement_type: 'income', date: payment.paid_at || payment.created_at })}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      setSelectedMovement({ ...payment, movement_type: 'income', date: payment.paid_at || payment.created_at })
+                    }
+                  }}
+                  className="grid cursor-pointer gap-3 rounded-lg border border-dark-800 bg-dark-950/50 p-3 transition-all hover:border-dark-600 hover:bg-dark-900/80 focus:outline-none focus:ring-2 focus:ring-fizzia-500/40 sm:grid-cols-[1fr_auto] sm:items-center"
+                >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-white">{payment.clients?.name || 'Cliente sin nombre'}</p>
                     <p className="truncate text-xs text-dark-500">{payment.projects?.name || payment.description || 'Pago sin proyecto'} · {methodLabels[payment.method] || payment.method || 'Metodo'}</p>
@@ -228,7 +254,20 @@ export function FinancePage() {
                   <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
                     <button
                       type="button"
-                      onClick={() => handleRejectPayment(payment.id)}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        setSelectedMovement({ ...payment, movement_type: 'income', date: payment.paid_at || payment.created_at })
+                      }}
+                      className="col-span-2 cursor-pointer rounded-lg border border-dark-700 bg-dark-900 px-3 py-2 text-sm font-medium text-dark-200 transition-all hover:border-dark-500 hover:text-white sm:col-span-1"
+                    >
+                      Detalles
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        handleRejectPayment(payment.id)
+                      }}
                       disabled={Boolean(reviewingPaymentId)}
                       className="cursor-pointer rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
                     >
@@ -236,7 +275,10 @@ export function FinancePage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleApprovePayment(payment.id)}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        handleApprovePayment(payment.id)
+                      }}
                       disabled={Boolean(reviewingPaymentId)}
                       className="cursor-pointer rounded-lg bg-green-500 px-3 py-2 text-sm font-semibold text-white transition-all hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-50"
                     >
@@ -262,7 +304,19 @@ export function FinancePage() {
         ) : (
           <div className="space-y-2">
             {allMovements.map(m => (
-              <div key={m.id} className="grid gap-3 rounded-lg border border-dark-800 bg-dark-950/50 p-3 transition-all hover:border-dark-700 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div
+                key={m.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedMovement(m)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    setSelectedMovement(m)
+                  }
+                }}
+                className="grid cursor-pointer gap-3 rounded-lg border border-dark-800 bg-dark-950/50 p-3 transition-all hover:border-dark-600 hover:bg-dark-900/80 focus:outline-none focus:ring-2 focus:ring-fizzia-500/40 sm:grid-cols-[1fr_auto] sm:items-center"
+              >
                 <div className="flex min-w-0 items-center gap-3">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                     m.movement_type === 'income' ? 'bg-green-500/20' : 'bg-red-500/20'
@@ -290,14 +344,71 @@ export function FinancePage() {
                     </p>
                   </div>
                 </div>
-                <span className={`font-semibold sm:shrink-0 sm:text-right ${m.movement_type === 'income' ? 'text-green-400' : 'text-red-400'}`}>
-                  {m.movement_type === 'income' ? '+' : '-'}{formatMoney(m.amount)}
-                </span>
+                <div className="flex items-center justify-between gap-3 sm:block sm:text-right">
+                  <span className={`font-semibold sm:block ${m.movement_type === 'income' ? 'text-green-400' : 'text-red-400'}`}>
+                    {m.movement_type === 'income' ? '+' : '-'}{formatMoney(m.amount)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setSelectedMovement(m)
+                    }}
+                    className="cursor-pointer rounded-lg border border-dark-700 px-3 py-1.5 text-xs font-semibold text-dark-300 transition-all hover:border-dark-500 hover:text-white sm:mt-2"
+                  >
+                    Detalles
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <Modal isOpen={Boolean(selectedMovement)} onClose={() => setSelectedMovement(null)} title={isPaymentMovement(selectedMovement) ? 'Detalle del pago' : 'Detalle del movimiento'} size="sm">
+        {selectedMovement && (
+          <PaymentSummary
+            title={isPaymentMovement(selectedMovement)
+              ? (selectedMovement.projects?.name || selectedMovement.description || 'Detalle del pago')
+              : (selectedMovement.title || 'Detalle del movimiento')}
+            paymentMethod={{
+              icon: <span className="material-symbols-rounded text-lg text-fizzia-300">{isPaymentMovement(selectedMovement) ? 'payments' : 'account_balance_wallet'}</span>,
+              name: isPaymentMovement(selectedMovement)
+                ? (methodLabels[selectedMovement.method] || selectedMovement.method || 'Pago')
+                : (expenseCategoryLabels[selectedMovement.category] || selectedMovement.category || 'Egreso'),
+            }}
+            items={[
+              ...(isPaymentMovement(selectedMovement)
+                ? [
+                    { label: 'Cliente', value: selectedMovement.clients?.name || '-' },
+                    { label: 'Proyecto', value: selectedMovement.projects?.name || '-' },
+                    { label: 'Estado', value: getPaymentStatusLabel(selectedMovement.admin_status) },
+                  ]
+                : [
+                    { label: 'Beneficiario', value: selectedMovement.paid_to_user?.full_name || selectedMovement.paid_to_user?.email || '-' },
+                  ]),
+              { label: 'Fecha', value: formatDate(selectedMovement.date || selectedMovement.paid_at || selectedMovement.expense_date || selectedMovement.created_at) },
+              ...(selectedMovement.reference ? [{ label: 'Referencia', value: selectedMovement.reference, valueClassName: 'break-words' }] : []),
+            ]}
+            total={{
+              label: isPaymentMovement(selectedMovement) ? 'Total pagado' : 'Total egreso',
+              value: `${isPaymentMovement(selectedMovement) ? '+' : '-'}${formatMoney(selectedMovement.amount)}`,
+            }}
+          >
+              {(selectedMovement.proofUrl || selectedMovement.proof_url) && (
+                <a
+                  href={selectedMovement.proofUrl || selectedMovement.proof_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dark-700 bg-dark-900 px-4 py-3 text-sm font-semibold text-white transition-all hover:border-dark-500"
+                >
+                  <span className="material-symbols-rounded text-lg">receipt_long</span>
+                  Abrir comprobante
+                </a>
+              )}
+          </PaymentSummary>
+        )}
+      </Modal>
 
       {/* Income Modal */}
       <Modal isOpen={showIncomeForm} onClose={() => { setShowIncomeForm(false); setIncomeForm({ amount: '', description: '', method: 'transfer' }) }} title="Agregar Ingreso" size="sm">
