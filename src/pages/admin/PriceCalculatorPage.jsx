@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState, useRef } from 'react'
 import { formatDate, formatMoney } from '../../utils/format'
 
 const DAILY_DEV_RATE = 20
+const BASELINE_WORKDAYS_FOR_FULL_PRICE = 5
+const MAX_DISCOUNT_WORKDAYS = 20
+const MAX_SCHEDULE_DISCOUNT = 0.15
 const LATAM = ['CO', 'PE', 'AR', 'CL', 'MX', 'BO', 'UY', 'PY', 'CR', 'PA', 'DO', 'GT', 'SV', 'HN', 'NI', 'CU', 'VE']
 
 const PROJECT_TYPES = [
@@ -162,6 +165,13 @@ function addWorkDays(startDate, workDays) {
   return date
 }
 
+function getScheduleDiscountRate(availableWorkDays) {
+  if (!availableWorkDays || availableWorkDays <= BASELINE_WORKDAYS_FOR_FULL_PRICE) return 0
+  const cappedDays = Math.min(availableWorkDays, MAX_DISCOUNT_WORKDAYS)
+  const progress = (cappedDays - BASELINE_WORKDAYS_FOR_FULL_PRICE) / (MAX_DISCOUNT_WORKDAYS - BASELINE_WORKDAYS_FOR_FULL_PRICE)
+  return Math.max(0, Math.min(MAX_SCHEDULE_DISCOUNT, progress * MAX_SCHEDULE_DISCOUNT))
+}
+
 function deriveComplexity(projectType, selectedExtras) {
   const extraCount = selectedExtras.length
   const extraDiff = sumItems(EXTRAS, selectedExtras, 'difficulty')
@@ -198,8 +208,7 @@ function calculateProjectPrice({ form, extras, coupons }) {
   const availableWorkDays = selectedDeliveryDate ? calculateWorkdays(new Date(), selectedDeliveryDate) : estimatedCalendarDays
   const today = parseDateInput(toDateInputValue())
   const deliveryInPast = selectedDeliveryDate && selectedDeliveryDate < today
-  const rushGap = Math.max(0, estimatedCalendarDays - availableWorkDays)
-  const rushRate = deliveryInPast ? 0 : Math.min(0.3, rushGap * 0.025)
+  const scheduleDiscountRate = deliveryInPast ? 0 : getScheduleDiscountRate(availableWorkDays)
 
   const internalLabor = workDays * DAILY_DEV_RATE
   const baseWithoutLabor = projectType.baseCost + Number(form.domain || 0)
@@ -207,25 +216,28 @@ function calculateProjectPrice({ form, extras, coupons }) {
   const weightedCost = pricedScopeBase * complexity.multiplier
   const riskScore = complexity.risk + extraRisk
   const dynamicBufferRate = complexity.buffer + (extras.length >= 4 ? 0.06 : 0) + (riskScore >= 18 ? 0.05 : 0)
-  const bufferApplied = pricedScopeBase * dynamicBufferRate
-  const rushApplied = (weightedCost + bufferApplied) * rushRate
-  const subtotalBeforeDiscount = weightedCost + bufferApplied + internalLabor + rushApplied
-  const discountableBase = weightedCost + bufferApplied
-  const countryDiscount = discountableBase * getCountryDiscount(form.country)
-  const couponDiscount = coupon ? (subtotalBeforeDiscount - countryDiscount) * (coupon.percent / 100) : 0
-  const recommended = Math.max(0, Math.round(subtotalBeforeDiscount - countryDiscount - couponDiscount))
-  const minimum = Math.max(0, Math.round(subtotalBeforeDiscount * 0.78 - countryDiscount - couponDiscount))
-  const premium = Math.round(recommended * 1.28)
+  const errorMarginApplied = pricedScopeBase * dynamicBufferRate
+  const subtotalBeforeDiscount = weightedCost + errorMarginApplied + internalLabor
+  const scheduleDiscount = subtotalBeforeDiscount * scheduleDiscountRate
+  const afterScheduleDiscount = subtotalBeforeDiscount - scheduleDiscount
+  const countryDiscount = afterScheduleDiscount * getCountryDiscount(form.country)
+  const couponDiscount = coupon ? (afterScheduleDiscount - countryDiscount) * (coupon.percent / 100) : 0
+  const recommended = Math.max(0, Math.round(subtotalBeforeDiscount - scheduleDiscount - countryDiscount - couponDiscount))
+  const minimumSubtotal = subtotalBeforeDiscount * 0.78
+  const minimumScheduleDiscount = minimumSubtotal * scheduleDiscountRate
+  const minimumAfterScheduleDiscount = minimumSubtotal - minimumScheduleDiscount
+  const minimumCountryDiscount = minimumAfterScheduleDiscount * getCountryDiscount(form.country)
+  const minimumCouponDiscount = coupon ? (minimumAfterScheduleDiscount - minimumCountryDiscount) * (coupon.percent / 100) : 0
+  const minimum = Math.max(0, Math.round(minimumSubtotal - minimumScheduleDiscount - minimumCountryDiscount - minimumCouponDiscount))
   const maintenanceMonthly = Math.max(25, Math.round((baseWithoutLabor + extraCost) * (maintenance.multiplier || 0.06) + maintenanceWeight * 5))
   const maintenanceSuggestion = form.maintenance === 'annual' ? Math.round(maintenanceMonthly * 12 * 0.85) : maintenanceMonthly
 
   const warnings = []
-  const profit = recommended - internalLabor - weightedCost - bufferApplied
+  const profit = recommended - internalLabor - weightedCost - errorMarginApplied
   const profitability = recommended > 0 ? profit / recommended : 0
   if (deliveryInPast) warnings.push('La fecha de entrega no puede ser anterior a hoy.')
-  if (rushRate > 0) warnings.push('Entrega acelerada: se agregó un recargo por urgencia.')
   if (profitability < 0.15) warnings.push('Margen bajo para el nivel de esfuerzo.')
-  if (extras.length >= 4) warnings.push('Varios extras complejos, conviene revisar alcance y buffer.')
+  if (extras.length >= 4) warnings.push('Varios extras complejos, conviene revisar alcance y margen de error.')
   if (form.maintenance === 'none' && (riskScore >= 14 || maintenanceWeight >= 14)) warnings.push('Proyecto complejo sin mantenimiento incluido.')
 
   return {
@@ -235,13 +247,13 @@ function calculateProjectPrice({ form, extras, coupons }) {
       baseWithoutLabor,
       internalLabor,
       extraCost,
-      bufferApplied,
-      rushApplied,
+      errorMarginApplied,
+      scheduleDiscount,
       countryDiscount,
       couponDiscount,
       subtotalBeforeDiscount,
     },
-    prices: { minimum, recommended, premium },
+    prices: { minimum, recommended },
     meta: {
       riskScore,
       riskLabel: riskLabel(riskScore),
@@ -251,6 +263,7 @@ function calculateProjectPrice({ form, extras, coupons }) {
       availableWorkDays,
       estimatedCalendarDays,
       deliveryDate: addWorkDays(new Date(), estimatedCalendarDays),
+      scheduleDiscountRate,
       maintenanceMonthly,
       maintenanceSuggestion,
       maintenanceIncluded: form.maintenance !== 'none',
@@ -472,10 +485,8 @@ export function PriceCalculatorPage() {
   const resultText = result ? [
     `Precio mínimo: ${formatMoney(result.prices.minimum)}`,
     `Precio recomendado: ${formatMoney(result.prices.recommended)}`,
-    `Precio premium: ${formatMoney(result.prices.premium)}`,
     `Riesgo: ${result.meta.riskLabel}`,
-    `Esfuerzo estimado: ${Math.ceil(result.meta.workDays)} días laborables`,
-    `Entrega estimada: ${Math.ceil(result.meta.estimatedCalendarDays)} días laborables con ${form.devs} dev(s)`,
+    `Días laborables disponibles: ${Math.ceil(result.meta.availableWorkDays)}`,
     `Mantenimiento sugerido: ${formatMoney(result.meta.maintenanceMonthly)}/mes`,
   ].join('\n') : ''
 
@@ -493,8 +504,9 @@ export function PriceCalculatorPage() {
       ['Sistema base', projectType.label, result.breakdown.baseWithoutLabor],
       ...selectedExtraItems.map(item => ['Extra', item.label, item.price]),
       ['Mano de obra estimada', `${Math.ceil(result.meta.workDays)} días laborables`, result.breakdown.internalLabor],
-      ['Buffer técnico', result.complexity.label, result.breakdown.bufferApplied],
-      ...(result.breakdown.rushApplied > 0 ? [['Urgencia', 'Entrega acelerada', result.breakdown.rushApplied]] : []),
+      ['Margen de error', result.complexity.label, result.breakdown.errorMarginApplied],
+      ['Subtotal', 'Antes de descuentos', result.breakdown.subtotalBeforeDiscount],
+      ...(result.breakdown.scheduleDiscount > 0 ? [['Descuento por plazo', `${Math.ceil(result.meta.availableWorkDays)} días laborables disponibles`, -result.breakdown.scheduleDiscount]] : []),
       ...(result.breakdown.countryDiscount > 0 ? [['Descuento', 'Ajuste por país', -result.breakdown.countryDiscount]] : []),
       ...(result.breakdown.couponDiscount > 0 ? [['Cupón', 'Descuento aplicado', -result.breakdown.couponDiscount]] : []),
     ]
@@ -577,7 +589,7 @@ export function PriceCalculatorPage() {
 
     <div class="grid">
       <div class="box"><span>Mínimo</span><strong>${formatMoney(result.prices.minimum)}</strong></div>
-      <div class="box"><span>Premium</span><strong>${formatMoney(result.prices.premium)}</strong></div>
+      <div class="box"><span>Días laborables</span><strong>${Math.ceil(result.meta.availableWorkDays)}</strong></div>
       <div class="box"><span>Riesgo</span><strong>${result.meta.riskLabel}</strong></div>
     </div>
 
@@ -593,7 +605,7 @@ export function PriceCalculatorPage() {
     <h2>Resumen operativo</h2>
     <div class="grid">
       <div class="box"><span>Esfuerzo</span><strong>${Math.ceil(result.meta.workDays)} días laborables</strong></div>
-      <div class="box"><span>Entrega estimada</span><strong>${Math.ceil(result.meta.estimatedCalendarDays)} días</strong></div>
+      <div class="box"><span>Descuento por plazo</span><strong>${Math.round(result.meta.scheduleDiscountRate * 100)}%</strong></div>
       <div class="box"><span>Mantenimiento sugerido</span><strong>${formatMoney(result.meta.maintenanceMonthly)}/mes</strong></div>
     </div>
 
@@ -741,23 +753,19 @@ export function PriceCalculatorPage() {
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-xl bg-dark-950 p-3"><p className="text-xs text-dark-500">Mínimo</p><p className="text-sm font-bold text-white">{formatMoney(result.prices.minimum)}</p></div>
                 <div className="rounded-xl bg-[var(--accent)]/10 p-3"><p className="text-xs text-dark-500">Recomendado</p><p className="text-sm font-bold text-white">{formatMoney(result.prices.recommended)}</p></div>
-                <div className="rounded-xl bg-dark-950 p-3"><p className="text-xs text-dark-500">Premium</p><p className="text-sm font-bold text-white">{formatMoney(result.prices.premium)}</p></div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <span className="rounded-full bg-dark-950 px-3 py-1 text-xs font-semibold text-dark-200">{result.complexity.label}</span>
-                <span className="rounded-full bg-dark-950 px-3 py-1 text-xs font-semibold text-dark-200">{Math.ceil(result.meta.workDays)} días de esfuerzo</span>
-                <span className="rounded-full bg-dark-950 px-3 py-1 text-xs font-semibold text-dark-200">{Math.ceil(result.meta.estimatedCalendarDays)} días calendario estimados</span>
-                <span className="rounded-full bg-dark-950 px-3 py-1 text-xs font-semibold text-dark-200">Riesgo {result.meta.riskLabel}</span>
+                <div className="rounded-xl bg-dark-950 p-3"><p className="text-xs text-dark-500">Días laborables</p><p className="text-sm font-bold text-white">{Math.ceil(result.meta.availableWorkDays)}</p></div>
               </div>
 
               <div className="space-y-2 border-t border-dark-800 pt-4">
                 <MoneyRow label="Base del proyecto" value={result.breakdown.baseWithoutLabor} />
                 <MoneyRow label="Mano de obra estimada" value={result.breakdown.internalLabor} />
                 <MoneyRow label="Extras" value={result.breakdown.extraCost} />
-                <MoneyRow label="Buffer de riesgo" value={result.breakdown.bufferApplied} />
-                {result.breakdown.rushApplied > 0 && (
-                  <MoneyRow label="Recargo por urgencia" value={result.breakdown.rushApplied} tone="text-amber-300" />
+                <MoneyRow label="Margen de error" value={result.breakdown.errorMarginApplied} />
+                <div className="border-t border-dark-700 pt-2">
+                  <MoneyRow label="Subtotal" value={result.breakdown.subtotalBeforeDiscount} />
+                </div>
+                {result.breakdown.scheduleDiscount > 0 && (
+                  <MoneyRow label={`Descuento por plazo (${Math.round(result.meta.scheduleDiscountRate * 100)}%)`} value={result.breakdown.scheduleDiscount} tone="text-green-300" />
                 )}
                 <MoneyRow label="Descuento país" value={result.breakdown.countryDiscount} tone="text-green-300" />
                 {result.breakdown.couponDiscount > 0 && (
@@ -773,7 +781,7 @@ export function PriceCalculatorPage() {
                   Mantenimiento sugerido: <span className="text-white font-semibold">{formatMoney(result.meta.maintenanceMonthly)}/mes</span>
                 </p>
                 <p className="text-xs text-dark-500">
-                  * Una fecha lejana no aumenta el precio; solo una fecha muy ajustada agrega urgencia.
+                  * Los descuentos se aplican después del subtotal. El descuento por plazo llega a su máximo al mes.
                 </p>
               </div>
 
