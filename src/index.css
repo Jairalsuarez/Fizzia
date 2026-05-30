@@ -280,6 +280,72 @@ html:not(.dark) .app-shell .app-logo-link[aria-current="page"] {
   box-shadow: none;
 }
 
+html:not(.dark) .app-shell .price-calculator {
+  --color-dark-50: #07110a;
+  --color-dark-100: #101c13;
+  --color-dark-200: #1d2d21;
+  --color-dark-300: #3d5142;
+  --color-dark-400: #526557;
+  --color-dark-500: #586b5d;
+  --color-dark-600: #aebfb2;
+  --color-dark-700: #9fb4a5;
+  --color-dark-800: #d3dfd6;
+  --color-dark-900: #e9f1eb;
+  --color-dark-950: #f8fbf8;
+}
+
+html:not(.dark) .app-shell .price-calculator :where(.bg-dark-900) {
+  background-color: #e9f1eb;
+}
+
+html:not(.dark) .app-shell .price-calculator :where(.bg-dark-900\/60) {
+  background-color: rgba(233, 241, 235, 0.96);
+}
+
+html:not(.dark) .app-shell .price-calculator :where(.bg-dark-950),
+html:not(.dark) .app-shell .price-calculator :where(.bg-dark-950\/70),
+html:not(.dark) .app-shell .price-calculator :where(.bg-dark-950\/80) {
+  background-color: #f8fbf8;
+}
+
+html:not(.dark) .app-shell .price-calculator :where(.border-dark-800) {
+  border-color: rgba(129, 157, 137, 0.78);
+}
+
+html:not(.dark) .app-shell .price-calculator :where(.border-dark-700) {
+  border-color: rgba(101, 133, 110, 0.9);
+}
+
+html:not(.dark) .app-shell .price-calculator :where(.text-dark-500) {
+  color: #4b5f50;
+}
+
+html:not(.dark) .app-shell .price-calculator :where(.text-dark-400) {
+  color: #405746;
+}
+
+html:not(.dark) .app-shell .price-calculator :where(.text-dark-300) {
+  color: #263a2b;
+}
+
+.price-date-input {
+  color-scheme: dark;
+}
+
+html:not(.dark) .app-shell .price-calculator .price-date-input {
+  color-scheme: light;
+}
+
+.price-date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  filter: invert(1) brightness(1.6);
+}
+
+html:not(.dark) .app-shell .price-calculator .price-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(18%) sepia(19%) saturate(832%) hue-rotate(80deg) brightness(78%) contrast(98%);
+}
+
 .app-shell .app-logo-link,
 .app-shell .app-logo-link[aria-current="page"] {
   box-shadow: none;
