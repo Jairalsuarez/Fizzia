@@ -115,8 +115,8 @@ function isCouponValid(coupon) {
 }
 
 function getCountryDiscount(code) {
-  if (code === 'EC') return 0.5
-  if (LATAM.includes(code)) return 0.25
+  if (code === 'EC') return 0.35
+  if (LATAM.includes(code)) return 0.15
   return 0
 }
 
@@ -134,12 +134,13 @@ function calculateWorkdays(from, to) {
   let count = 0
   const current = parseDateInput(toDateInputValue(from))
   const end = parseDateInput(toDateInputValue(to))
-  while (current <= end) {
+  current.setDate(current.getDate() + 1)
+  while (current < end) {
     const day = current.getDay()
     if (day !== 0 && day !== 6) count++
     current.setDate(current.getDate() + 1)
   }
-  return Math.max(1, count)
+  return Math.max(0, count)
 }
 
 function toDateInputValue(date = new Date()) {
@@ -236,7 +237,6 @@ function calculateProjectPrice({ form, extras, coupons }) {
   const profit = recommended - internalLabor - weightedCost - errorMarginApplied
   const profitability = recommended > 0 ? profit / recommended : 0
   if (deliveryInPast) warnings.push('La fecha de entrega no puede ser anterior a hoy.')
-  if (profitability < 0.15) warnings.push('Margen bajo para el nivel de esfuerzo.')
   if (extras.length >= 4) warnings.push('Varios extras complejos, conviene revisar alcance y margen de error.')
   if (form.maintenance === 'none' && (riskScore >= 14 || maintenanceWeight >= 14)) warnings.push('Proyecto complejo sin mantenimiento incluido.')
 
@@ -739,7 +739,7 @@ export function PriceCalculatorPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-bold text-white">Resultado</h2>
-                  <p className="mt-1 text-3xl font-black text-[var(--accent)]">{formatMoney(result.prices.recommended)}</p>
+                  <p className="mt-1 text-3xl font-black text-white">{formatMoney(result.prices.recommended)}</p>
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-bold ${
                   result.meta.riskLabel === 'Alto' ? 'bg-red-500/15 text-red-300' :
@@ -765,11 +765,11 @@ export function PriceCalculatorPage() {
                   <MoneyRow label="Subtotal" value={result.breakdown.subtotalBeforeDiscount} />
                 </div>
                 {result.breakdown.scheduleDiscount > 0 && (
-                  <MoneyRow label={`Descuento por plazo (${Math.round(result.meta.scheduleDiscountRate * 100)}%)`} value={result.breakdown.scheduleDiscount} tone="text-green-300" />
+                  <MoneyRow label={`Descuento por plazo (${Math.round(result.meta.scheduleDiscountRate * 100)}%)`} value={result.breakdown.scheduleDiscount} />
                 )}
-                <MoneyRow label="Descuento país" value={result.breakdown.countryDiscount} tone="text-green-300" />
+                <MoneyRow label="Descuento país" value={result.breakdown.countryDiscount} />
                 {result.breakdown.couponDiscount > 0 && (
-                  <MoneyRow label="Cupón" value={result.breakdown.couponDiscount} tone="text-green-300" />
+                  <MoneyRow label="Cupón" value={result.breakdown.couponDiscount} />
                 )}
                 <div className="border-t border-dark-700 pt-2">
                   <MoneyRow label="Total estimado" value={result.prices.recommended} />
@@ -779,9 +779,6 @@ export function PriceCalculatorPage() {
               <div className="space-y-1">
                 <p className="text-sm text-dark-300">
                   Mantenimiento sugerido: <span className="text-white font-semibold">{formatMoney(result.meta.maintenanceMonthly)}/mes</span>
-                </p>
-                <p className="text-xs text-dark-500">
-                  * Los descuentos se aplican después del subtotal. El descuento por plazo llega a su máximo al mes.
                 </p>
               </div>
 
