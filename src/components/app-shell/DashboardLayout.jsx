@@ -84,6 +84,29 @@ export function DashboardLayout({
       ? location.pathname === item.to
       : location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
   )) || navItems[0]
+  const isSummaryPath = location.pathname === summaryPath
+  const isPrimaryNavPath = navItems.some(item => location.pathname === item.to)
+
+  const handleBack = () => {
+    const backEvent = new CustomEvent('fizzia-app-back', {
+      cancelable: true,
+      detail: { handled: false },
+    })
+    window.dispatchEvent(backEvent)
+    if (backEvent.defaultPrevented || backEvent.detail?.handled) return
+
+    if (isPrimaryNavPath && !isSummaryPath) {
+      navigate(summaryPath)
+      return
+    }
+
+    if (isSummaryPath) {
+      navigate('/')
+      return
+    }
+
+    navigate(-1)
+  }
 
   const handleTermsAccepted = (updatedProfile) => {
     setProfile(updatedProfile || profile)
@@ -284,9 +307,9 @@ export function DashboardLayout({
 
       <main className="pt-28 pb-10 lg:pt-20 relative z-10">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-          {location.pathname !== navItems[0]?.to && (
+          {location.pathname !== '/' && (
             <button
-              onClick={() => navigate(-1)}
+              onClick={handleBack}
               className="mb-4 flex items-center gap-1 text-sm text-dark-400 hover:text-white transition-colors cursor-pointer"
               aria-label="Volver atras"
             >

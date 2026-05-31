@@ -460,6 +460,17 @@ export function PriceCalculatorPage() {
     localStorage.setItem('fizzia-admin-coupons', JSON.stringify(coupons))
   }, [coupons])
 
+  useEffect(() => {
+    const handleAppBack = (event) => {
+      if (phase !== 'form') return
+      event.preventDefault()
+      event.detail.handled = true
+      handleChangeProjectType()
+    }
+    window.addEventListener('fizzia-app-back', handleAppBack)
+    return () => window.removeEventListener('fizzia-app-back', handleAppBack)
+  }, [phase])
+
   const inputKey = useMemo(() => JSON.stringify({ form, selectedExtras }), [form, selectedExtras])
   const dirty = result && result.inputKey !== inputKey
 
