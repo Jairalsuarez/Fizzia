@@ -5,6 +5,7 @@ const DAILY_DEV_RATE = 20
 const BASELINE_WORKDAYS_FOR_FULL_PRICE = 5
 const MAX_DISCOUNT_WORKDAYS = 20
 const MAX_SCHEDULE_DISCOUNT = 0.15
+const MIN_DELIVERY_DAYS = 7
 const LATAM = ['CO', 'PE', 'AR', 'CL', 'MX', 'BO', 'UY', 'PY', 'CR', 'PA', 'DO', 'GT', 'SV', 'HN', 'NI', 'CU', 'VE']
 
 const PROJECT_TYPES = [
@@ -64,27 +65,27 @@ const MAINTENANCE_OPTIONS = [
 
 const EXTRAS = [
   { key: 'advancedAuth', label: 'Autenticación avanzada y roles', price: 320, difficulty: 5, risk: 3, maintenance: 2, types: ['web', 'booking', 'inventory', 'gym', 'restaurant', 'crm', 'education', 'ecommerce', 'delivery', 'forum', 'realestate', 'hotel', 'hospital', 'mobile', 'marketplace', 'both', 'saas'] },
-  { key: 'adminAnalytics', label: 'Dashboard ejecutivo con métricas', price: 380, difficulty: 5, risk: 2, maintenance: 2, types: ['web', 'booking', 'inventory', 'gym', 'restaurant', 'crm', 'education', 'ecommerce', 'delivery', 'realestate', 'hotel', 'hospital', 'fleet', 'marketplace', 'both', 'saas'] },
-  { key: 'reportsExport', label: 'Reportes avanzados y exportación', price: 340, difficulty: 5, risk: 3, maintenance: 2, types: ['web', 'inventory', 'crm', 'education', 'ecommerce', 'hospital', 'fleet', 'marketplace', 'saas', 'both'] },
+  { key: 'adminAnalytics', label: 'Dashboard ejecutivo con métricas', price: 380, difficulty: 5, risk: 2, maintenance: 2, types: ['booking', 'inventory', 'gym', 'restaurant', 'ecommerce', 'delivery', 'realestate', 'hotel', 'hospital', 'fleet', 'marketplace', 'both', 'saas'] },
+  { key: 'reportsExport', label: 'Reportes avanzados y exportación', price: 340, difficulty: 5, risk: 3, maintenance: 2, types: ['inventory', 'crm', 'education', 'ecommerce', 'hospital', 'fleet', 'marketplace', 'saas', 'both', 'accounting', 'wms'] },
   { key: 'paymentSystem', label: 'Pagos en línea y conciliación', price: 420, difficulty: 6, risk: 5, maintenance: 4, types: ['ecommerce', 'booking', 'gym', 'restaurant', 'delivery', 'hotel', 'marketplace', 'saas', 'both'] },
   { key: 'multiVendor', label: 'Gestión multivendedor', price: 720, difficulty: 8, risk: 6, maintenance: 5, types: ['marketplace', 'ecommerce', 'both'] },
-  { key: 'inventoryOps', label: 'Inventario con movimientos y alertas', price: 460, difficulty: 6, risk: 4, maintenance: 3, types: ['inventory', 'ecommerce', 'restaurant', 'delivery', 'marketplace', 'fleet'] },
-  { key: 'bookingEngine', label: 'Motor de reservas con disponibilidad', price: 430, difficulty: 6, risk: 4, maintenance: 3, types: ['booking', 'gym', 'restaurant', 'hotel', 'realestate', 'education', 'hospital'] },
+  { key: 'inventoryOps', label: 'Inventario avanzado con alertas', price: 460, difficulty: 6, risk: 4, maintenance: 3, types: ['ecommerce', 'restaurant', 'delivery', 'marketplace', 'fleet', 'pos'] },
+  { key: 'bookingEngine', label: 'Motor de reservas multi-recurso', price: 430, difficulty: 6, risk: 4, maintenance: 3, types: ['gym', 'restaurant', 'hotel', 'realestate', 'education', 'hospital'] },
   { key: 'realtimeChat', label: 'Chat en vivo con historial', price: 360, difficulty: 5, risk: 3, maintenance: 3, types: ['web', 'ecommerce', 'forum', 'education', 'hospital', 'saas', 'both', 'marketplace'] },
-  { key: 'automationFlow', label: 'Automatizaciones y estados complejos', price: 520, difficulty: 7, risk: 5, maintenance: 4, types: ['crm', 'saas', 'inventory', 'hospital', 'education', 'marketplace', 'web', 'both'] },
+  { key: 'automationFlow', label: 'Automatizaciones y estados complejos', price: 520, difficulty: 7, risk: 5, maintenance: 4, types: ['crm', 'saas', 'inventory', 'hospital', 'education', 'marketplace', 'both', 'accounting', 'hr', 'wms'] },
   { key: 'fileWorkflow', label: 'Gestión documental con aprobaciones', price: 420, difficulty: 6, risk: 4, maintenance: 3, types: ['web', 'education', 'crm', 'hospital', 'forum', 'saas', 'both', 'legal'] },
-  { key: 'multilanguage', label: 'Multilenguaje administrable', price: 330, difficulty: 5, risk: 2, maintenance: 2, types: ['web', 'ecommerce', 'blog', 'education', 'saas', 'marketplace', 'both', 'hotel'] },
-  { key: 'securityHardening', label: 'Seguridad avanzada y auditoría', price: 480, difficulty: 7, risk: 5, maintenance: 4, types: ['ecommerce', 'saas', 'both', 'hospital', 'marketplace', 'crm', 'web'] },
+  { key: 'multilanguage', label: 'Multilenguaje administrable', price: 330, difficulty: 5, risk: 2, maintenance: 2, types: ['ecommerce', 'blog', 'education', 'saas', 'marketplace', 'both', 'hotel', 'landing', 'portfolio'] },
+  { key: 'securityHardening', label: 'Seguridad avanzada y auditoría', price: 480, difficulty: 7, risk: 5, maintenance: 4, types: ['ecommerce', 'saas', 'both', 'hospital', 'marketplace', 'crm'] },
   { key: 'subscriptions', label: 'Suscripciones y membresías', price: 520, difficulty: 7, risk: 5, maintenance: 4, types: ['gym', 'saas', 'education', 'forum', 'booking', 'mobile'] },
   { key: 'coursePlatform', label: 'Cursos, lecciones y progreso', price: 620, difficulty: 7, risk: 4, maintenance: 4, types: ['education', 'saas', 'both'] },
-  { key: 'geolocation', label: 'Geolocalización, rutas y mapas', price: 420, difficulty: 6, risk: 4, maintenance: 3, types: ['delivery', 'realestate', 'hotel', 'fleet', 'mobile', 'restaurant', 'both'] },
+  { key: 'geolocation', label: 'Geolocalización, rutas y mapas', price: 420, difficulty: 6, risk: 4, maintenance: 3, types: ['delivery', 'fleet', 'mobile', 'both'] },
   { key: 'pushNotifications', label: 'Push notifications FCM/APNS', price: 360, difficulty: 5, risk: 4, maintenance: 4, types: ['mobile', 'delivery', 'both', 'saas'] },
   { key: 'offlineMode', label: 'Modo offline con sincronización', price: 560, difficulty: 8, risk: 6, maintenance: 5, types: ['mobile', 'delivery', 'both', 'fleet'] },
   { key: 'tracking', label: 'Tracking en tiempo real', price: 620, difficulty: 8, risk: 6, maintenance: 5, types: ['delivery', 'fleet', 'mobile', 'both'] },
-  { key: 'whatsappApi', label: 'WhatsApp API con automatización', price: 440, difficulty: 6, risk: 5, maintenance: 4, types: ['web', 'ecommerce', 'booking', 'gym', 'restaurant', 'crm', 'delivery', 'hotel', 'hospital', 'both', 'saas'] },
+  { key: 'whatsappApi', label: 'WhatsApp API con automatización', price: 440, difficulty: 6, risk: 5, maintenance: 4, types: ['ecommerce', 'booking', 'gym', 'restaurant', 'crm', 'delivery', 'hotel', 'hospital', 'both', 'saas'] },
   { key: 'aiAssistant', label: 'IA / asistente inteligente', price: 580, difficulty: 7, risk: 5, maintenance: 5, types: ['web', 'crm', 'education', 'saas', 'both', 'hospital'] },
-  { key: 'sriBilling', label: 'Facturación electrónica SRI', price: 720, difficulty: 8, risk: 6, maintenance: 5, types: ['ecommerce', 'marketplace', 'inventory', 'restaurant', 'hotel', 'web', 'saas'] },
-  { key: 'externalCrm', label: 'Integración con CRM externo', price: 520, difficulty: 7, risk: 5, maintenance: 4, types: ['web', 'ecommerce', 'crm', 'saas', 'both'] },
+  { key: 'sriBilling', label: 'Facturación electrónica SRI', price: 720, difficulty: 8, risk: 6, maintenance: 5, types: ['ecommerce', 'marketplace', 'inventory', 'restaurant', 'hotel', 'saas', 'pos', 'accounting'] },
+  { key: 'externalCrm', label: 'Integración con CRM externo', price: 520, difficulty: 7, risk: 5, maintenance: 4, types: ['ecommerce', 'crm', 'saas', 'both'] },
   { key: 'erpIntegration', label: 'Integración ERP', price: 760, difficulty: 9, risk: 7, maintenance: 5, types: ['web', 'inventory', 'saas', 'both', 'accounting', 'wms'] },
   { key: 'cloudStorage', label: 'Storage privado en la nube', price: 340, difficulty: 5, risk: 3, maintenance: 3, types: ['web', 'education', 'forum', 'saas', 'both', 'hospital', 'legal'] },
   { key: 'machineLearning', label: 'Machine Learning / predicciones', price: 900, difficulty: 10, risk: 8, maintenance: 6, types: ['saas', 'crm', 'education', 'hospital', 'inventory'] },
@@ -166,11 +167,41 @@ function addWorkDays(startDate, workDays) {
   return date
 }
 
+function addCalendarDays(startDate, days) {
+  const date = new Date(startDate)
+  date.setDate(date.getDate() + days)
+  return date
+}
+
 function getScheduleDiscountRate(availableWorkDays) {
   if (!availableWorkDays || availableWorkDays <= BASELINE_WORKDAYS_FOR_FULL_PRICE) return 0
   const cappedDays = Math.min(availableWorkDays, MAX_DISCOUNT_WORKDAYS)
   const progress = (cappedDays - BASELINE_WORKDAYS_FOR_FULL_PRICE) / (MAX_DISCOUNT_WORKDAYS - BASELINE_WORKDAYS_FOR_FULL_PRICE)
   return Math.max(0, Math.min(MAX_SCHEDULE_DISCOUNT, progress * MAX_SCHEDULE_DISCOUNT))
+}
+
+function analyzeRequirements(text = '') {
+  const clean = text.toLowerCase().trim()
+  if (!clean) return { cost: 0, days: 0, risk: 0, summary: 'Sin requerimientos adicionales escritos.' }
+  const rules = [
+    { words: ['sri', 'factura', 'facturación', 'facturacion'], cost: 420, days: 5, risk: 4 },
+    { words: ['erp', 'sap', 'odoo'], cost: 520, days: 6, risk: 5 },
+    { words: ['ia', 'inteligencia artificial', 'chatbot', 'openai'], cost: 420, days: 5, risk: 4 },
+    { words: ['tiempo real', 'tracking', 'gps', 'ruta'], cost: 420, days: 5, risk: 4 },
+    { words: ['offline', 'sin internet', 'sin conexión', 'sin conexion'], cost: 360, days: 4, risk: 4 },
+    { words: ['roles', 'permisos', 'aprobación', 'aprobacion'], cost: 240, days: 3, risk: 2 },
+    { words: ['reporte', 'excel', 'pdf', 'exportar'], cost: 220, days: 3, risk: 2 },
+    { words: ['pago', 'tarjeta', 'paypal', 'stripe', 'transferencia'], cost: 300, days: 4, risk: 3 },
+    { words: ['notificación', 'notificacion', 'correo', 'sms', 'push'], cost: 220, days: 3, risk: 3 },
+  ]
+  const matched = rules.filter(rule => rule.words.some(word => clean.includes(word)))
+  const lengthCost = Math.min(380, Math.floor(clean.length / 280) * 90)
+  return {
+    cost: matched.reduce((sum, item) => sum + item.cost, 0) + lengthCost,
+    days: matched.reduce((sum, item) => sum + item.days, 0) + Math.floor(clean.length / 420),
+    risk: matched.reduce((sum, item) => sum + item.risk, 0),
+    summary: matched.length ? `Detectado: ${matched.length} requerimiento(s) complejo(s).` : 'Requerimientos generales sin complejidad especial detectada.',
+  }
 }
 
 function deriveComplexity(projectType, selectedExtras) {
@@ -198,10 +229,11 @@ function calculateProjectPrice({ form, extras, coupons }) {
   const extraCost = sumItems(EXTRAS, extras, 'price')
   const extraRisk = sumItems(EXTRAS, extras, 'risk')
   const maintenanceWeight = sumItems(EXTRAS, extras, 'maintenance')
+  const requirementsAnalysis = analyzeRequirements(form.requirements)
 
   const extraDays = sumItems(EXTRAS, extras, 'difficulty') * 0.9
   const workDays = Math.max(1, Math.ceil(
-    projectType.baseDays + extraDays
+    projectType.baseDays + extraDays + requirementsAnalysis.days
   ))
   const devCount = Math.max(1, Number(form.devs || 1))
   const estimatedCalendarDays = Math.ceil(workDays / devCount)
@@ -212,10 +244,11 @@ function calculateProjectPrice({ form, extras, coupons }) {
   const scheduleDiscountRate = deliveryInPast ? 0 : getScheduleDiscountRate(availableWorkDays)
 
   const internalLabor = workDays * DAILY_DEV_RATE
-  const baseWithoutLabor = projectType.baseCost + Number(form.domain || 0)
-  const pricedScopeBase = baseWithoutLabor + extraCost
+  const hostingCost = Number(form.domain || 0)
+  const baseWithoutLabor = projectType.baseCost
+  const pricedScopeBase = baseWithoutLabor + hostingCost + extraCost + requirementsAnalysis.cost
   const weightedCost = pricedScopeBase * complexity.multiplier
-  const riskScore = complexity.risk + extraRisk
+  const riskScore = complexity.risk + extraRisk + requirementsAnalysis.risk
   const dynamicBufferRate = complexity.buffer + (extras.length >= 4 ? 0.06 : 0) + (riskScore >= 18 ? 0.05 : 0)
   const errorMarginApplied = pricedScopeBase * dynamicBufferRate
   const subtotalBeforeDiscount = weightedCost + errorMarginApplied + internalLabor
@@ -230,7 +263,7 @@ function calculateProjectPrice({ form, extras, coupons }) {
   const minimumCountryDiscount = minimumAfterScheduleDiscount * getCountryDiscount(form.country)
   const minimumCouponDiscount = coupon ? (minimumAfterScheduleDiscount - minimumCountryDiscount) * (coupon.percent / 100) : 0
   const minimum = Math.max(0, Math.round(minimumSubtotal - minimumScheduleDiscount - minimumCountryDiscount - minimumCouponDiscount))
-  const maintenanceMonthly = Math.max(25, Math.round((baseWithoutLabor + extraCost) * (maintenance.multiplier || 0.06) + maintenanceWeight * 5))
+  const maintenanceMonthly = Math.max(25, Math.round((baseWithoutLabor + hostingCost + extraCost) * (maintenance.multiplier || 0.06) + maintenanceWeight * 5))
   const maintenanceSuggestion = form.maintenance === 'annual' ? Math.round(maintenanceMonthly * 12 * 0.85) : maintenanceMonthly
 
   const warnings = []
@@ -245,8 +278,10 @@ function calculateProjectPrice({ form, extras, coupons }) {
     complexity,
     breakdown: {
       baseWithoutLabor,
+      hostingCost,
       internalLabor,
       extraCost,
+      requirementsCost: requirementsAnalysis.cost,
       errorMarginApplied,
       scheduleDiscount,
       countryDiscount,
@@ -264,6 +299,7 @@ function calculateProjectPrice({ form, extras, coupons }) {
       estimatedCalendarDays,
       deliveryDate: addWorkDays(new Date(), estimatedCalendarDays),
       scheduleDiscountRate,
+      requirementsSummary: requirementsAnalysis.summary,
       maintenanceMonthly,
       maintenanceSuggestion,
       maintenanceIncluded: form.maintenance !== 'none',
@@ -350,7 +386,6 @@ function SearchSelect({ options, value, onChange, placeholder }) {
                 }`}
               >
                 <span>{opt.label}</span>
-                <span className="text-[11px] text-dark-500 font-mono">${opt.baseCost}</span>
               </button>
             ))}
             {filtered.length === 0 && (
@@ -400,6 +435,7 @@ export function PriceCalculatorPage() {
     deliveryDate: '',
     domain: 20,
     maintenance: 'none',
+    requirements: '',
   })
   const [selectedExtras, setSelectedExtras] = useState([])
   const [coupons, setCoupons] = useState(DEFAULT_COUPONS)
@@ -428,7 +464,7 @@ export function PriceCalculatorPage() {
   const dirty = result && result.inputKey !== inputKey
 
   const update = (key, value) => {
-    const nextValue = key === 'deliveryDate' && value && value < todayStr ? todayStr : value
+    const nextValue = key === 'deliveryDate' && value && value < minDeliveryStr ? minDeliveryStr : value
     setForm(prev => ({ ...prev, [key]: nextValue }))
     setCopied(false)
   }
@@ -449,7 +485,7 @@ export function PriceCalculatorPage() {
     setCalculating(true)
     const sanitizedForm = {
       ...form,
-      deliveryDate: form.deliveryDate && form.deliveryDate < todayStr ? todayStr : form.deliveryDate,
+    deliveryDate: !form.deliveryDate || form.deliveryDate < minDeliveryStr ? minDeliveryStr : form.deliveryDate,
     }
     if (sanitizedForm.deliveryDate !== form.deliveryDate) setForm(sanitizedForm)
     window.setTimeout(() => {
@@ -469,6 +505,7 @@ export function PriceCalculatorPage() {
       deliveryDate: '',
       domain: 20,
       maintenance: 'none',
+      requirements: '',
     })
     setSelectedExtras([])
     setResult(null)
@@ -480,7 +517,7 @@ export function PriceCalculatorPage() {
     setResult(null)
   }
 
-  const todayStr = toDateInputValue()
+  const minDeliveryStr = toDateInputValue(addCalendarDays(new Date(), MIN_DELIVERY_DAYS))
 
   const resultText = result ? [
     `Precio mínimo: ${formatMoney(result.prices.minimum)}`,
@@ -502,13 +539,16 @@ export function PriceCalculatorPage() {
     const quoteNumber = `FZ-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`
     const rows = [
       ['Sistema base', projectType.label, result.breakdown.baseWithoutLabor],
+      ['Dominio / hosting', 'Infraestructura inicial', result.breakdown.hostingCost],
       ...selectedExtraItems.map(item => ['Extra', item.label, item.price]),
+      ...(result.breakdown.requirementsCost > 0 ? [['Requerimientos', result.meta.requirementsSummary, result.breakdown.requirementsCost]] : []),
       ['Mano de obra estimada', `${Math.ceil(result.meta.workDays)} días laborables`, result.breakdown.internalLabor],
       ['Margen de error', result.complexity.label, result.breakdown.errorMarginApplied],
       ['Subtotal', 'Antes de descuentos', result.breakdown.subtotalBeforeDiscount],
       ...(result.breakdown.scheduleDiscount > 0 ? [['Descuento por plazo', `${Math.ceil(result.meta.availableWorkDays)} días laborables disponibles`, -result.breakdown.scheduleDiscount]] : []),
       ...(result.breakdown.countryDiscount > 0 ? [['Descuento', 'Ajuste por país', -result.breakdown.countryDiscount]] : []),
       ...(result.breakdown.couponDiscount > 0 ? [['Cupón', 'Descuento aplicado', -result.breakdown.couponDiscount]] : []),
+      ['Total', 'Total recomendado', result.prices.recommended],
     ]
     const rowsHtml = rows.map(([type, detail, amount]) => `
       <tr>
@@ -565,13 +605,13 @@ export function PriceCalculatorPage() {
   <main class="page">
     <header>
       <div class="brand">
-        <span class="badge">Cotización profesional</span>
         <h1>Fizzia</h1>
         <p>Desarrollo de software, sistemas web y aplicaciones</p>
       </div>
       <div class="meta">
         <p><strong>No.</strong> ${quoteNumber}</p>
         <p><strong>Fecha:</strong> ${formatDate(new Date())}</p>
+        <p><strong>Entrega:</strong> ${form.deliveryDate ? formatDate(parseDateInput(form.deliveryDate)) : 'Por definir'}</p>
         <p><strong>Vigencia:</strong> 15 días</p>
       </div>
     </header>
@@ -587,12 +627,6 @@ export function PriceCalculatorPage() {
       </div>
     </section>
 
-    <div class="grid">
-      <div class="box"><span>Mínimo</span><strong>${formatMoney(result.prices.minimum)}</strong></div>
-      <div class="box"><span>Días laborables</span><strong>${Math.ceil(result.meta.availableWorkDays)}</strong></div>
-      <div class="box"><span>Riesgo</span><strong>${result.meta.riskLabel}</strong></div>
-    </div>
-
     <h2>Detalle de cotización</h2>
     <table>
       <thead><tr><th>Concepto</th><th>Detalle</th><th class="money">Valor</th></tr></thead>
@@ -601,13 +635,6 @@ export function PriceCalculatorPage() {
 
     <h2>Extras seleccionados</h2>
     <ul>${extrasHtml}</ul>
-
-    <h2>Resumen operativo</h2>
-    <div class="grid">
-      <div class="box"><span>Esfuerzo</span><strong>${Math.ceil(result.meta.workDays)} días laborables</strong></div>
-      <div class="box"><span>Descuento por plazo</span><strong>${Math.round(result.meta.scheduleDiscountRate * 100)}%</strong></div>
-      <div class="box"><span>Mantenimiento sugerido</span><strong>${formatMoney(result.meta.maintenanceMonthly)}/mes</strong></div>
-    </div>
 
     ${warningsHtml}
 
@@ -688,7 +715,7 @@ export function PriceCalculatorPage() {
                   <input type="number" min="1" max="12" value={form.devs} onChange={e => update('devs', e.target.value)} className="w-full rounded-xl border border-dark-700 bg-dark-950/80 px-3 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition-colors" />
                 </Field>
                 <Field label="Fecha de entrega">
-                  <input type="date" min={todayStr} value={form.deliveryDate} onChange={e => update('deliveryDate', e.target.value)} className="price-date-input w-full rounded-xl border border-dark-700 bg-dark-950/80 px-3 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition-colors" />
+                  <input type="date" min={minDeliveryStr} value={form.deliveryDate} onChange={e => update('deliveryDate', e.target.value)} className="price-date-input w-full rounded-xl border border-dark-700 bg-dark-950/80 px-3 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition-colors" />
                 </Field>
                 <Field label="Dominio / hosting ($)">
                   <div className="relative">
@@ -711,6 +738,16 @@ export function PriceCalculatorPage() {
                 </Field>
               </div>
 
+              <Field label="Requerimientos del cliente">
+                <textarea
+                  value={form.requirements}
+                  onChange={e => update('requirements', e.target.value)}
+                  rows={5}
+                  placeholder="Describe aquí lo que el cliente necesita: flujos, integraciones, reportes, pagos, usuarios, reglas especiales..."
+                  className="w-full resize-none rounded-xl border border-dark-700 bg-dark-950/80 px-3 py-3 text-sm text-white outline-none transition-colors placeholder:text-dark-500 focus:border-[var(--accent)]"
+                />
+              </Field>
+
               {availableExtras.length > 0 && (
                 <div>
                   <h2 className="mb-3 text-lg font-bold text-white">Extras</h2>
@@ -730,7 +767,7 @@ export function PriceCalculatorPage() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
               )}
-              {calculating ? 'Calculando...' : 'Calcular precio del proyecto'}
+              {calculating ? 'Analizando requerimientos...' : 'Calcular precio del proyecto'}
             </button>
           )}
 
@@ -757,9 +794,13 @@ export function PriceCalculatorPage() {
               </div>
 
               <div className="space-y-2 border-t border-dark-800 pt-4">
-                <MoneyRow label="Base del proyecto" value={result.breakdown.baseWithoutLabor} />
+                <MoneyRow label="Sistema base" value={result.breakdown.baseWithoutLabor} />
+                <MoneyRow label="Dominio / hosting" value={result.breakdown.hostingCost} />
                 <MoneyRow label="Mano de obra estimada" value={result.breakdown.internalLabor} />
                 <MoneyRow label="Extras" value={result.breakdown.extraCost} />
+                {result.breakdown.requirementsCost > 0 && (
+                  <MoneyRow label="Requerimientos" value={result.breakdown.requirementsCost} />
+                )}
                 <MoneyRow label="Margen de error" value={result.breakdown.errorMarginApplied} />
                 <div className="border-t border-dark-700 pt-2">
                   <MoneyRow label="Subtotal" value={result.breakdown.subtotalBeforeDiscount} />
