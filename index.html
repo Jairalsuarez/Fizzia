@@ -12,23 +12,23 @@
       rel="stylesheet"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fizzia | Desarrollo de software, apps y sistemas de ventas en Ecuador</title>
-    <meta name="description" content="Desarrollo de paginas web, aplicaciones personalizadas, sistemas de ventas, inventario y tiendas online para negocios de Guayaquil, Quito, Quevedo y Buena Fe." />
+    <title>Fizzia | Desarrollo de software, apps y sistemas en Ecuador</title>
+    <meta name="description" content="Desarrollamos paginas web, apps, tiendas online y sistemas de ventas e inventario para negocios en Ecuador que quieren operar con mas orden." />
     <meta name="keywords" content="desarrollo de software Ecuador, aplicaciones personalizadas, aplicacion de ventas, sistema de inventario, programas para negocios, Guayaquil, Quito, Quevedo, Buena Fe" />
     <meta name="author" content="Fizzia" />
     <meta name="robots" content="index, follow" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Fizzia | Desarrollo de software, apps y sistemas de ventas en Ecuador" />
-    <meta property="og:description" content="Aplicaciones personalizadas, paginas web, tiendas online y sistemas digitales para negocios de Guayaquil, Quito, Quevedo y Buena Fe." />
+    <meta property="og:title" content="Fizzia | Desarrollo de software, apps y sistemas en Ecuador" />
+    <meta property="og:description" content="Paginas web, apps, tiendas online y sistemas de ventas e inventario para negocios en Ecuador que quieren operar con mas orden." />
     <meta property="og:image" content="/images/og-cover.jpg" />
-    <meta property="og:url" content="https://fizzia.dev" />
+    <meta property="og:url" content="https://fizzia.vercel.app" />
     <meta property="og:locale" content="es_ES" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Fizzia | Desarrollo de software, apps y sistemas de ventas en Ecuador" />
-    <meta name="twitter:description" content="Aplicaciones personalizadas, paginas web, tiendas online y sistemas digitales para negocios de Guayaquil, Quito, Quevedo y Buena Fe." />
+    <meta name="twitter:title" content="Fizzia | Desarrollo de software, apps y sistemas en Ecuador" />
+    <meta name="twitter:description" content="Paginas web, apps, tiendas online y sistemas de ventas e inventario para negocios en Ecuador que quieren operar con mas orden." />
     <meta name="twitter:image" content="/images/og-cover.jpg" />
     <meta name="theme-color" content="#050806" />
-    <link rel="canonical" href="https://fizzia.dev" />
+    <link rel="canonical" href="https://fizzia.vercel.app" />
     <style>
       #root {
         min-height: 100vh;
@@ -55,6 +55,60 @@
         background: #050605;
       }
 
+      .seo-fallback {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 7rem 1.5rem 4rem;
+        color: #07110a;
+        background:
+          radial-gradient(circle at top left, rgba(50, 168, 82, 0.12), transparent 32rem),
+          linear-gradient(180deg, #ffffff 0%, #f6fbf7 100%);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .seo-fallback__content {
+        width: min(100%, 64rem);
+        text-align: center;
+      }
+
+      .seo-fallback h1 {
+        margin: 0;
+        font-size: clamp(2.6rem, 8vw, 5.7rem);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      .seo-fallback h1 span,
+      .seo-fallback a {
+        color: #32a852;
+      }
+
+      .seo-fallback p {
+        max-width: 44rem;
+        margin: 1.25rem auto 0;
+        color: #3c4a40;
+        font-size: 1.125rem;
+        line-height: 1.7;
+      }
+
+      .seo-fallback__links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 2rem;
+      }
+
+      .seo-fallback__links a {
+        border: 1px solid rgba(50, 168, 82, 0.28);
+        border-radius: 0.875rem;
+        padding: 0.75rem 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.74);
+      }
+
       @keyframes initial-loader-spin {
         to {
           transform: rotate(360deg);
@@ -66,7 +120,7 @@
       "@context": "https://schema.org",
       "@type": "ProfessionalService",
       "name": "Fizzia",
-      "url": "https://fizzia.dev",
+      "url": "https://fizzia.vercel.app",
       "description": "Desarrollo de paginas web, aplicaciones moviles, sistemas de ventas, inventario y software a medida para negocios en Ecuador.",
       "address": {
         "@type": "PostalAddress",
@@ -81,9 +135,29 @@
   </head>
   <body>
     <div id="root">
-      <div class="initial-loader" aria-label="Cargando Fizzia">
-        <div class="initial-loader__mark"></div>
-      </div>
+      <main class="seo-fallback">
+        <section class="seo-fallback__content" aria-labelledby="seo-fallback-title">
+          <p>Software a medida para negocios en Ecuador</p>
+          <h1 id="seo-fallback-title">Desarrollo de software, apps y sistemas <span>con Fizzia</span></h1>
+          <p>
+            Creamos paginas web, aplicaciones moviles, tiendas online, sistemas de ventas e inventario para
+            negocios de Guayaquil, Quito, Quevedo, Buena Fe y otras ciudades de Ecuador.
+          </p>
+          <h2>Servicios digitales para vender y trabajar con mas orden</h2>
+          <p>
+            Te ayudamos a convertir procesos manuales en herramientas claras: paneles de administracion,
+            catalogos, reportes, clientes, pagos, pedidos y flujos hechos a la medida de tu operacion.
+          </p>
+          <nav class="seo-fallback__links" aria-label="Enlaces principales de Fizzia">
+            <a href="/#servicios">Servicios</a>
+            <a href="/#proceso">Proceso</a>
+            <a href="/#contacto">Contacto</a>
+            <a href="/quienes-somos">Quienes somos</a>
+            <a href="/simulador">Simulador</a>
+            <a href="/desarrollo-software-guayaquil">Software en Guayaquil</a>
+          </nav>
+        </section>
+      </main>
     </div>
     <script>
       (function () {

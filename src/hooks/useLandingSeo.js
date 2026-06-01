@@ -9,7 +9,15 @@ import {
   findIntent,
 } from '../data/localSeo'
 
-const SITE_URL = 'https://fizzia.dev'
+const SITE_URL = 'https://fizzia.vercel.app'
+
+function buildDescription(intentCopy, activeLocation, hasLocation) {
+  if (hasLocation) {
+    return `${intentCopy.label} en ${activeLocation.name}: sistemas web, apps y herramientas a medida para vender, organizarse y crecer con Fizzia.`
+  }
+
+  return 'Desarrollamos paginas web, apps, tiendas online y sistemas de ventas e inventario para negocios en Ecuador que quieren operar con mas orden.'
+}
 
 function setMeta(selector, attr, value) {
   let tag = document.head.querySelector(selector)
@@ -57,14 +65,14 @@ export function useLandingSeo(cityFromIp) {
     const cityFromQuery = findCity(params.get('ciudad'))
     const cityFromLastPathPart = findCity(pathParts.at(-1))
 
-    const city =
+    const cityFromUrl =
       cityFromQuery ||
       cityFromLastPathPart ||
       cityFromPath ||
-      cityFromIp ||
       null
-    const hasLocation = !!city
-    const activeLocation = city || NEUTRAL_LOCATION
+    const displayCity = cityFromUrl || cityFromIp || null
+    const hasLocation = !!cityFromUrl
+    const activeLocation = displayCity || NEUTRAL_LOCATION
 
     const intent =
       findIntent(params.get('servicio')) ||
@@ -73,10 +81,11 @@ export function useLandingSeo(cityFromIp) {
       DEFAULT_INTENT
 
     const intentCopy = t(`localSeo.intents.${intent.key}`)
-    const canonicalPath = hasLocation ? `/${intent.slug}-${activeLocation.slug}` : '/'
-    const heading = hasLocation ? `${intentCopy.label} ${t('localSeo.inCity')} ${activeLocation.name}` : intentCopy.label
+    const canonicalLocation = cityFromUrl || NEUTRAL_LOCATION
+    const canonicalPath = hasLocation ? `/${intent.slug}-${canonicalLocation.slug}` : '/'
+    const heading = hasLocation ? `${intentCopy.label} ${t('localSeo.inCity')} ${canonicalLocation.name}` : `${intentCopy.label} en Ecuador`
     const title = `${heading} | Fizzia`
-    const description = `${intentCopy.summary} ${t('localSeo.intentFooter')}`
+    const description = buildDescription(intentCopy, canonicalLocation, hasLocation)
     const keywords = [...intentCopy.keywords, activeLocation.name, activeLocation.region, 'Fizzia'].filter(Boolean).join(', ')
 
     return {
