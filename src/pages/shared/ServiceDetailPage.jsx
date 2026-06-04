@@ -277,9 +277,6 @@ function ServiceContent() {
           <div className="mx-auto grid max-w-5xl gap-8">
             {servicePages.map((service, index) => (
               (() => {
-                const look = serviceLooks[service.slug]
-                const Icon = look?.Icon || LayoutDashboard
-
                 return (
                   <article
                     id={service.slug}
@@ -295,10 +292,6 @@ function ServiceContent() {
 
                     <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-10">
                       <div className={`${index % 2 ? 'md:order-2' : ''}`}>
-                        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-dark-400">
-                          <Icon className="size-3.5" />
-                          {look?.label}
-                        </div>
                         <ServiceVisual service={service} />
                       </div>
 
