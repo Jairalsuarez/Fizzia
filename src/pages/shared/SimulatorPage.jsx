@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext'
 import { CountryProvider, useCountry } from '../../contexts/CountryContext'
 import { LanguageProvider } from '../../contexts/LanguageContext'
 import { Icon } from '../../components/ui/Icon'
+import { BrandLogo } from '../../components/BrandLogo'
 
 const SIMULATOR_STEPS = ['projectType', 'scope', 'content', 'designLevel', 'delivery', 'features', 'maintenance', 'result']
 
@@ -298,9 +299,8 @@ function SimulatorContent() {
       {currentStep === 'result' && <FullScreenConfetti key="confetti" />}
 
       <header className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-dark-800/60">
-        <a href="/" className="flex items-center gap-2">
-          <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-8 w-auto" />
-          <span className="text-fizzia-500 font-black text-xl">Fizzia</span>
+        <a href="/" className="inline-flex items-center transition-opacity hover:opacity-80" aria-label="Fizzia">
+          <BrandLogo markClassName="h-11" themeClassName="h-12" />
         </a>
         <a href="/" className="text-dark-400 hover:text-white transition-colors">
           <Icon name="close" size={22} />

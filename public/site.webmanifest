@@ -10,9 +10,9 @@
   "lang": "es",
   "icons": [
     {
-      "src": "/images/Solo%20la%20figura%20del%20logo.png",
-      "sizes": "192x192",
-      "type": "image/png",
+      "src": "/images/Logo%20Fizzia.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]

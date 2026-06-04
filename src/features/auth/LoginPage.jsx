@@ -6,6 +6,7 @@ import { useAuth } from './authContext'
 import { getRoleHome } from './roles'
 import { getAuthRedirectUrl } from '../../utils/authRedirect'
 import { readStoredJson, writeStoredJson } from '../../utils/persistedState'
+import { BrandLogo } from '../../components/BrandLogo'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -130,7 +131,7 @@ export function LoginPage() {
     return (
       <div className="auth-page min-h-screen flex items-center justify-center bg-dark-950 p-6">
         <div className="text-center space-y-4">
-          <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-16 w-auto mx-auto" onError={(e) => { e.target.style.display = 'none' }} />
+          <BrandLogo mode="mark" markClassName="h-16" className="mx-auto" />
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-fizzia-500 mx-auto"></div>
           <p className="text-dark-400 text-sm">Ingresando a tu portal...</p>
         </div>
@@ -150,7 +151,7 @@ export function LoginPage() {
         <div className="relative z-10 w-full max-w-md">
           <div className="text-center mb-8">
             <a href="/" className="inline-flex items-center gap-3 mb-6">
-              <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-16 w-auto" onError={(e) => { e.target.style.display = 'none' }} />
+              <BrandLogo markClassName="h-14" themeClassName="h-20" />
             </a>
             <h2 className="text-2xl font-bold text-white">Recuperar contraseña</h2>
             <p className="text-dark-400 text-sm mt-1">Te enviaremos un enlace para restablecerla</p>
@@ -241,7 +242,7 @@ export function LoginPage() {
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
           <a href="/" className="inline-flex items-center gap-3 mb-6">
-            <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-16 w-auto" onError={(e) => { e.target.style.display = 'none' }} />
+            <BrandLogo markClassName="h-14" themeClassName="h-20" />
           </a>
           <h2 className="text-2xl font-bold text-white">Inicia sesión</h2>
           <p className="text-dark-400 text-sm mt-1">Accede a tu portal de Fizzia</p>

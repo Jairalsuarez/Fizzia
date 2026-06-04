@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ArrowRight, ChevronDown, Menu } from 'lucide-react'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { AnimatedThemeToggler } from '../ui/AnimatedThemeToggler'
+import { BrandLogo } from '../BrandLogo'
+import { getServiceSlugByName } from '../../data/servicePages'
 
 export function Header() {
-  const [activeSection, setActiveSection] = useState('inicio')
+  const [, setActiveSection] = useState('inicio')
   const [langOpen, setLangOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState(null)
@@ -13,6 +16,7 @@ export function Header() {
   const triggerRef = useRef(null)
   const dropdownRef = useRef(null)
   const lockedRef = useRef(false)
+  const navigate = useNavigate()
   const { lang, setLang, t } = useLanguage()
 
   const navItems = t('header.nav')
@@ -119,30 +123,45 @@ export function Header() {
         setOpenDropdown(null)
         handleNavClick(e, item.id)
       }}
-      className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-        isHome && activeSection === item.id
-          ? 'text-dark-50'
-          : 'text-dark-300 hover:text-dark-50'
-      }`}
+      className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:text-[#0b120d]"
     >
       {item.label}
     </a>
   )
 
+  const getServiceHref = (service) => {
+    const slug = getServiceSlugByName(service.name)
+    return slug ? `/servicios#${slug}` : isHome ? '#servicios' : '/#servicios'
+  }
+
+  const navigateToService = (event, service) => {
+    const slug = getServiceSlugByName(service.name)
+    if (!slug) return
+
+    event.preventDefault()
+    setOpenDropdown(null)
+    setMenuOpen(false)
+    navigate(`/servicios#${slug}`)
+
+    window.setTimeout(() => {
+      document.getElementById(slug)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 80)
+  }
+
   return (
     <nav
       ref={navRef}
-      className="fixed top-0 left-0 right-0 z-50 border-b border-dark-800 bg-dark-950/82 backdrop-blur-md"
+      className="fixed top-0 left-0 right-0 z-50 border-b border-[#e7eee8] bg-white/86 backdrop-blur-md"
       aria-label="Navegacion principal"
     >
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-6">
-            <a href="/" className="text-xl font-black tracking-tight text-fizzia-500 transition-opacity hover:opacity-75">
-              Fizzia
+            <a href="/" className="inline-flex items-center transition-opacity hover:opacity-75" aria-label="Fizzia">
+              <BrandLogo markClassName="h-9" themeClassName="h-10" />
             </a>
 
-            <nav className="hidden text-dark-300 font-medium lg:flex" aria-label="Secciones">
+            <nav className="hidden font-medium text-[#526155] lg:flex" aria-label="Secciones">
               <ul className="flex items-center space-x-2">
                 {navItems.map((item) => (
                   <li key={item.id} className="relative">
@@ -151,26 +170,19 @@ export function Header() {
                         <button
                           type="button"
                           onClick={() => toggleDropdown('services')}
-                          className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                            openDropdown === 'services' || (isHome && activeSection === item.id)
-                              ? 'text-dark-50'
-                              : 'text-dark-300 hover:text-dark-50'
-                          }`}
+                          className="flex cursor-pointer items-center rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:text-[#0b120d]"
                         >
                           {item.label}
                           <ChevronDown className={`ml-1 h-4 w-4 transition-transform ${openDropdown === 'services' ? 'rotate-180' : ''}`} />
                         </button>
                         {openDropdown === 'services' && (
-                          <ul className="absolute left-0 top-full z-20 mt-2 w-64 rounded-xl border border-dark-800 bg-dark-950 p-2 shadow-xl">
+                          <ul className="absolute left-0 top-full z-20 mt-2 w-64 rounded-xl border border-[#dce6dd] bg-white p-2 shadow-xl shadow-black/10">
                             {services.map((service) => (
                               <li key={service.name}>
                                 <a
-                                  href={isHome ? '#servicios' : '/#servicios'}
-                                  onClick={(event) => {
-                                    setOpenDropdown(null)
-                                    handleNavClick(event, 'servicios')
-                                  }}
-                                  className="block rounded-lg px-3 py-2 text-sm text-dark-300 transition-colors hover:bg-dark-900 hover:text-dark-50"
+                                  href={getServiceHref(service)}
+                                  onClick={(event) => navigateToService(event, service)}
+                                  className="block cursor-pointer rounded-lg px-3 py-2 text-sm text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
                                 >
                                   {service.name}
                                 </a>
@@ -194,16 +206,9 @@ export function Header() {
                 key={item.id}
                 href={isHome ? `#${item.id}` : `/#${item.id}`}
                 onClick={(e) => handleNavClick(e, item.id)}
-                className={`relative text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-dark-50 ${
-                  isHome && activeSection === item.id
-                    ? 'text-dark-50'
-                    : 'text-dark-300 hover:text-dark-50'
-                }`}
+                className="relative cursor-pointer text-sm font-medium text-[#526155] transition-colors hover:text-[#0b120d] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#32a852]"
               >
                 {item.label}
-                {isHome && activeSection === item.id && (
-                  <span className="absolute -bottom-2 left-0 right-0 h-0.5 rounded-full bg-fizzia-500" />
-                )}
               </a>
             ))}
           </div>
@@ -213,20 +218,20 @@ export function Header() {
             <div className="relative">
               <button
                 onClick={() => setLangOpen(!langOpen)}
-                className="flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-dark-300 transition-colors hover:text-dark-50 sm:text-sm"
+                className="flex cursor-pointer items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-[#526155] transition-colors hover:text-[#0b120d] sm:text-sm"
               >
                 {lang.toUpperCase()}
                 <ChevronDown className={`h-4 w-4 transition-transform ${langOpen ? 'rotate-180' : ''}`} />
               </button>
               {langOpen && (
-                <div className="absolute top-full right-0 mt-2 w-32 bg-dark-950 border border-dark-800 rounded-xl shadow-xl overflow-hidden p-1 z-50">
+                <div className="absolute top-full right-0 z-50 mt-2 w-32 overflow-hidden rounded-xl border border-[#dce6dd] bg-white p-1 shadow-xl shadow-black/10">
                   {['ES', 'EN'].map(code => {
                     const langKey = code.toLowerCase()
                     return (
                       <button
                         key={code}
                         onClick={() => changeLanguage(code)}
-                        className={`w-full text-left px-4 py-2 text-sm cursor-pointer hover:bg-fizzia-500/10 hover:text-fizzia-400 transition-colors ${lang === langKey ? 'text-fizzia-400 font-bold' : 'text-dark-300'}`}
+                        className={`w-full cursor-pointer px-4 py-2 text-left text-sm transition-colors hover:bg-fizzia-500/10 hover:text-fizzia-600 ${lang === langKey ? 'font-bold text-fizzia-600' : 'text-[#526155]'}`}
                       >
                         {t(`header.langNames.${code}`)}
                       </button>
@@ -237,13 +242,13 @@ export function Header() {
             </div>
             <a
               href="/login"
-              className="hidden rounded-xl px-4 py-2 text-sm font-medium text-dark-50 transition-colors hover:text-dark-300 lg:inline-flex"
+              className="hidden cursor-pointer rounded-xl px-4 py-2 text-sm font-medium text-[#0b120d] transition-colors hover:text-[#526155] lg:inline-flex"
             >
               {t('header.signIn')}
             </a>
             <a
               href="/register"
-              className="hidden items-center gap-2 rounded-xl bg-dark-50 px-5 py-2.5 text-sm font-medium text-dark-950 transition-colors hover:bg-dark-300 lg:inline-flex"
+              className="hidden cursor-pointer items-center gap-2 rounded-xl bg-[#0b120d] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#25332a] lg:inline-flex"
             >
               {t('header.createAccount')}
               <ArrowRight className="h-4 w-4" />
@@ -252,7 +257,7 @@ export function Header() {
               ref={triggerRef}
               type="button"
               onClick={() => setMenuOpen((open) => !open)}
-              className="inline-flex rounded-xl p-2 text-dark-50 transition-colors hover:bg-dark-900 lg:hidden"
+              className="inline-flex cursor-pointer rounded-xl p-2 text-[#0b120d] transition-colors hover:bg-[#f1f6f2] lg:hidden"
               aria-expanded={menuOpen}
               aria-controls="mobile-menu"
               aria-haspopup="menu"
@@ -266,7 +271,7 @@ export function Header() {
         <div
           id="mobile-menu"
           ref={menuRef}
-          className="absolute right-4 top-full mt-2 w-64 rounded-xl border border-dark-800 bg-dark-950/95 p-2 shadow-xl backdrop-blur-md lg:hidden"
+          className="absolute right-4 top-full mt-2 w-64 rounded-xl border border-[#dce6dd] bg-white/95 p-2 shadow-xl shadow-black/10 backdrop-blur-md lg:hidden"
           role="menu"
           aria-label="Menu movil"
         >
@@ -277,19 +282,19 @@ export function Header() {
                   <button
                     type="button"
                     onClick={() => toggleDropdown('mobile-services')}
-                    className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-dark-50 transition-colors hover:bg-dark-900"
+                    className="flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
                   >
                     {item.label}
                     <ChevronDown className={`h-4 w-4 transition-transform ${openDropdown === 'mobile-services' ? 'rotate-180' : ''}`} />
                   </button>
                   {openDropdown === 'mobile-services' && (
-                    <ul className="ml-4 mt-1 border-l border-dark-800 pl-3">
+                    <ul className="ml-4 mt-1 border-l border-[#dce6dd] pl-3">
                       {services.map((service) => (
                         <li key={service.name}>
                           <a
-                            href={isHome ? '#servicios' : '/#servicios'}
-                            onClick={(event) => handleMobileNavClick(event, 'servicios')}
-                            className="block rounded-lg px-3 py-1.5 text-sm text-dark-300 transition-colors hover:bg-dark-900 hover:text-dark-50"
+                            href={getServiceHref(service)}
+                            onClick={(event) => navigateToService(event, service)}
+                            className="block cursor-pointer rounded-lg px-3 py-1.5 text-sm text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
                           >
                             {service.name}
                           </a>
@@ -303,23 +308,23 @@ export function Header() {
                   key={item.id}
                   href={isHome ? `#${item.id}` : `/#${item.id}`}
                   onClick={(event) => handleMobileNavClick(event, item.id)}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-dark-50 transition-colors hover:bg-dark-900"
+                  className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
                   role="menuitem"
                 >
                   {item.label}
                 </a>
               )
             ))}
-            <div className="mt-2 space-y-2 border-t border-dark-800 pt-2">
+            <div className="mt-2 space-y-2 border-t border-[#dce6dd] pt-2">
               <a
                 href="/login"
-                className="block rounded-lg px-3 py-2 text-center text-sm font-medium text-dark-50 transition-colors hover:bg-dark-900"
+                className="block cursor-pointer rounded-lg px-3 py-2 text-center text-sm font-medium text-[#0b120d] transition-colors hover:bg-[#f1f6f2]"
               >
                 {t('header.signIn')}
               </a>
               <a
                 href="/register"
-                className="flex items-center justify-center gap-2 rounded-lg bg-dark-50 px-3 py-2.5 text-sm font-medium text-dark-950"
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0b120d] px-3 py-2.5 text-sm font-medium text-white"
               >
                 {t('header.createAccount')}
                 <ArrowRight className="h-4 w-4" />

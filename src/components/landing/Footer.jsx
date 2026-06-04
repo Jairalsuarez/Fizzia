@@ -1,4 +1,5 @@
 import { useLanguage } from '../../contexts/LanguageContext'
+import { BrandLogo } from '../BrandLogo'
 
 export function Footer() {
   const { t } = useLanguage()
@@ -16,9 +17,8 @@ export function Footer() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-7">
           <div>
-            <a href="#inicio" className="inline-flex items-center gap-2">
-              <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-8 w-auto" onError={(e) => { e.target.style.display = 'none' }} />
-              <span className="text-fizzia-500 font-black text-2xl">Fizzia</span>
+            <a href="#inicio" className="inline-flex items-center transition-opacity hover:opacity-80" aria-label="Fizzia">
+              <BrandLogo markClassName="h-12" themeClassName="h-14" />
             </a>
             <p className="mt-4 text-dark-300 text-sm leading-relaxed">
               {t('footer.description')}
@@ -35,8 +35,7 @@ export function Footer() {
                       'Inicio': '#inicio', 'Home': '#inicio',
                       'Servicios': '#servicios', 'Services': '#servicios',
                       'Quiénes somos': '/quienes-somos', 'About us': '/quienes-somos',
-                      'Proceso': '#proceso', 'Process': '#proceso',
-                      'Contacto': '#contacto', 'Contact': '#contacto',
+                      'Preguntas': '#contacto', 'FAQs': '#contacto',
                     })[item] || `#${item.toLowerCase()}`}
                     className="text-dark-300 hover:text-fizzia-400 text-sm transition-colors"
                   >

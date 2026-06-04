@@ -5,6 +5,7 @@ import { ToastProvider } from './components/Toast'
 import { ProtectedRoute } from './features/auth/ProtectedRoute'
 import { CountryProvider } from './contexts/CountryContext'
 import { CookieConsent } from './components/CookieConsent'
+import { BrandLogo } from './components/BrandLogo'
 
 const LandingLayout = lazy(() => import('./layouts/LandingLayout').then(module => ({ default: module.LandingLayout })))
 const AdminLayout = lazy(() => import('./layouts/AdminLayout').then(module => ({ default: module.AdminLayout })))
@@ -16,6 +17,7 @@ const LandingPage = lazy(() => import('./pages/LandingPage').then(module => ({ d
 const TermsPage = lazy(() => import('./pages/shared/TermsPage').then(module => ({ default: module.TermsPage })))
 const AboutPage = lazy(() => import('./pages/shared/AboutPage').then(module => ({ default: module.AboutPage })))
 const SimulatorPage = lazy(() => import('./pages/shared/SimulatorPage').then(module => ({ default: module.SimulatorPage })))
+const ServiceDetailPage = lazy(() => import('./pages/shared/ServiceDetailPage').then(module => ({ default: module.ServiceDetailPage })))
 
 const AdminDashboardPage = lazy(() => import('./pages/admin/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const AdminProjectDetailPage = lazy(() => import('./pages/admin/ProjectDetailPage').then(module => ({ default: module.ProjectDetailPage })))
@@ -49,7 +51,7 @@ function RouteFallback() {
   return (
     <div className={`flex min-h-screen items-center justify-center ${shellClass}`}>
       <div className="text-center space-y-4">
-        <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-12 w-auto mx-auto" />
+        <BrandLogo mode="mark" markClassName="h-12" className="mx-auto" />
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-fizzia-500 mx-auto"></div>
       </div>
     </div>
@@ -65,6 +67,7 @@ function App() {
             <Route path="/" element={<LandingLayout />}>
               <Route index element={<LandingPage />} />
               <Route path="quienes-somos" element={<AboutPage />} />
+              <Route path="servicios" element={<ServiceDetailPage />} />
             </Route>
 
           <Route path="/simulador" element={<SimulatorPage />} />

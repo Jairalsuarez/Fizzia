@@ -52,11 +52,11 @@ export function AnimatedHero({
 
   return (
     <div className={`relative w-full ${className}`}>
-      <div className="mx-auto flex max-w-5xl flex-col items-center justify-center gap-8 px-4 py-16 text-center sm:px-6 lg:py-24">
+      <div className="mx-auto flex max-w-5xl flex-col items-center justify-center gap-7 px-4 py-12 text-center sm:px-6 md:py-14 lg:gap-7 lg:py-16">
         {badge}
 
         <div className="flex max-w-4xl flex-col items-center gap-5">
-          <h1 className="text-balance text-4xl font-black leading-[1.05] text-dark-50 sm:text-5xl lg:text-7xl">
+          <h1 className="text-balance text-4xl font-black leading-[1.05] text-dark-50 sm:text-5xl lg:text-6xl xl:text-7xl">
             <span>{renderHeading()}</span>
             {titles.length > 0 && (
               <span className="relative mt-2 flex min-h-[1.08em] w-full justify-center overflow-hidden text-center text-fizzia-400 sm:mt-3">

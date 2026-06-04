@@ -136,7 +136,7 @@ function calculateWorkdays(from, to) {
   const current = parseDateInput(toDateInputValue(from))
   const end = parseDateInput(toDateInputValue(to))
   current.setDate(current.getDate() + 1)
-  while (current < end) {
+  while (current <= end) {
     const day = current.getDay()
     if (day !== 0 && day !== 6) count++
     current.setDate(current.getDate() + 1)
@@ -242,8 +242,9 @@ function calculateProjectPrice({ form, extras, coupons }) {
   const today = parseDateInput(toDateInputValue())
   const deliveryInPast = selectedDeliveryDate && selectedDeliveryDate < today
   const scheduleDiscountRate = deliveryInPast ? 0 : getScheduleDiscountRate(availableWorkDays)
+  const billableWorkDays = Math.max(1, availableWorkDays || workDays)
 
-  const internalLabor = workDays * DAILY_DEV_RATE
+  const internalLabor = billableWorkDays * DAILY_DEV_RATE
   const hostingCost = Number(form.domain || 0)
   const baseWithoutLabor = projectType.baseCost
   const pricedScopeBase = baseWithoutLabor + hostingCost + extraCost + requirementsAnalysis.cost
@@ -295,6 +296,7 @@ function calculateProjectPrice({ form, extras, coupons }) {
       profitability,
       profit,
       workDays,
+      billableWorkDays,
       availableWorkDays,
       estimatedCalendarDays,
       deliveryDate: addWorkDays(new Date(), estimatedCalendarDays),
@@ -553,7 +555,7 @@ export function PriceCalculatorPage() {
       ['Dominio / hosting', 'Infraestructura inicial', result.breakdown.hostingCost],
       ...selectedExtraItems.map(item => ['Extra', item.label, item.price]),
       ...(result.breakdown.requirementsCost > 0 ? [['Requerimientos', result.meta.requirementsSummary, result.breakdown.requirementsCost]] : []),
-      ['Mano de obra estimada', `${Math.ceil(result.meta.workDays)} días laborables`, result.breakdown.internalLabor],
+      ['Mano de obra', `${Math.ceil(result.meta.billableWorkDays)} días laborables`, result.breakdown.internalLabor],
       ['Margen de error', result.complexity.label, result.breakdown.errorMarginApplied],
       ['Subtotal', 'Antes de descuentos', result.breakdown.subtotalBeforeDiscount],
       ...(result.breakdown.scheduleDiscount > 0 ? [['Descuento por plazo', `${Math.ceil(result.meta.availableWorkDays)} días laborables disponibles`, -result.breakdown.scheduleDiscount]] : []),
@@ -807,7 +809,7 @@ export function PriceCalculatorPage() {
               <div className="space-y-2 border-t border-dark-800 pt-4">
                 <MoneyRow label="Sistema base" value={result.breakdown.baseWithoutLabor} />
                 <MoneyRow label="Dominio / hosting" value={result.breakdown.hostingCost} />
-                <MoneyRow label="Mano de obra estimada" value={result.breakdown.internalLabor} />
+                <MoneyRow label="Mano de obra" value={result.breakdown.internalLabor} />
                 <MoneyRow label="Extras" value={result.breakdown.extraCost} />
                 {result.breakdown.requirementsCost > 0 && (
                   <MoneyRow label="Requerimientos" value={result.breakdown.requirementsCost} />

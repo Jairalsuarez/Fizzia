@@ -25,7 +25,7 @@ export function HeroSection({ seoContext }) {
   }, [])
 
   return (
-    <section id="inicio" ref={ref} className="relative flex min-h-[min(86dvh,820px)] items-center overflow-hidden bg-dark-950 pt-20 pb-10 md:pt-24 md:pb-12">
+    <section id="inicio" ref={ref} className="relative flex min-h-[min(78dvh,720px)] items-center overflow-hidden bg-dark-950 pt-20 pb-8 md:min-h-[min(70dvh,660px)] md:pt-20 md:pb-6 xl:min-h-[min(64dvh,600px)]">
       <div className="absolute inset-0">
         <div className="absolute top-0 left-0 right-0 h-[600px] bg-gradient-to-b from-dark-800/40 via-dark-900/20 to-transparent" />
         <div className="absolute top-20 right-10 w-96 h-96 bg-dark-800/30 rounded-full blur-3xl" />

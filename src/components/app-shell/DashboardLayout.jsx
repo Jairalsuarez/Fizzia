@@ -8,6 +8,7 @@ import { ThemeProvider } from '../../theme/ThemeContext'
 import { AnimatedThemeToggler } from '../ui/AnimatedThemeToggler'
 import { TermsAcceptanceGate } from '../legal/TermsAcceptanceGate'
 import { VersionChecker } from '../VersionChecker'
+import { BrandLogo } from '../BrandLogo'
 
 export function DashboardLayout({
   navItems,
@@ -135,11 +136,11 @@ export function DashboardLayout({
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className={`absolute -top-24 -left-24 w-[500px] h-[500px] ${palette.glow} rounded-full blur-3xl`} />
         <div className={`absolute top-1/2 -right-24 w-[400px] h-[400px] ${palette.glowSoft} rounded-full blur-3xl`} />
-        <img
-          src="/images/Solo la figura del logo.png"
-          alt=""
-          className="absolute bottom-[-8rem] left-1/2 h-[28rem] -translate-x-1/2 opacity-[0.035] blur-[1px]"
-          aria-hidden="true"
+        <BrandLogo
+          mode="mark"
+          decorative
+          markClassName="h-[28rem]"
+          className="absolute bottom-[-8rem] left-1/2 -translate-x-1/2 opacity-[0.035] blur-[1px]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-dark-950 via-transparent to-dark-950/80" />
       </div>
@@ -161,9 +162,8 @@ export function DashboardLayout({
             </div>
 
             <div className="flex justify-center">
-              <NavLink to={navItems[0]?.to || '/'} className="app-logo-link cursor-pointer flex-shrink-0 flex items-center gap-2 rounded-lg px-1 py-1" title="Ir al resumen">
-                <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-8 w-auto" onError={(e) => { e.target.style.display = 'none' }} />
-                <span className="text-fizzia-500 font-black text-xl">Fizzia</span>
+              <NavLink to={navItems[0]?.to || '/'} className="app-logo-link cursor-pointer flex-shrink-0 flex items-center rounded-lg px-1 py-1" title="Ir al resumen" aria-label="Ir al resumen">
+                <BrandLogo markClassName="h-11" themeClassName="h-12" />
               </NavLink>
             </div>
 

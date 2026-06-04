@@ -4,6 +4,7 @@ import { signUp, checkEmailExists } from '../../api/authApi'
 import { supabase } from '../../services/supabase'
 import { useAuth } from './authContext'
 import { useCountry } from '../../contexts/CountryContext'
+import { BrandLogo } from '../../components/BrandLogo'
 
 const phrases = [
   'Tu próximo proyecto empieza aquí',
@@ -135,7 +136,7 @@ export function RegisterPage() {
 
             <div className="relative z-10">
               <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-6 animate-pulse">
-                <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-8 w-auto" onError={(e) => { e.target.style.display = 'none' }} />
+                <BrandLogo mode="mark" markClassName="h-8" />
               </div>
               <h2 className="text-xl font-bold text-white leading-tight">Tu próximo proyecto empieza aquí</h2>
             </div>
@@ -154,7 +155,7 @@ export function RegisterPage() {
           {/* Right panel - form */}
           <div className="flex-1 p-8 md:p-10">
             <div className="lg:hidden text-center mb-6">
-              <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="h-12 w-auto mx-auto" onError={(e) => { e.target.style.display = 'none' }} />
+              <BrandLogo markClassName="h-12" themeClassName="h-16" className="justify-center" />
             </div>
 
             <div className="flex items-center gap-2 mb-6">

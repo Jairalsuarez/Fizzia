@@ -4,8 +4,7 @@ export const translations = {
       nav: [
         { label: 'Inicio', id: 'inicio' },
         { label: 'Servicios', id: 'servicios' },
-        { label: 'Proceso', id: 'proceso' },
-        { label: 'Contacto', id: 'contacto' },
+        { label: 'Preguntas', id: 'contacto' },
       ],
       signIn: 'Ingresar',
       createAccount: 'Crear cuenta gratis',
@@ -196,19 +195,6 @@ export const translations = {
       cta: 'Crea tu cuenta gratis',
       disclaimer: 'Sin compromiso. Entras a tu portal al instante.',
     },
-    process: {
-      label: 'Cómo lo hacemos',
-      heading: ['Pasos reales,', 'sin rodeos'],
-      startBadge: 'Inicio',
-      goalBadge: 'Meta',
-      steps: [
-        { title: 'Cuéntanos qué necesitas', text: 'Revisamos tu idea, tu operación y el problema que quieres resolver.', icon: 'edit_note' },
-        { title: 'Te damos una propuesta', text: 'Definimos alcance, tiempos y una ruta clara antes de empezar.', icon: 'fact_check' },
-        { title: 'Diseñamos contigo', text: 'Aterrizamos pantallas, funciones y prioridades para que todo tenga sentido.', icon: 'groups' },
-        { title: 'Construimos y probamos', text: 'Te mostramos avances funcionales para corregir rápido y evitar sorpresas.', icon: 'visibility' },
-        { title: 'Entrega', text: 'Lanzamos tu proyecto y te acompañamos en cada paso.', icon: 'deployed_code' },
-      ],
-    },
     simulator: {
       heading: '¿Cuánto cuesta tu proyecto?',
       description: 'Responde unas preguntas y obtén un presupuesto estimado al instante. Sin compromiso.',
@@ -308,19 +294,10 @@ export const translations = {
       button: 'Suscribirme',
       success: 'Gracias por suscribirte. Revisa tu bandeja de entrada.',
     },
-    contact: {
-      heading: 'Tienes una idea?',
-      description: 'Hablemos de lo que necesitas y te damos una propuesta clara.',
-      ctaStart: 'Quiero una propuesta',
-      cooldown: 'Ya lo solicitaste. Vuelve mañana.',
-      secondaryHeading: 'Prefieres revisar con calma?',
-      secondaryDescription: 'Crea tu cuenta gratis y guarda tu proyecto en un portal donde podrás ver avances, mensajes y archivos cuando empecemos.',
-      ctaAccount: 'Crear cuenta gratis',
-    },
     footer: {
       description: 'Creamos soluciones digitales a la medida que ayudan a los negocios a crecer y conectar con su gente.',
       navTitle: 'Navegación',
-      navItems: ['Inicio', 'Servicios', 'Quiénes somos', 'Proceso', 'Contacto'],
+      navItems: ['Inicio', 'Servicios', 'Quiénes somos', 'Preguntas'],
       servicesTitle: 'Servicios',
       services: [
         'Desarrollo Web',
@@ -341,8 +318,7 @@ export const translations = {
       nav: [
         { label: 'Home', id: 'inicio' },
         { label: 'Services', id: 'servicios' },
-        { label: 'Process', id: 'proceso' },
-        { label: 'Contact', id: 'contacto' },
+        { label: 'FAQs', id: 'contacto' },
       ],
       signIn: 'Sign In',
       createAccount: 'Create Free Account',
@@ -533,19 +509,6 @@ export const translations = {
       cta: 'Create Your Free Account',
       disclaimer: 'No commitment. Instant portal access.',
     },
-    process: {
-      label: 'How We Work',
-      heading: ['Real steps,', 'no fluff'],
-      startBadge: 'Start',
-      goalBadge: 'Goal',
-      steps: [
-        { title: 'Tell us what you need', text: 'We review your idea, your operation, and the problem you want to solve.', icon: 'edit_note' },
-        { title: 'We send a proposal', text: 'We define scope, timing, and a clear path before starting.', icon: 'fact_check' },
-        { title: 'We design with you', text: 'We shape screens, features, and priorities so everything makes sense.', icon: 'groups' },
-        { title: 'We build and test', text: 'We show functional progress so we can adjust quickly and avoid surprises.', icon: 'visibility' },
-        { title: 'Delivery', text: 'We launch your project and support you every step.', icon: 'deployed_code' },
-      ],
-    },
     simulator: {
       heading: 'How much does your project cost?',
       description: 'Answer a few questions and get an instant estimated budget. No commitment.',
@@ -645,19 +608,10 @@ export const translations = {
       button: 'Subscribe',
       success: 'Thanks for subscribing! Check your inbox.',
     },
-    contact: {
-      heading: 'Got an idea?',
-      description: 'Tell us what you need and we will send you a clear proposal.',
-      ctaStart: 'I want a proposal',
-      cooldown: 'Already requested. Come back tomorrow.',
-      secondaryHeading: 'Prefer to review calmly?',
-      secondaryDescription: 'Create your free account and save your project in a portal where you can see progress, messages, and files once we start.',
-      ctaAccount: 'Create Free Account',
-    },
     footer: {
       description: 'We build custom digital solutions that help businesses grow and connect with their people.',
       navTitle: 'Navigation',
-      navItems: ['Home', 'Services', 'About us', 'Process', 'Contact'],
+      navItems: ['Home', 'Services', 'About us', 'FAQs'],
       servicesTitle: 'Services',
       services: [
         'Web Development',

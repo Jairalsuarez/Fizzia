@@ -7,6 +7,7 @@ import { createClientPayment, getMyInvoices, getMyPayments, uploadPaymentProof }
 import { getMyProjects } from '../../api/projectsApi'
 import { useToast } from '../../components/Toast'
 import { formatMoney } from '../../utils/format'
+import { BrandLogo } from '../../components/BrandLogo'
 
 const BANK_INFO = {
   bank: 'Banco del Pichincha',
@@ -299,7 +300,7 @@ export function PaymentPage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-6">
         <div className="text-center">
-          <img src="/images/Solo la figura del logo.png" alt="Fizzia" className="mx-auto h-12 w-auto" />
+          <BrandLogo mode="mark" markClassName="h-12" className="mx-auto" />
           <div className="mx-auto mt-4 h-10 w-10 animate-spin rounded-full border-b-2 border-fizzia-500" />
         </div>
       </div>
