@@ -124,8 +124,8 @@ function App() {
             <Route path="*" element={<LandingPage />} />
           </Route>
           </Routes>
+          <CookieConsent />
         </Suspense>
-        <CookieConsent />
       </AuthProvider>
     </ToastProvider>
   )

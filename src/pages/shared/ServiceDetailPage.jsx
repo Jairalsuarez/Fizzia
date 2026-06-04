@@ -46,17 +46,17 @@ function ServiceVisual({ service }) {
   if (isMobile) {
     return (
       <div className="flex aspect-[16/10] items-center justify-center rounded-2xl border border-dark-800 bg-dark-900 p-6">
-        <div className="relative h-full max-h-80 w-40 rounded-[2rem] border border-dark-700 bg-dark-950 p-3 shadow-2xl shadow-black/20">
-          <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-dark-700" />
-          <div className="rounded-2xl bg-fizzia-500 p-4 text-white">
+        <div className="relative h-full max-h-72 w-40 overflow-hidden rounded-[2rem] border border-dark-700 bg-dark-950 p-3 shadow-2xl shadow-black/20">
+          <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-dark-700" />
+          <div className="rounded-2xl bg-fizzia-500 p-3 text-white">
             <p className="text-xs font-bold opacity-80">Fizzia App</p>
-            <p className="mt-3 text-2xl font-black">Hoy</p>
+            <p className="mt-2 text-2xl font-black">Hoy</p>
           </div>
-          <div className="mt-4 space-y-2">
+          <div className="mt-3 space-y-1.5">
             {rows.map((row, itemIndex) => (
-              <div key={row} className="flex items-center gap-2 rounded-xl border border-dark-800 bg-dark-900 p-2">
-                <span className="size-7 rounded-lg bg-fizzia-500/15" />
-                <span className="text-xs font-bold text-dark-100">{row}</span>
+              <div key={row} className="flex min-h-9 items-center gap-2 rounded-xl border border-dark-800 bg-dark-900 px-2 py-1.5">
+                <span className="size-6 shrink-0 rounded-lg bg-fizzia-500/15" />
+                <span className="min-w-0 flex-1 truncate text-[11px] font-bold text-dark-100">{row}</span>
                 <span className="ml-auto text-[10px] font-black text-fizzia-300">{itemIndex + 1}</span>
               </div>
             ))}
@@ -241,18 +241,18 @@ function ServiceContent() {
   return (
     <>
       <Header />
-      <main className="landing-page min-h-screen bg-dark-950 text-dark-50">
-        <section className="px-4 pb-10 pt-28 sm:px-6 lg:px-8">
+      <main className="landing-page service-detail-page min-h-screen bg-[#f8fbf8] text-[#0b120d]">
+        <section className="px-4 pb-8 pt-24 sm:px-6 sm:pb-10 sm:pt-28 lg:px-8">
           <div className="mx-auto max-w-5xl">
-            <a href="/" className="mb-8 inline-flex items-center gap-2 text-sm font-bold text-dark-400 transition-colors hover:text-fizzia-300">
+            <a href="/" className="service-detail-back mb-8 inline-flex items-center gap-2 text-sm font-bold text-[#526155] transition-colors hover:text-fizzia-600">
               <ArrowRight className="size-4 rotate-180" />
               Volver al inicio
             </a>
 
-            <h1 className="mt-3 max-w-3xl text-4xl font-black leading-tight text-white md:text-6xl">
+            <h1 className="service-detail-title mt-3 max-w-3xl text-3xl font-black leading-tight text-[#0b120d] sm:text-4xl md:text-6xl">
               Todo lo que podemos hacer.
             </h1>
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="hide-scrollbar -mx-4 mt-7 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
               {servicePages.map((service) => {
                 const look = serviceLooks[service.slug]
                 const Icon = look?.Icon || LayoutDashboard
@@ -261,7 +261,7 @@ function ServiceContent() {
                   <a
                     key={service.slug}
                     href={`#${service.slug}`}
-                    className="inline-flex items-center gap-2 rounded-full border border-dark-800 bg-white px-3 py-2 text-xs font-black text-dark-200 shadow-sm transition-colors hover:border-fizzia-500/40 hover:bg-dark-900"
+                    className="service-detail-chip inline-flex shrink-0 items-center gap-2 rounded-full border border-[#dce6dd] bg-white px-3 py-2 text-xs font-black text-[#25332a] shadow-sm transition-colors hover:border-fizzia-500/40 hover:bg-[#f1f6f2]"
                   >
                     <Icon className="size-3.5 text-fizzia-500" />
                     {service.name}
@@ -272,55 +272,74 @@ function ServiceContent() {
           </div>
         </section>
 
-        <section className="px-4 pb-20 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-5xl gap-8">
+        <section className="px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
+          <div className="mx-auto grid max-w-5xl gap-4 sm:gap-8">
             {servicePages.map((service, index) => (
               (() => {
                 return (
                   <article
                     id={service.slug}
                     key={service.slug}
-                    className="scroll-mt-28 bg-white/60 py-8"
+                    className="service-detail-card scroll-mt-24 rounded-2xl border border-[#e7eee8] bg-white/72 px-4 py-5 shadow-[0_24px_70px_-56px_rgba(8,30,15,0.45)] sm:scroll-mt-28 sm:rounded-3xl sm:px-6 sm:py-8"
                   >
-                    <div className="relative mb-10 flex items-center justify-center">
-                      <span className="h-px w-full bg-dark-800" />
-                      <span className="absolute bg-dark-950 px-6 text-5xl font-black leading-none tracking-tight text-fizzia-500 md:text-6xl">
+                    <div className="relative mb-10 hidden items-center justify-center sm:flex">
+                      <span className="service-detail-line h-px w-full bg-[#dce6dd]" />
+                      <span className="service-detail-number absolute bg-white px-6 text-5xl font-black leading-none tracking-tight text-fizzia-500 md:text-6xl">
                         0{index + 1}
                       </span>
                     </div>
 
                     <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-10">
-                      <div className={`${index % 2 ? 'md:order-2' : ''}`}>
+                      <div className={`hidden md:block ${index % 2 ? 'md:order-2' : ''}`}>
                         <ServiceVisual service={service} />
                       </div>
 
                       <div className={`${index % 2 ? 'md:order-1' : ''}`}>
-                        <h2 className="text-3xl font-black text-white md:text-4xl">{service.name}</h2>
-                        <p className="mt-4 max-w-xl text-sm leading-relaxed text-dark-300 md:text-base">
-                          {service.text}
-                        </p>
-
-                        <div className="mt-6 flex flex-wrap gap-3">
-                          <span className="inline-flex items-center gap-2 rounded-full border border-dark-800 bg-white px-3 py-1.5 text-xs font-bold text-dark-300">
-                            <Clock className="size-4 text-fizzia-500" />
-                            {service.time}
+                        <div className="mb-3 flex items-center gap-3 sm:hidden">
+                          <span className="rounded-lg bg-fizzia-500 px-2.5 py-1 text-sm font-black text-[#f8fff9]">
+                            0{index + 1}
                           </span>
-                          <span className="inline-flex items-center gap-2 rounded-full border border-dark-800 bg-white px-3 py-1.5 text-xs font-bold text-dark-300">
-                            <DollarSign className="size-4 text-fizzia-500" />
-                            {service.price}
-                          </span>
+                          <span className="h-px flex-1 bg-[#dce6dd]" />
                         </div>
-                        <p className="mt-2 text-[11px] font-medium text-dark-400">
-                          Precio y tiempo referenciales. Pueden variar segun alcance y funciones.
-                        </p>
-
-                        <div className="mt-7 flex flex-wrap gap-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <h2 className="service-detail-heading min-w-0 text-2xl font-black text-[#0b120d] sm:text-3xl md:text-4xl">{service.name}</h2>
                           {service.canTry && (
                             <a
                               href={DEMO_URL}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 rounded-xl bg-fizzia-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-fizzia-400"
+                              className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-fizzia-500 text-[#f8fff9] transition-colors hover:bg-fizzia-400 sm:hidden"
+                              aria-label={`Probar ${service.name}`}
+                            >
+                              <Play className="size-4" />
+                            </a>
+                          )}
+                        </div>
+                        <p className="service-detail-copy mt-4 max-w-xl text-sm leading-relaxed text-[#526155] md:text-base">
+                          {service.text}
+                        </p>
+
+                        <div className="mt-6 hidden flex-wrap gap-3 sm:flex">
+                          <span className="service-detail-meta inline-flex items-center gap-2 rounded-full border border-[#dce6dd] bg-white px-3 py-1.5 text-xs font-bold text-[#526155]">
+                            <Clock className="size-4 text-fizzia-500" />
+                            {service.time}
+                          </span>
+                          <span className="service-detail-meta inline-flex items-center gap-2 rounded-full border border-[#dce6dd] bg-white px-3 py-1.5 text-xs font-bold text-[#526155]">
+                            <DollarSign className="size-4 text-fizzia-500" />
+                            {service.price}
+                          </span>
+                        </div>
+                        <p className="service-detail-note mt-2 hidden text-[11px] font-medium text-[#718071] sm:block">
+                          Precio y tiempo referenciales. Pueden variar segun alcance y funciones.
+                        </p>
+
+                        <div className="mt-6 flex flex-wrap gap-3 sm:mt-7">
+                          {service.canTry && (
+                            <a
+                              href={DEMO_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hidden items-center gap-2 rounded-xl bg-fizzia-500 px-5 py-3 text-sm font-black text-[#f8fff9] transition-colors hover:bg-fizzia-400 sm:inline-flex"
                             >
                               <Play className="size-4" />
                               Probar
@@ -328,7 +347,7 @@ function ServiceContent() {
                           )}
                           <a
                             href="/register"
-                            className="inline-flex items-center gap-2 rounded-xl border border-dark-700 bg-white px-5 py-3 text-sm font-black text-dark-100 transition-colors hover:border-fizzia-500/40 hover:bg-dark-900"
+                            className="service-detail-secondary inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#cbd8cd] bg-white px-5 py-3 text-sm font-black text-[#0b120d] transition-colors hover:border-fizzia-500/40 hover:bg-[#f1f6f2] sm:w-auto"
                           >
                             Quiero uno similar
                           </a>
@@ -342,12 +361,12 @@ function ServiceContent() {
 
             <div className="relative py-10 text-center">
               <div className="relative mb-8 flex items-center justify-center">
-                <span className="h-px w-full bg-dark-800" />
-                <span className="absolute bg-dark-950 px-6 text-5xl font-black leading-none tracking-tight text-fizzia-500 md:text-6xl">
+                <span className="service-detail-line h-px w-full bg-[#dce6dd]" />
+                <span className="service-detail-page-number absolute bg-[#f8fbf8] px-6 text-5xl font-black leading-none tracking-tight text-fizzia-500 md:text-6xl">
                   10+
                 </span>
               </div>
-              <p className="text-sm font-black uppercase tracking-[0.18em] text-dark-400">
+              <p className="service-detail-note text-sm font-black uppercase tracking-[0.18em] text-[#526155]">
                 Y muchos tipos de proyectos mas
               </p>
             </div>

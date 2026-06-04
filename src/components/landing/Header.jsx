@@ -123,7 +123,7 @@ export function Header() {
         setOpenDropdown(null)
         handleNavClick(e, item.id)
       }}
-      className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:text-[#0b120d]"
+      className="landing-header-link cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:text-[#0b120d]"
     >
       {item.label}
     </a>
@@ -151,7 +151,7 @@ export function Header() {
   return (
     <nav
       ref={navRef}
-      className="fixed top-0 left-0 right-0 z-50 border-b border-[#e7eee8] bg-white/86 backdrop-blur-md"
+      className="landing-header fixed top-0 left-0 right-0 z-50 border-b border-[#e7eee8] bg-white/86 backdrop-blur-md"
       aria-label="Navegacion principal"
     >
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -170,19 +170,19 @@ export function Header() {
                         <button
                           type="button"
                           onClick={() => toggleDropdown('services')}
-                          className="flex cursor-pointer items-center rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:text-[#0b120d]"
+                          className="landing-header-link flex cursor-pointer items-center rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:text-[#0b120d]"
                         >
                           {item.label}
                           <ChevronDown className={`ml-1 h-4 w-4 transition-transform ${openDropdown === 'services' ? 'rotate-180' : ''}`} />
                         </button>
                         {openDropdown === 'services' && (
-                          <ul className="absolute left-0 top-full z-20 mt-2 w-64 rounded-xl border border-[#dce6dd] bg-white p-2 shadow-xl shadow-black/10">
+                          <ul className="landing-header-surface absolute left-0 top-full z-20 mt-2 w-64 rounded-xl border border-[#dce6dd] bg-white p-2 shadow-xl shadow-black/10">
                             {services.map((service) => (
                               <li key={service.name}>
                                 <a
                                   href={getServiceHref(service)}
                                   onClick={(event) => navigateToService(event, service)}
-                                  className="block cursor-pointer rounded-lg px-3 py-2 text-sm text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
+                                  className="landing-header-link block cursor-pointer rounded-lg px-3 py-2 text-sm text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
                                 >
                                   {service.name}
                                 </a>
@@ -206,7 +206,7 @@ export function Header() {
                 key={item.id}
                 href={isHome ? `#${item.id}` : `/#${item.id}`}
                 onClick={(e) => handleNavClick(e, item.id)}
-                className="relative cursor-pointer text-sm font-medium text-[#526155] transition-colors hover:text-[#0b120d] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#32a852]"
+                className="landing-header-link relative cursor-pointer text-sm font-medium text-[#526155] transition-colors hover:text-[#0b120d] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#32a852]"
               >
                 {item.label}
               </a>
@@ -218,20 +218,20 @@ export function Header() {
             <div className="relative">
               <button
                 onClick={() => setLangOpen(!langOpen)}
-                className="flex cursor-pointer items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-[#526155] transition-colors hover:text-[#0b120d] sm:text-sm"
+                className="landing-header-link flex cursor-pointer items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-[#526155] transition-colors hover:text-[#0b120d] sm:text-sm"
               >
                 {lang.toUpperCase()}
                 <ChevronDown className={`h-4 w-4 transition-transform ${langOpen ? 'rotate-180' : ''}`} />
               </button>
               {langOpen && (
-                <div className="absolute top-full right-0 z-50 mt-2 w-32 overflow-hidden rounded-xl border border-[#dce6dd] bg-white p-1 shadow-xl shadow-black/10">
+                <div className="landing-header-surface absolute top-full right-0 z-50 mt-2 w-32 overflow-hidden rounded-xl border border-[#dce6dd] bg-white p-1 shadow-xl shadow-black/10">
                   {['ES', 'EN'].map(code => {
                     const langKey = code.toLowerCase()
                     return (
                       <button
                         key={code}
                         onClick={() => changeLanguage(code)}
-                        className={`w-full cursor-pointer px-4 py-2 text-left text-sm transition-colors hover:bg-fizzia-500/10 hover:text-fizzia-600 ${lang === langKey ? 'font-bold text-fizzia-600' : 'text-[#526155]'}`}
+                        className={`landing-header-link w-full cursor-pointer px-4 py-2 text-left text-sm transition-colors hover:bg-fizzia-500/10 hover:text-fizzia-600 ${lang === langKey ? 'font-bold text-fizzia-600' : 'text-[#526155]'}`}
                       >
                         {t(`header.langNames.${code}`)}
                       </button>
@@ -242,13 +242,13 @@ export function Header() {
             </div>
             <a
               href="/login"
-              className="hidden cursor-pointer rounded-xl px-4 py-2 text-sm font-medium text-[#0b120d] transition-colors hover:text-[#526155] lg:inline-flex"
+              className="landing-header-signin hidden cursor-pointer rounded-xl px-4 py-2 text-sm font-medium text-[#0b120d] transition-colors hover:text-[#526155] lg:inline-flex"
             >
               {t('header.signIn')}
             </a>
             <a
               href="/register"
-              className="hidden cursor-pointer items-center gap-2 rounded-xl bg-[#0b120d] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#25332a] lg:inline-flex"
+              className="landing-header-cta hidden cursor-pointer items-center gap-2 rounded-xl bg-[#0b120d] px-5 py-2.5 text-sm font-medium text-[#f8fff9] transition-colors hover:bg-[#25332a] lg:inline-flex"
             >
               {t('header.createAccount')}
               <ArrowRight className="h-4 w-4" />
@@ -257,7 +257,7 @@ export function Header() {
               ref={triggerRef}
               type="button"
               onClick={() => setMenuOpen((open) => !open)}
-              className="inline-flex cursor-pointer rounded-xl p-2 text-[#0b120d] transition-colors hover:bg-[#f1f6f2] lg:hidden"
+              className="landing-header-menu-trigger inline-flex cursor-pointer rounded-xl p-2 text-[#0b120d] transition-colors hover:bg-[#f1f6f2] lg:hidden"
               aria-expanded={menuOpen}
               aria-controls="mobile-menu"
               aria-haspopup="menu"
@@ -271,7 +271,7 @@ export function Header() {
         <div
           id="mobile-menu"
           ref={menuRef}
-          className="absolute right-4 top-full mt-2 w-64 rounded-xl border border-[#dce6dd] bg-white/95 p-2 shadow-xl shadow-black/10 backdrop-blur-md lg:hidden"
+          className="landing-header-surface absolute right-4 top-full mt-2 w-64 rounded-xl border border-[#dce6dd] bg-white/95 p-2 shadow-xl shadow-black/10 backdrop-blur-md lg:hidden"
           role="menu"
           aria-label="Menu movil"
         >
@@ -282,19 +282,19 @@ export function Header() {
                   <button
                     type="button"
                     onClick={() => toggleDropdown('mobile-services')}
-                    className="flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
+                    className="landing-header-link flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
                   >
                     {item.label}
                     <ChevronDown className={`h-4 w-4 transition-transform ${openDropdown === 'mobile-services' ? 'rotate-180' : ''}`} />
                   </button>
                   {openDropdown === 'mobile-services' && (
-                    <ul className="ml-4 mt-1 border-l border-[#dce6dd] pl-3">
+                    <ul className="landing-header-divider ml-4 mt-1 border-l border-[#dce6dd] pl-3">
                       {services.map((service) => (
                         <li key={service.name}>
                           <a
                             href={getServiceHref(service)}
                             onClick={(event) => navigateToService(event, service)}
-                            className="block cursor-pointer rounded-lg px-3 py-1.5 text-sm text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
+                            className="landing-header-link block cursor-pointer rounded-lg px-3 py-1.5 text-sm text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
                           >
                             {service.name}
                           </a>
@@ -308,23 +308,23 @@ export function Header() {
                   key={item.id}
                   href={isHome ? `#${item.id}` : `/#${item.id}`}
                   onClick={(event) => handleMobileNavClick(event, item.id)}
-                  className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
+                  className="landing-header-link cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-[#526155] transition-colors hover:bg-[#f1f6f2] hover:text-[#0b120d]"
                   role="menuitem"
                 >
                   {item.label}
                 </a>
               )
             ))}
-            <div className="mt-2 space-y-2 border-t border-[#dce6dd] pt-2">
+            <div className="landing-header-divider mt-2 space-y-2 border-t border-[#dce6dd] pt-2">
               <a
                 href="/login"
-                className="block cursor-pointer rounded-lg px-3 py-2 text-center text-sm font-medium text-[#0b120d] transition-colors hover:bg-[#f1f6f2]"
+                className="landing-header-signin block cursor-pointer rounded-lg px-3 py-2 text-center text-sm font-medium text-[#0b120d] transition-colors hover:bg-[#f1f6f2]"
               >
                 {t('header.signIn')}
               </a>
               <a
                 href="/register"
-                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0b120d] px-3 py-2.5 text-sm font-medium text-white"
+                className="landing-header-cta flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0b120d] px-3 py-2.5 text-sm font-medium text-[#f8fff9]"
               >
                 {t('header.createAccount')}
                 <ArrowRight className="h-4 w-4" />

@@ -30,6 +30,12 @@
     <meta name="theme-color" content="#050806" />
     <link rel="canonical" href="https://fizzia.vercel.app" />
     <style>
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+      }
+
       #root {
         min-height: 100vh;
       }
@@ -135,6 +141,11 @@
   </head>
   <body>
     <div id="root">
+      <main class="initial-loader" aria-label="Cargando Fizzia">
+        <div class="initial-loader__mark" aria-hidden="true"></div>
+      </main>
+    </div>
+    <noscript>
       <main class="seo-fallback">
         <section class="seo-fallback__content" aria-labelledby="seo-fallback-title">
           <p>Software a medida para negocios en Ecuador</p>
@@ -157,7 +168,7 @@
           </nav>
         </section>
       </main>
-    </div>
+    </noscript>
     <script>
       (function () {
         var appRoutes = ['/admin', '/cliente', '/dev', '/simulador'];

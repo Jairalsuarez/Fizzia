@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChartNoAxesCombined, Fingerprint, Layers3, ShieldCheck } from 'lucide-react'
+import { ArrowRight, ChartNoAxesCombined, Fingerprint, Layers3, ShieldCheck, ShoppingCart } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '../ui/Card'
 import { useLanguage } from '../../contexts/LanguageContext'
@@ -143,7 +143,7 @@ export function ServicesSection() {
       type: 'stack',
     },
     {
-      icon: ShieldCheck,
+      icon: ShoppingCart,
       title: services[2]?.name,
       text: services[2]?.description,
       type: 'team',
@@ -171,7 +171,51 @@ export function ServicesSection() {
             </div>
 
             <motion.div
-              className="relative z-10 mb-12 grid grid-cols-6 gap-3"
+              className="relative z-10 grid gap-3 md:hidden"
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: '-80px' }}
+            >
+              {featureCards.map((feature, index) => {
+                const LucideIcon = feature.icon
+                return (
+                  <motion.a
+                    key={feature.title}
+                    href={getServiceHref(feature.title)}
+                    className="landing-service-mobile-card group flex min-h-24 items-center gap-4 rounded-2xl border border-[#dce6dd] bg-white px-4 py-4 text-[#0b120d] shadow-[0_18px_42px_-34px_rgba(8,30,15,0.45)] transition-colors hover:border-fizzia-500/35"
+                    variants={{
+                      hidden: { opacity: 0, y: 18, scale: 0.98 },
+                      show: {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        transition: { duration: 0.38, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] },
+                      },
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-fizzia-500/12 text-fizzia-500">
+                      {feature.metric ? (
+                        <span className="text-sm font-black">100</span>
+                      ) : (
+                        <LucideIcon className="size-5" strokeWidth={1.7} />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-base font-black leading-tight">{feature.title}</h3>
+                        <span className="landing-service-mobile-index mt-0.5 text-xs font-black text-fizzia-500">0{index + 1}</span>
+                      </div>
+                      <p className="landing-service-mobile-copy mt-1 line-clamp-2 text-sm leading-snug text-[#526155]">{feature.text}</p>
+                    </div>
+                    <ArrowRight className="size-4 shrink-0 text-fizzia-500 transition-transform group-hover:translate-x-0.5" />
+                  </motion.a>
+                )
+              })}
+            </motion.div>
+
+            <motion.div
+              className="relative z-10 mb-12 hidden grid-cols-6 gap-3 md:grid"
               initial="hidden"
               whileInView="show"
               viewport={{ once: true, margin: '-80px' }}

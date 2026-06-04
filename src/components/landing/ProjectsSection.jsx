@@ -21,24 +21,24 @@ export function ProjectsSection() {
     <section id="proyectos" className="relative overflow-hidden bg-dark-950 py-16 md:py-20">
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-center">
-          <div>
-            <h2 className="max-w-xl text-4xl font-black leading-tight text-white md:text-5xl">
+          <div className="mx-auto max-w-xl text-center lg:mx-0 lg:text-left">
+            <h2 className="text-4xl font-black leading-tight text-white md:text-5xl">
               Prueba nuestra demostracion
             </h2>
-            <p className="mt-4 max-w-md text-base font-medium leading-relaxed text-dark-300">
+            <p className="mx-auto mt-4 max-w-md text-base font-medium leading-relaxed text-dark-300 lg:mx-0">
               Explora una demo funcional del tipo de sistema que podemos construir para tu negocio.
             </p>
             <button
               type="button"
               onClick={handleDemoClick}
-              className="mt-7 inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl border border-fizzia-500/30 bg-fizzia-500 px-8 py-5 text-lg font-black text-white shadow-lg shadow-fizzia-500/25 transition-all duration-200 hover:bg-fizzia-400 hover:shadow-fizzia-500/40 active:scale-[0.98] sm:w-fit"
+              className="mx-auto mt-7 inline-flex w-full max-w-xs cursor-pointer items-center justify-center gap-3 rounded-2xl border border-fizzia-500/30 bg-fizzia-500 px-8 py-5 text-lg font-black text-white shadow-lg shadow-fizzia-500/25 transition-all duration-200 hover:bg-fizzia-400 hover:shadow-fizzia-500/40 active:scale-[0.98] sm:w-fit lg:mx-0"
             >
               Ver demostracion
               <Icon name="arrow_forward" size={22} />
             </button>
           </div>
 
-          <div className="overflow-hidden rounded-[1.35rem] border border-dark-800 bg-dark-900 shadow-2xl shadow-black/25">
+          <div className="hidden overflow-hidden rounded-[1.35rem] border border-dark-800 bg-dark-900 shadow-2xl shadow-black/25 md:block">
             <div className="flex items-center justify-between border-b border-dark-800 bg-dark-950/70 px-4 py-3">
               <div className="flex gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-red-400" />

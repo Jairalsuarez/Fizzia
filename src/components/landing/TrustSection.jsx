@@ -5,10 +5,13 @@ import {
   TooltipTrigger,
 } from '@radix-ui/react-tooltip'
 import { ArrowDown, ArrowUp } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { useLanguage } from '../../contexts/LanguageContext'
 
 export function TrustSection() {
   const { t } = useLanguage()
+  const [selectedTech, setSelectedTech] = useState(null)
   const test = t('trust.testimonials')[0]
   const copy = t('trust.showcase')
   const stack = [
@@ -16,6 +19,8 @@ export function TrustSection() {
       name: 'React',
       value: 'SPA',
       label: copy.stack.react,
+      concept: 'React es la tecnologia con la que construimos la interfaz que ve y toca el usuario.',
+      usage: 'La usamos para que cada pantalla se sienta rapida, ordenada y facil de actualizar sin recargar toda la pagina.',
       trend: true,
       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg',
     },
@@ -23,6 +28,8 @@ export function TrustSection() {
       name: 'Supabase',
       value: 'DB',
       label: copy.stack.supabase,
+      concept: 'Supabase es la base de datos y el sistema que guarda usuarios, ventas, proyectos y archivos.',
+      usage: 'La usamos para que la informacion del negocio quede segura, sincronizada y disponible cuando el cliente entra al sistema.',
       trend: true,
       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/supabase/supabase-original.svg',
     },
@@ -30,6 +37,8 @@ export function TrustSection() {
       name: 'Vercel',
       value: 'Edge',
       label: copy.stack.vercel,
+      concept: 'Vercel es la plataforma donde publicamos la aplicacion para que pueda abrirse desde internet.',
+      usage: 'La usamos para entregar sitios rapidos, con despliegues simples y enlaces listos para compartir con clientes o equipos.',
       trend: true,
       logo: 'https://assets.vercel.com/image/upload/front/favicon/vercel/180x180.png',
     },
@@ -37,10 +46,17 @@ export function TrustSection() {
       name: 'Tailwind',
       value: 'UI',
       label: copy.stack.tailwind,
+      concept: 'Tailwind es la herramienta que nos ayuda a construir el diseno visual con reglas consistentes.',
+      usage: 'La usamos para mantener botones, tarjetas, espacios, colores y versiones moviles con el mismo estilo en todo el proyecto.',
       trend: false,
       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg',
     },
   ]
+  const activeTech = selectedTech || stack[0]
+
+  const toggleTech = (stat) => {
+    setSelectedTech((current) => current?.name === stat.name ? null : stat)
+  }
 
   return (
     <section className="relative overflow-hidden bg-dark-950 px-4 py-16 md:px-8 md:py-24 lg:px-16">
@@ -109,9 +125,57 @@ export function TrustSection() {
             </blockquote>
           </div>
 
-          <div className="mx-auto mt-10 grid w-full grid-cols-2 gap-4 rounded-lg border border-dark-800 bg-dark-900 px-4 py-6 sm:flex sm:px-8">
+          <motion.div
+            className="hide-scrollbar -mx-4 mt-9 flex gap-3 overflow-x-auto px-4 pb-1 md:hidden"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-60px' }}
+          >
             {stack.map((stat, index) => (
-              <div key={stat.name} className="relative flex flex-1 gap-4 sm:pl-8">
+              <motion.button
+                key={stat.name}
+                type="button"
+                onClick={() => toggleTech(stat)}
+                className={`group flex min-w-[9.5rem] snap-start items-center gap-3 rounded-2xl border bg-dark-900 px-3.5 py-3 text-left shadow-[0_18px_42px_-34px_rgba(0,0,0,0.85)] transition-colors active:border-fizzia-500/45 ${
+                  selectedTech?.name === stat.name ? 'border-fizzia-500/50' : 'border-dark-800'
+                }`}
+                aria-expanded={selectedTech?.name === stat.name}
+                variants={{
+                  hidden: { opacity: 0, y: 18, scale: 0.96 },
+                  show: {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    transition: { duration: 0.38, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] },
+                  },
+                }}
+                whileTap={{ scale: 0.96, y: 1 }}
+              >
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-dark-950 ring-1 ring-dark-800">
+                  <img src={stat.logo} alt="" className="h-6 w-6 object-contain grayscale transition duration-200 group-active:grayscale-0" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-black text-dark-50">{stat.name}</span>
+                  <span className="mt-0.5 flex items-center gap-1.5 text-xs font-bold text-dark-400 group-active:text-fizzia-300">
+                    {stat.trend ? <ArrowUp className="size-3.5 text-fizzia-500" /> : <ArrowDown className="size-3.5 text-dark-500" />}
+                    {stat.value}
+                  </span>
+                </span>
+              </motion.button>
+            ))}
+          </motion.div>
+
+          <div className="mx-auto mt-10 hidden w-full gap-4 rounded-lg border border-dark-800 bg-dark-900 px-4 py-6 md:flex md:px-8">
+            {stack.map((stat, index) => (
+              <button
+                key={stat.name}
+                type="button"
+                onClick={() => toggleTech(stat)}
+                className={`relative flex flex-1 cursor-pointer gap-4 rounded-xl text-left transition-colors sm:pl-8 ${
+                  selectedTech?.name === stat.name ? 'bg-dark-950/70 ring-1 ring-fizzia-500/35' : 'hover:bg-dark-950/40'
+                }`}
+                aria-expanded={selectedTech?.name === stat.name}
+              >
                 {index !== 0 && (
                   <div className="absolute left-0 hidden h-10 border-l border-dashed border-dark-700 sm:block" />
                 )}
@@ -136,9 +200,34 @@ export function TrustSection() {
                     <p className="text-center text-xs text-dark-300 md:text-sm">{stat.label}</p>
                   </div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
+
+          {selectedTech && (
+            <motion.div
+              className="mx-auto mt-4 max-w-3xl rounded-2xl border border-fizzia-500/25 bg-dark-900 px-5 py-4 text-left shadow-2xl shadow-black/20"
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              role="status"
+            >
+              <div className="flex items-start gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-dark-950 ring-1 ring-dark-800">
+                  <img src={activeTech.logo} alt="" className="h-6 w-6 object-contain" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-black text-dark-50">{activeTech.name}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-dark-300">
+                    {activeTech.concept}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-dark-300">
+                    {activeTech.usage}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </TooltipProvider>
       </div>
     </section>

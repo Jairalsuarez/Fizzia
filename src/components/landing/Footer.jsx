@@ -12,13 +12,20 @@ export function Footer() {
       <div className="absolute inset-0">
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-fizzia-500/20 to-transparent" />
         <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-fizzia-500/3 rounded-full blur-3xl" />
+        <BrandLogo
+          mode="mark"
+          decorative
+          markClassName="h-56 sm:h-72 lg:h-80"
+          className="landing-footer-mark-bg absolute -bottom-12 -left-10 opacity-[0.055]"
+        />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-7">
           <div>
-            <a href="#inicio" className="inline-flex items-center transition-opacity hover:opacity-80" aria-label="Fizzia">
-              <BrandLogo markClassName="h-12" themeClassName="h-14" />
+            <a href="#inicio" className="inline-flex flex-col items-start gap-3 transition-opacity hover:opacity-80" aria-label="Fizzia">
+              <BrandLogo mode="mark" markClassName="h-20 sm:h-24" />
+              <BrandLogo mode="theme" themeClassName="h-12" decorative />
             </a>
             <p className="mt-4 text-dark-300 text-sm leading-relaxed">
               {t('footer.description')}

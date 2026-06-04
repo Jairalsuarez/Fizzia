@@ -385,6 +385,164 @@ html:not(.dark) .app-shell :where(button, a) {
   transition-timing-function: var(--landing-ease-out);
 }
 
+.landing-header,
+.landing-header-surface,
+.landing-header-link,
+.landing-header-signin,
+.landing-header-menu-trigger,
+.landing-header-divider,
+.landing-service-mobile-card,
+.landing-service-mobile-copy,
+.landing-service-mobile-index,
+.service-detail-page,
+.service-detail-card,
+.service-detail-chip,
+.service-detail-meta,
+.service-detail-secondary,
+.service-detail-title,
+.service-detail-heading,
+.service-detail-copy,
+.service-detail-note,
+.service-detail-line,
+.service-detail-number,
+.service-detail-page-number,
+.landing-footer-mark-bg {
+  transition-property: background-color, border-color, color, opacity, box-shadow;
+  transition-duration: 180ms;
+  transition-timing-function: var(--landing-ease-out);
+}
+
+html.dark .landing-header {
+  border-color: rgba(42, 42, 42, 0.92);
+  background: rgba(5, 6, 5, 0.88);
+}
+
+html.dark .landing-header-surface {
+  border-color: rgba(42, 42, 42, 0.92);
+  background: rgba(17, 17, 17, 0.96);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+}
+
+html.dark .landing-header-link {
+  color: #a3a3a3;
+}
+
+html.dark .landing-header-link:hover,
+html.dark .landing-header-signin,
+html.dark .landing-header-menu-trigger {
+  color: #fafafa;
+}
+
+html.dark .landing-header-link:hover,
+html.dark .landing-header-menu-trigger:hover,
+html.dark .landing-header-signin:hover {
+  background-color: rgba(42, 42, 42, 0.72);
+}
+
+html.dark .landing-header-divider {
+  border-color: rgba(42, 42, 42, 0.92);
+}
+
+html.dark .landing-header-cta {
+  background-color: #32a852;
+  color: #f8fff9;
+}
+
+html.dark .landing-header-cta:hover {
+  background-color: #44a64a;
+}
+
+html.dark .landing-service-mobile-card {
+  border-color: rgba(42, 42, 42, 0.92);
+  background: #111111;
+  color: #fafafa;
+  box-shadow: 0 18px 42px -34px rgba(0, 0, 0, 0.72);
+}
+
+html.dark .landing-service-mobile-card:hover {
+  border-color: rgba(50, 168, 82, 0.42);
+}
+
+html.dark .landing-service-mobile-copy {
+  color: #a3a3a3;
+}
+
+html.dark .landing-service-mobile-index {
+  color: #6ee775;
+}
+
+html.dark .service-detail-page {
+  background: #050605;
+  color: #fafafa;
+}
+
+html.dark .service-detail-back,
+html.dark .service-detail-note {
+  color: #737373;
+}
+
+html.dark .service-detail-back:hover {
+  color: #6ee775;
+}
+
+html.dark .service-detail-title,
+html.dark .service-detail-heading {
+  color: #fafafa;
+}
+
+html.dark .service-detail-copy,
+html.dark .service-detail-meta,
+html.dark .service-detail-chip {
+  color: #cccccc;
+}
+
+html.dark .service-detail-card {
+  border-color: rgba(42, 42, 42, 0.92);
+  background: rgba(17, 17, 17, 0.36);
+  box-shadow: 0 24px 70px -50px rgba(0, 0, 0, 0.7);
+}
+
+html.dark .service-detail-chip {
+  border-color: rgba(42, 42, 42, 0.92);
+  background: #111111;
+}
+
+html.dark .service-detail-chip:hover {
+  background: #1a1a1a;
+}
+
+html.dark .service-detail-line {
+  background: #2a2a2a;
+}
+
+html.dark .service-detail-number {
+  background: #111111;
+}
+
+html.dark .service-detail-page-number {
+  background: #050605;
+}
+
+html.dark .service-detail-meta {
+  border-color: rgba(42, 42, 42, 0.92);
+  background: #050605;
+}
+
+html.dark .service-detail-secondary {
+  border-color: #2a2a2a;
+  background: #050605;
+  color: #e5e5e5;
+}
+
+html.dark .service-detail-secondary:hover {
+  border-color: rgba(50, 168, 82, 0.42);
+  background: #1a1a1a;
+}
+
+html.dark .landing-footer-mark-bg {
+  opacity: 0.075;
+}
+
 .auth-page :where(a, button, input, textarea, select),
 .app-shell :where(a, button, input, textarea, select) {
   transition-timing-function: var(--landing-ease-out);
