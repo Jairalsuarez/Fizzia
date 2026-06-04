@@ -290,11 +290,11 @@ function ServiceContent() {
                     key={service.slug}
                     className="scroll-mt-28 bg-white/60 py-8"
                   >
-                    <div className="mb-8 flex items-center gap-5">
-                      <span className="shrink-0 text-sm font-black tracking-[0.24em] text-fizzia-500">
+                    <div className="relative mb-10 flex items-center justify-center">
+                      <span className="h-px w-full bg-dark-800" />
+                      <span className="absolute bg-dark-950 px-6 text-5xl font-black leading-none tracking-tight text-fizzia-500 md:text-6xl">
                         0{index + 1}
                       </span>
-                      <span className="h-px flex-1 bg-dark-800" />
                     </div>
 
                     <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-10">
@@ -351,6 +351,18 @@ function ServiceContent() {
                 )
               })()
             ))}
+
+            <div className="relative py-10 text-center">
+              <div className="relative mb-8 flex items-center justify-center">
+                <span className="h-px w-full bg-dark-800" />
+                <span className="absolute bg-dark-950 px-6 text-5xl font-black leading-none tracking-tight text-fizzia-500 md:text-6xl">
+                  10+
+                </span>
+              </div>
+              <p className="text-sm font-black uppercase tracking-[0.18em] text-dark-400">
+                Y muchos tipos de proyectos mas
+              </p>
+            </div>
           </div>
         </section>
       </main>
