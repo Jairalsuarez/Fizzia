@@ -253,10 +253,6 @@ function ServiceContent() {
             <h1 className="mt-3 max-w-3xl text-4xl font-black leading-tight text-white md:text-6xl">
               Todo lo que podemos hacer.
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-dark-300">
-              Elige el tipo de servicio y mira una referencia rapida de tiempo, costo y enfoque.
-            </p>
-
             <div className="mt-8 flex flex-wrap gap-2">
               {servicePages.map((service) => {
                 const look = serviceLooks[service.slug]
