@@ -11,37 +11,22 @@ const serviceLooks = {
   'sistemas-web': {
     Icon: LayoutDashboard,
     label: 'Paneles y operaciones',
-    accent: '#32a852',
-    tint: 'rgba(50, 168, 82, 0.12)',
-    border: 'rgba(50, 168, 82, 0.32)',
   },
   'aplicaciones-moviles': {
     Icon: Smartphone,
     label: 'Experiencia movil',
-    accent: '#2563eb',
-    tint: 'rgba(37, 99, 235, 0.11)',
-    border: 'rgba(37, 99, 235, 0.28)',
   },
   'tiendas-online': {
     Icon: ShoppingCart,
     label: 'Catalogo y carrito',
-    accent: '#d97706',
-    tint: 'rgba(217, 119, 6, 0.12)',
-    border: 'rgba(217, 119, 6, 0.3)',
   },
   'gestion-inventarios': {
     Icon: Boxes,
     label: 'Productos y costos',
-    accent: '#0f766e',
-    tint: 'rgba(15, 118, 110, 0.12)',
-    border: 'rgba(15, 118, 110, 0.3)',
   },
   'sistemas-ventas': {
     Icon: ReceiptText,
     label: 'Caja y movimientos',
-    accent: '#7c3aed',
-    tint: 'rgba(124, 58, 237, 0.11)',
-    border: 'rgba(124, 58, 237, 0.28)',
   },
 }
 
@@ -281,10 +266,9 @@ function ServiceContent() {
                   <a
                     key={service.slug}
                     href={`#${service.slug}`}
-                    className="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-2 text-xs font-black text-dark-200 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
-                    style={{ borderColor: look?.border, boxShadow: `0 10px 28px ${look?.tint}` }}
+                    className="inline-flex items-center gap-2 rounded-full border border-dark-800 bg-white px-3 py-2 text-xs font-black text-dark-200 shadow-sm transition-colors hover:border-fizzia-500/40 hover:bg-dark-900"
                   >
-                    <Icon className="size-3.5" style={{ color: look?.accent }} />
+                    <Icon className="size-3.5 text-fizzia-500" />
                     {service.name}
                   </a>
                 )
@@ -304,37 +288,22 @@ function ServiceContent() {
                   <article
                     id={service.slug}
                     key={service.slug}
-                    className="relative grid scroll-mt-28 overflow-hidden rounded-[2rem] border bg-white p-4 shadow-[0_18px_60px_rgba(11,18,13,0.08)] md:grid-cols-[0.9fr_1.1fr] md:items-center md:p-6"
-                    style={{
-                      borderColor: look?.border,
-                      background: `linear-gradient(135deg, ${look?.tint} 0%, rgba(255,255,255,0.98) 34%, rgba(255,255,255,0.94) 100%)`,
-                    }}
+                    className="grid scroll-mt-28 gap-6 border-t border-dark-800 bg-white/60 py-10 md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-10"
                   >
-                    <div
-                      className="absolute left-0 top-0 h-full w-1.5"
-                      style={{ backgroundColor: look?.accent }}
-                    />
-
-                    <div className={`relative ${index % 2 ? 'md:order-2' : ''}`}>
-                      <div
-                        className="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-[0.12em]"
-                        style={{ backgroundColor: look?.tint, color: look?.accent }}
-                      >
+                    <div className={`${index % 2 ? 'md:order-2' : ''}`}>
+                      <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-dark-400">
                         <Icon className="size-3.5" />
                         {look?.label}
                       </div>
                       <ServiceVisual service={service} />
                     </div>
 
-                    <div className={`relative p-2 md:p-6 ${index % 2 ? 'md:order-1' : ''}`}>
-                      <div className="mb-5 flex items-center gap-3">
-                        <span
-                          className="inline-flex size-11 items-center justify-center rounded-2xl text-sm font-black text-white shadow-lg"
-                          style={{ backgroundColor: look?.accent, boxShadow: `0 14px 26px ${look?.tint}` }}
-                        >
+                    <div className={`${index % 2 ? 'md:order-1' : ''}`}>
+                      <div className="mb-4 flex items-center gap-4">
+                        <span className="text-sm font-black tracking-[0.22em] text-fizzia-500">
                           0{index + 1}
                         </span>
-                        <span className="h-px flex-1" style={{ backgroundColor: look?.border }} />
+                        <span className="h-px flex-1 bg-dark-800" />
                       </div>
                       <h2 className="text-3xl font-black text-white md:text-4xl">{service.name}</h2>
                       <p className="mt-4 max-w-xl text-sm leading-relaxed text-dark-300 md:text-base">
@@ -343,11 +312,11 @@ function ServiceContent() {
 
                       <div className="mt-6 flex flex-wrap gap-3">
                         <span className="inline-flex items-center gap-2 rounded-full border border-dark-800 bg-white px-3 py-1.5 text-xs font-bold text-dark-300">
-                          <Clock className="size-4" style={{ color: look?.accent }} />
+                          <Clock className="size-4 text-fizzia-500" />
                           {service.time}
                         </span>
                         <span className="inline-flex items-center gap-2 rounded-full border border-dark-800 bg-white px-3 py-1.5 text-xs font-bold text-dark-300">
-                          <DollarSign className="size-4" style={{ color: look?.accent }} />
+                          <DollarSign className="size-4 text-fizzia-500" />
                           {service.price}
                         </span>
                       </div>
@@ -361,8 +330,7 @@ function ServiceContent() {
                             href={DEMO_URL}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-black text-white transition-opacity hover:opacity-90"
-                            style={{ backgroundColor: look?.accent }}
+                            className="inline-flex items-center gap-2 rounded-xl bg-fizzia-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-fizzia-400"
                           >
                             <Play className="size-4" />
                             Probar
