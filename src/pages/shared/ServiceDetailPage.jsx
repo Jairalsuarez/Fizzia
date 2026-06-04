@@ -249,7 +249,6 @@ function ServiceContent() {
               Volver al inicio
             </a>
 
-            <p className="text-sm font-black uppercase tracking-[0.2em] text-fizzia-300">Servicios</p>
             <h1 className="mt-3 max-w-3xl text-4xl font-black leading-tight text-white md:text-6xl">
               Todo lo que podemos hacer.
             </h1>
