@@ -288,60 +288,63 @@ function ServiceContent() {
                   <article
                     id={service.slug}
                     key={service.slug}
-                    className="grid scroll-mt-28 gap-6 border-t border-dark-800 bg-white/60 py-10 md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-10"
+                    className="scroll-mt-28 bg-white/60 py-8"
                   >
-                    <div className={`${index % 2 ? 'md:order-2' : ''}`}>
-                      <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-dark-400">
-                        <Icon className="size-3.5" />
-                        {look?.label}
-                      </div>
-                      <ServiceVisual service={service} />
+                    <div className="mb-8 flex items-center gap-5">
+                      <span className="shrink-0 text-sm font-black tracking-[0.24em] text-fizzia-500">
+                        0{index + 1}
+                      </span>
+                      <span className="h-px flex-1 bg-dark-800" />
                     </div>
 
-                    <div className={`${index % 2 ? 'md:order-1' : ''}`}>
-                      <div className="mb-4 flex items-center gap-4">
-                        <span className="text-sm font-black tracking-[0.22em] text-fizzia-500">
-                          0{index + 1}
-                        </span>
-                        <span className="h-px flex-1 bg-dark-800" />
+                    <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-10">
+                      <div className={`${index % 2 ? 'md:order-2' : ''}`}>
+                        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-dark-400">
+                          <Icon className="size-3.5" />
+                          {look?.label}
+                        </div>
+                        <ServiceVisual service={service} />
                       </div>
-                      <h2 className="text-3xl font-black text-white md:text-4xl">{service.name}</h2>
-                      <p className="mt-4 max-w-xl text-sm leading-relaxed text-dark-300 md:text-base">
-                        {service.text}
-                      </p>
 
-                      <div className="mt-6 flex flex-wrap gap-3">
-                        <span className="inline-flex items-center gap-2 rounded-full border border-dark-800 bg-white px-3 py-1.5 text-xs font-bold text-dark-300">
-                          <Clock className="size-4 text-fizzia-500" />
-                          {service.time}
-                        </span>
-                        <span className="inline-flex items-center gap-2 rounded-full border border-dark-800 bg-white px-3 py-1.5 text-xs font-bold text-dark-300">
-                          <DollarSign className="size-4 text-fizzia-500" />
-                          {service.price}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-[11px] font-medium text-dark-400">
-                        Precio y tiempo referenciales. Pueden variar segun alcance y funciones.
-                      </p>
+                      <div className={`${index % 2 ? 'md:order-1' : ''}`}>
+                        <h2 className="text-3xl font-black text-white md:text-4xl">{service.name}</h2>
+                        <p className="mt-4 max-w-xl text-sm leading-relaxed text-dark-300 md:text-base">
+                          {service.text}
+                        </p>
 
-                      <div className="mt-7 flex flex-wrap gap-3">
-                        {service.canTry && (
+                        <div className="mt-6 flex flex-wrap gap-3">
+                          <span className="inline-flex items-center gap-2 rounded-full border border-dark-800 bg-white px-3 py-1.5 text-xs font-bold text-dark-300">
+                            <Clock className="size-4 text-fizzia-500" />
+                            {service.time}
+                          </span>
+                          <span className="inline-flex items-center gap-2 rounded-full border border-dark-800 bg-white px-3 py-1.5 text-xs font-bold text-dark-300">
+                            <DollarSign className="size-4 text-fizzia-500" />
+                            {service.price}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-[11px] font-medium text-dark-400">
+                          Precio y tiempo referenciales. Pueden variar segun alcance y funciones.
+                        </p>
+
+                        <div className="mt-7 flex flex-wrap gap-3">
+                          {service.canTry && (
+                            <a
+                              href={DEMO_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-xl bg-fizzia-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-fizzia-400"
+                            >
+                              <Play className="size-4" />
+                              Probar
+                            </a>
+                          )}
                           <a
-                            href={DEMO_URL}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-xl bg-fizzia-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-fizzia-400"
+                            href="/register"
+                            className="inline-flex items-center gap-2 rounded-xl border border-dark-700 bg-white px-5 py-3 text-sm font-black text-dark-100 transition-colors hover:border-fizzia-500/40 hover:bg-dark-900"
                           >
-                            <Play className="size-4" />
-                            Probar
+                            Quiero uno similar
                           </a>
-                        )}
-                        <a
-                          href="/register"
-                          className="inline-flex items-center gap-2 rounded-xl border border-dark-700 bg-white px-5 py-3 text-sm font-black text-dark-100 transition-colors hover:border-fizzia-500/40 hover:bg-dark-900"
-                        >
-                          Quiero uno similar
-                        </a>
+                        </div>
                       </div>
                     </div>
                   </article>
