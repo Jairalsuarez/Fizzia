@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Icon } from '../ui/Icon'
-
-const DEMO_URL = 'https://demostracion-alpha.vercel.app/'
+import { DEMO_URL } from '../../data/servicePages'
 
 const previewRows = [
   { item: 'Café americano', stock: '34', sales: '$128' },
@@ -12,9 +11,8 @@ const previewRows = [
 export function ProjectsSection() {
   const [showRedirectMessage, setShowRedirectMessage] = useState(false)
 
-  const handleDemoClick = () => {
+  const showDemoRedirectMessage = () => {
     setShowRedirectMessage(true)
-    window.open(DEMO_URL, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -28,14 +26,16 @@ export function ProjectsSection() {
             <p className="mx-auto mt-4 max-w-md text-base font-medium leading-relaxed text-dark-300 lg:mx-0">
               Explora una demo funcional del tipo de sistema que podemos construir para tu negocio.
             </p>
-            <button
-              type="button"
-              onClick={handleDemoClick}
+            <a
+              href={DEMO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={showDemoRedirectMessage}
               className="mx-auto mt-7 inline-flex w-full max-w-xs cursor-pointer items-center justify-center gap-3 rounded-2xl border border-fizzia-500/30 bg-fizzia-500 px-8 py-5 text-lg font-black text-white shadow-lg shadow-fizzia-500/25 transition-all duration-200 hover:bg-fizzia-400 hover:shadow-fizzia-500/40 active:scale-[0.98] sm:w-fit lg:mx-0"
             >
               Ver demostracion
               <Icon name="arrow_forward" size={22} />
-            </button>
+            </a>
           </div>
 
           <div className="hidden overflow-hidden rounded-[1.35rem] border border-dark-800 bg-dark-900 shadow-2xl shadow-black/25 md:block">
